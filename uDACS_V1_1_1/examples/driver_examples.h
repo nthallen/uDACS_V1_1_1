@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+void EXTERNAL_IRQ_0_example(void);
+
 void AD_SPI_example(void);
 
 void UC_I2C_example(void);

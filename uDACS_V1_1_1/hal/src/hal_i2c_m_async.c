@@ -180,9 +180,17 @@ int32_t i2c_m_async_deinit(struct i2c_m_async_desc *const i2c)
  */
 int32_t i2c_m_async_enable(struct i2c_m_async_desc *const i2c)
 {
+	int32_t rc;
+
 	ASSERT(i2c);
 
-	return _i2c_m_async_enable(&i2c->device);
+	rc = _i2c_m_async_enable(&i2c->device);
+	if (rc == ERR_NONE) {
+		_i2c_m_async_set_irq_state(&i2c->device, I2C_M_ASYNC_DEVICE_TX_COMPLETE, true);
+		_i2c_m_async_set_irq_state(&i2c->device, I2C_M_ASYNC_DEVICE_RX_COMPLETE, true);
+		_i2c_m_async_set_irq_state(&i2c->device, I2C_M_ASYNC_DEVICE_ERROR, true);
+	}
+	return rc;
 }
 
 /**
@@ -190,9 +198,17 @@ int32_t i2c_m_async_enable(struct i2c_m_async_desc *const i2c)
  */
 int32_t i2c_m_async_disable(struct i2c_m_async_desc *const i2c)
 {
+	int32_t rc;
+
 	ASSERT(i2c);
 
-	return _i2c_m_async_disable(&i2c->device);
+	rc = _i2c_m_async_disable(&i2c->device);
+	if (rc == ERR_NONE) {
+		_i2c_m_async_set_irq_state(&i2c->device, I2C_M_ASYNC_DEVICE_TX_COMPLETE, false);
+		_i2c_m_async_set_irq_state(&i2c->device, I2C_M_ASYNC_DEVICE_RX_COMPLETE, false);
+		_i2c_m_async_set_irq_state(&i2c->device, I2C_M_ASYNC_DEVICE_ERROR, false);
+	}
+	return rc;
 }
 
 /**
@@ -223,9 +239,6 @@ int32_t i2c_m_async_register_callback(struct i2c_m_async_desc *const i2c, enum i
 		/* error */
 		return ERR_INVALID_ARG;
 	}
-
-	_i2c_m_async_set_irq_state(&i2c->device, (enum _i2c_m_async_callback_type)type, NULL != func);
-
 	return I2C_OK;
 }
 

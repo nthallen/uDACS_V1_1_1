@@ -31,6 +31,26 @@ struct i2c_m_async_desc UC_I2C;
 
 struct spi_m_async_descriptor SD_SPI;
 
+void EXTERNAL_IRQ_0_init(void)
+{
+	_gclk_enable_channel(EIC_GCLK_ID, CONF_GCLK_EIC_SRC);
+
+	// Set pin direction to input
+	gpio_set_pin_direction(PA03, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(PA03,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(PA03, PINMUX_PA03A_EIC_EXTINT3);
+
+	ext_irq_init();
+}
+
 void AD_SPI_PORT_init(void)
 {
 
@@ -469,6 +489,8 @@ void system_init(void)
 	                       GPIO_PULL_OFF);
 
 	gpio_set_pin_function(PMOD6, GPIO_PIN_FUNCTION_OFF);
+
+	EXTERNAL_IRQ_0_init();
 
 	// AD_SPI_init();
 
