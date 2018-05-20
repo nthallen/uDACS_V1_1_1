@@ -12,9 +12,9 @@
     <OutputFileName>$(MSBuildProjectName)</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
-    <AssemblyName>uDACS_V1_1_1</AssemblyName>
-    <Name>uDACS_V1_1_1</Name>
-    <RootNamespace>uDACS_V1_1_1</RootNamespace>
+    <AssemblyName>uDACS_V1_1_1cpp</AssemblyName>
+    <Name>uDACS_V1_1_1cpp</Name>
+    <RootNamespace>uDACS_V1_1_1cpp</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
