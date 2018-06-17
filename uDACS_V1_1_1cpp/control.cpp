@@ -11,6 +11,7 @@
 * 0.00	mr	11/2/09  Initial release
 * 1.00  nta 9/8/10   Full implementation
 * 2.00  nta 11/6/17  Significant rewrite for microcontroller architecture
+* 3.00  nta 5/18/18  Convert to C++ for uDACS
 *
 *******************************************************************************/
 
@@ -21,6 +22,15 @@
 #include "subbus.h"
 #include "usart.h"
 
+#define CTRL_USE_SUBBUS 0
+
+Control::Control(subbus_t *sb) {
+  cmd_byte_num = 0;
+  this->sb = sb;
+  #ifdef CMD_RCV_TIMEOUT
+    cmd_rcv_timer = 0;
+  #endif
+}
 
 /**
  * Reads hex string and sets return value and updates the
@@ -30,7 +40,7 @@
  * @param pointer to return value
  * @return non-zero on error (no number)
  */
-static int read_hex( uint8_t **sp, uint16_t *rvp) {
+int Control::read_hex( uint8_t **sp, uint16_t *rvp) {
   uint8_t *s = *sp;
   uint16_t rv = 0;
   if (! isxdigit(*s)) return 1;
@@ -45,7 +55,7 @@ static int read_hex( uint8_t **sp, uint16_t *rvp) {
   return 0;
 }
 
-static void hex_out(uint16_t data) {
+void Control::hex_out(uint16_t data) {
   static uint8_t hex[] = { '0', '1', '2', '3', '4', '5', '6', '7',
                     '8','9', 'A', 'B', 'C', 'D', 'E', 'F' };
   if (data & 0xFFF0) {
@@ -76,7 +86,7 @@ static void hex_out(uint16_t data) {
  * is encountered, and error code is returned to terminate the output.
  * (e.g. M32B5m0M32B6E3)
  */
-static void read_multi(uint8_t *cmd) {
+void Control::read_multi(uint8_t *cmd) {
   uint16_t addr, start, incr, end, count, rep;
   uint16_t result;
   ++cmd;
@@ -110,8 +120,8 @@ static void read_multi(uint8_t *cmd) {
       }
       end = addr;
     } else if (*cmd == '|') {
-#if USE_SUBBUS
-      if ( subbus_read( addr, &result ) ) {
+#if CTRL_USE_SUBBUS
+      if ( sb->sb_read( addr, &result ) ) {
         uart_send_char('M');
         hex_out(result);
       } else {
@@ -120,9 +130,9 @@ static void read_multi(uint8_t *cmd) {
         result = 0;
       }
 #else
-      uart_send_char('m');
-      uart_send_char('0');
-      result = 0;
+        uart_send_char('m');
+        uart_send_char('0');
+        result = 0;
 #endif
       ++cmd;
       if ( read_hex( &cmd, &rep ) ) {
@@ -153,8 +163,8 @@ static void read_multi(uint8_t *cmd) {
         SendErrorMsg("3");
         return;
       }
-#if USE_SUBBUS
-      if ( subbus_read( addr, &result ) ) {
+#if CTRL_USE_SUBBUS
+      if ( sb->sb_read( addr, &result ) ) {
         uart_send_char('M');
         hex_out(result);
       } else {
@@ -162,8 +172,8 @@ static void read_multi(uint8_t *cmd) {
         uart_send_char('0');
       }
 #else
-      uart_send_char('m');
-      uart_send_char('0');
+        uart_send_char('m');
+        uart_send_char('0');
 #endif
     }
     if (*cmd == '\n' || *cmd == '\r') {
@@ -176,7 +186,7 @@ static void read_multi(uint8_t *cmd) {
   }
 }
 
-static void parse_command(uint8_t *cmd) {
+void Control::parse_command(uint8_t *cmd) {
   int nargs = 0;
   uint8_t cmd_code;
   uint16_t arg1, arg2;
@@ -221,25 +231,24 @@ static void parse_command(uint8_t *cmd) {
   }
   switch(cmd_code) {
     case 'R':                         // READ with ACK 'R'
-#if USE_SUBBUS
-      expack = subbus_read(arg1, &rv);
+#if CTRL_USE_SUBBUS
+      expack = sb->sb_read(arg1, &rv);
 #else
-      rv = 0;
       expack = 0;
 #endif
       SendCodeVal(expack ? 'R' : 'r', rv);
       break;
     case 'W':                         // WRITE with ACK 'W'
-#if USE_SUBBUS
-      expack = subbus_write(arg1, arg2);
+#if CTRL_USE_SUBBUS
+      expack = sb->write(arg1, arg2);
 #else
       expack = 0;
 #endif
       SendMsg(expack ? "W" : "w");
       break;
     case 'F':
-#if USE_SUBBUS
-      set_fail(arg1);
+#if CTRL_USE_SUBBUS
+      sb->set_fail(arg1);
 #endif
       SendMsg( "F" );
       break;
@@ -247,9 +256,7 @@ static void parse_command(uint8_t *cmd) {
 #ifdef SUBBUS_FAIL_DEVICE_ID
       arg1 = XGpio_DiscreteRead(&Subbus_Fail,2);
 #elif defined(SUBBUS_FAIL_ADDR)
-      subbus_read(SUBBUS_FAIL_ADDR, &arg1);
-#else
-      arg1 = 0;
+      sb->sb_read(SUBBUS_FAIL_ADDR, &arg1);
 #endif
       SendCodeVal('f', arg1);
       break;
@@ -259,11 +266,11 @@ static void parse_command(uint8_t *cmd) {
       SendCode(cmd_code);
       break;
     case 'B':
-#if USE_SUBBUS
-      subbus_reset();
+#if CTRL_USE_SUBBUS
+      sb->reset();
+#endif
 #if SUBBUS_INTERRUPTS
       init_interrupts();
-#endif
 #endif
       SendMsg("B");
       break;
@@ -274,9 +281,7 @@ static void parse_command(uint8_t *cmd) {
 #ifdef SUBBUS_SWITCHES_DEVICE_ID
       arg1 = XGpio_DiscreteRead(&Subbus_Switches,1);
 #elif defined(SUBBUS_SWITCHES_ADDR)
-      subbus_read(SUBBUS_SWITCHES_ADDR, &arg1);
-#else
-      arg1 = 0;
+      sb->sb_read(SUBBUS_SWITCHES_ADDR, &arg1);
 #endif
       SendCodeVal('D', arg1);
       break;
@@ -307,13 +312,6 @@ static void parse_command(uint8_t *cmd) {
   }
 }
 
-#define RECV_BUF_SIZE USART_CTRL_RX_BUFFER_SIZE
-static uint8_t cmd[RECV_BUF_SIZE];							// Current Command
-static int cmd_byte_num = 0;
-#ifdef CMD_RCV_TIMEOUT
-  static int cmd_rcv_timer = 0;
-#endif
-
 /******************************************************************************
 *
 * poll_control function. Reads data from uart when available and processes
@@ -321,7 +319,7 @@ static int cmd_byte_num = 0;
 *
 * @param    None
 *******************************************************************************/
-void poll_control(void) {
+void Control::poll(void) {
     int nr, i;
     nr = uart_recv(&cmd[cmd_byte_num], RECV_BUF_SIZE-cmd_byte_num-1);
     if (nr > 0) {
@@ -360,7 +358,7 @@ void poll_control(void) {
 * @note     None
 *
 *******************************************************************************/
-void SendErrorMsg(const char *msg) {
+void Control::SendErrorMsg(const char *msg) {
   uart_send_char('U');
   SendMsg(msg);
 }
@@ -374,20 +372,20 @@ void SendErrorMsg(const char *msg) {
  * @return   None
  *
  */
-void SendMsg(const char *msg) {
+void Control::SendMsg(const char *msg) {
   while (*msg)
     uart_send_char(*msg++);
   uart_send_char('\n');			// End with NL
   uart_flush_output();
 }
 
-void SendCodeVal(int8_t code, uint16_t val) {
+void Control::SendCodeVal(int8_t code, uint16_t val) {
   uart_send_char(code);
   hex_out(val);
   SendMsg("");
 }
 
-void SendCode(int8_t code) {
+void Control::SendCode(int8_t code) {
   uart_send_char(code);
   SendMsg("");
 }

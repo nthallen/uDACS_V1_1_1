@@ -462,7 +462,7 @@
     <Compile Include="Config\RTE_Components.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="control.c">
+    <Compile Include="control.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="control.h">
@@ -811,6 +811,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="main.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="subbus.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="subbus.h">

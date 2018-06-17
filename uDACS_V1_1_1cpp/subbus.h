@@ -1,11 +1,12 @@
 #ifndef SUBBUS_H_INCLUDED
 #define SUBBUS_H_INCLUDED
-
+//#include <list>
 #include <stdint.h>
-#include <stdbool.h>
+// #include <stdbool.h>
 
 #define uDACS_12
-#define USE_SUBBUS 0
+#define USE_SUBBUS 1
+#define USE_SUBBUS_DRIVERS 0
 
 #ifdef FCC1
   #define BOARD_REV                   "V10:178:HCHO FCC Rev A V1.1"
@@ -16,10 +17,9 @@
   #define SUBBUS_BOARD_ID             11
 #endif
 #ifdef uDACS_12
-#define BOARD_REV                   "V12:178:HCHO uDACS Rev A V1.1"
-#define SUBBUS_BOARD_ID             12
+  #define BOARD_REV                   "V12:178:HCHO uDACS Rev A V1.1"
+  #define SUBBUS_BOARD_ID             12
 #endif
-
 #if USE_SUBBUS
 #define SUBBUS_BUILD_NUM            1
 #define SUBBUS_FAIL_RESERVED        0xF000
@@ -33,22 +33,82 @@
 
 #define SUBBUS_ADDR_CMDS 0x18
 
-extern volatile uint8_t subbus_intr_req;
-void subbus_reset(void);
-void init_interrupts(void);
-int intr_attach(int id, uint16_t addr);
-int intr_detach( uint16_t addr );
-void intr_service(void);
-int subbus_read( uint16_t addr, uint16_t *rv );
-int subbus_write( uint16_t addr, uint16_t data);
-void set_fail(uint16_t arg);
-void set_fail_reserved(uint16_t arg);
-int subbus_cache_write(uint16_t addr, uint16_t data);
-int subbus_cache_update(uint16_t addr, uint16_t data);
-int subbus_cache_read(uint16_t addr, uint16_t *data);
-bool subbus_cache_config(uint16_t addr, bool writable);
-bool subbus_cache_iswritten(uint16_t addr, uint16_t *value);
+class subbus_driver {
+  public:
+    subbus_driver(uint16_t low, uint16_t high);
+    virtual int dr_read( uint16_t addr, uint16_t *rv ) = 0;
+    virtual int dr_write( uint16_t addr, uint16_t data) = 0;
+    virtual void reset() = 0;
+    uint16_t low, high;
+};
 
+class subbus_base : public subbus_driver {
+  public:
+    inline subbus_base() : subbus_driver(0,SUBBUS_BDID_ADDR+1) {}
+    int dr_read( uint16_t addr, uint16_t *rv );
+    int dr_write( uint16_t addr, uint16_t data);
+    void reset();
+};
+
+#if USE_SUBBUS_DRIVERS
+
+class subbus_fail_sw : public subbus_driver {
+  public:
+    inline subbus_fail_sw() :
+        subbus_driver(SUBBUS_FAIL_ADDR,SUBBUS_SWITCHES_ADDR) {
+      fail_reg = 0;
+    }
+    int read( uint16_t addr, uint16_t *rv );
+    int write( uint16_t addr, uint16_t data);
+    void reset();
+  private:
+    uint16_t fail_reg;
+};
+
+#endif // USE_SUBBUS_DRIVERS
+
+typedef struct {
+  uint16_t address;
+  uint16_t bitmask;
+} board_intr_t;
+
+typedef struct {
+  uint16_t intr_id;
+  int active;
+} interrupt_t;
+
+class subbus_t {
+  public:
+    subbus_t();
+    void reset(void);
+    void add_driver(subbus_driver *drv);
+    int sb_read( uint16_t addr, uint16_t *rv );
+    int write( uint16_t addr, uint16_t data);
+    inline void set_fail(uint16_t arg) {
+      this->write(SUBBUS_FAIL_ADDR, arg);
+    }
+    inline int read_fail(uint16_t *rv) {
+      return this->sb_read(SUBBUS_FAIL_ADDR, rv);
+    }
+    #if SUBBUS_INTERRUPTS
+      void init_interrupts(void);
+      int intr_attach(int id, uint16_t addr);
+      int intr_detach( uint16_t addr );
+      void intr_service(void);
+      static volatile uint8_t intr_req;
+    #endif
+  private:
+    //std::list<subbus_driver *> drivers;
+    #if SUBBUS_INTERRUPTS
+      static const board_intr_t bd_intrs[];
+      static interrupt_t interrupts[N_INTERRUPTS];
+    #endif
+};
+
+#else
+class subbus_t {
+  public:
+    int ver;
+};
 #endif // USE_SUBBUS
-
 #endif
