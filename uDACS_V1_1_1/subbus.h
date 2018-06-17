@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define uDACS_12
-#define USE_SUBBUS 0
+#define USE_SUBBUS 1
 
 #ifdef FCC1
   #define BOARD_REV                   "V10:178:HCHO FCC Rev A V1.1"
@@ -27,27 +27,35 @@
 #define SUBBUS_BDID_ADDR            0x0002
 #define SUBBUS_FAIL_ADDR            0x0004
 #define SUBBUS_SWITCHES_ADDR        0x0005
-#define SUBBUS_CACHE_BASE_ADDR      ((uint16_t)0x10)
-#define SUBBUS_CACHE_SIZE           ((uint16_t)9)
+#define SUBBUS_MAX_DRIVERS          4
 #define SUBBUS_INTERRUPTS           0
 
 #define SUBBUS_ADDR_CMDS 0x18
 
+#if SUBBUS_INTERRUPTS
 extern volatile uint8_t subbus_intr_req;
-void subbus_reset(void);
 void init_interrupts(void);
 int intr_attach(int id, uint16_t addr);
 int intr_detach( uint16_t addr );
 void intr_service(void);
+#endif
 int subbus_read( uint16_t addr, uint16_t *rv );
 int subbus_write( uint16_t addr, uint16_t data);
+void subbus_reset(void);
+void subbus_poll(void);
 void set_fail(uint16_t arg);
-void set_fail_reserved(uint16_t arg);
-int subbus_cache_write(uint16_t addr, uint16_t data);
-int subbus_cache_update(uint16_t addr, uint16_t data);
-int subbus_cache_read(uint16_t addr, uint16_t *data);
-bool subbus_cache_config(uint16_t addr, bool writable);
-bool subbus_cache_iswritten(uint16_t addr, uint16_t *value);
+
+typedef struct {
+  uint16_t low, high;
+  int (*read)( uint16_t addr, uint16_t *rv ),
+  int (*write)( uint16_t addr, uint16_t data),
+  void (*reset)(void),
+  void (*poll)(void)
+} subbus_driver_t;
+
+void subbus_add_driver(subbus_driver_t *driver);
+extern subbus_driver_t sb_base;
+extern subbus_driver_t sb_fail_sw;
 
 #endif // USE_SUBBUS
 

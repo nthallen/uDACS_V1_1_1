@@ -3,20 +3,20 @@
 #include "subbus.h"
 #include "control.h"
 //#include "spi.h"
-//#include "commands.h"
 
 int main(void)
 {
   /* Initializes MCU, drivers and middleware */
   atmel_start_init();
-  //subbus_reset();
+  if (subbus_add_driver(&sb_base) ||
+      subbus_add_driver(&sb_fail_sw)) {
+    while (true) ; // some driver is misconfigured.
+  }
+  subbus_reset();
   uart_init();
-  //spi_init();
-  //commands_init();
   while (1) {
     poll_control();
-    //poll_spi();
-    // poll_commands();
+    subbus_poll();
     #if SUBBUS_INTERRUPTS
       if (subbus_intr_req)
         intr_service();
