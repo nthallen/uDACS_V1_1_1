@@ -774,6 +774,9 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="subbus.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="subbus.h">
       <SubType>compile</SubType>
     </Compile>

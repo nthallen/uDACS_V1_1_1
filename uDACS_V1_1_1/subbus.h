@@ -47,13 +47,13 @@ void set_fail(uint16_t arg);
 
 typedef struct {
   uint16_t low, high;
-  int (*read)( uint16_t addr, uint16_t *rv ),
-  int (*write)( uint16_t addr, uint16_t data),
-  void (*reset)(void),
-  void (*poll)(void)
+  int (*read)( uint16_t addr, uint16_t *rv );
+  int (*write)( uint16_t addr, uint16_t data);
+  void (*reset)(void);
+  void (*poll)(void);
 } subbus_driver_t;
 
-void subbus_add_driver(subbus_driver_t *driver);
+bool subbus_add_driver(subbus_driver_t *driver);
 extern subbus_driver_t sb_base;
 extern subbus_driver_t sb_fail_sw;
 
