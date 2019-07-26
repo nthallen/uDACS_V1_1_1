@@ -54,11 +54,15 @@ extern "C" {
 #define _spi_m_async_dev_cb_type _spi_async_dev_cb_type
 
 /** Uses common SPI async device driver complete callback type. */
-#define _spi_m_async_dev_cb_complete_t _spi_async_dev_cb_complete_t
+#define _spi_m_async_dev_cb_error_t _spi_async_dev_cb_error_t
 
 /** Uses common SPI async device driver transfer callback type. */
 #define _spi_m_async_dev_cb_xfer_t _spi_async_dev_cb_xfer_t
 
+/**
+ * \name HPL functions
+ */
+//@{
 /**
  *  \brief Initialize SPI for access with interrupts
  *  It will load default hardware configuration and software struct.
@@ -181,7 +185,7 @@ int32_t _spi_m_async_enable_tx(struct _spi_m_async_dev *dev, bool state);
 int32_t _spi_m_async_enable_rx(struct _spi_m_async_dev *dev, bool state);
 
 /**
- * \brief Enable interrupt on Slave Select (SS) rising
+ * \brief Enable interrupt on after data transmission complate
  *
  * \param[in] dev  Pointer to the SPI device instance
  * \param[in] state true  = enable input interrupts
@@ -190,7 +194,7 @@ int32_t _spi_m_async_enable_rx(struct _spi_m_async_dev *dev, bool state);
  * \return Status code
  * \retvat 0 OK Status
  */
-int32_t _spi_m_async_enable_ss_detect(struct _spi_m_async_dev *dev, bool state);
+int32_t _spi_m_async_enable_tx_complete(struct _spi_m_async_dev *dev, bool state);
 
 /**
  *  \brief Read one character to SPI device instance
@@ -229,6 +233,7 @@ int32_t _spi_m_async_register_callback(struct _spi_m_async_dev *dev, const enum 
  */
 void _spi_m_async_set_irq_state(struct _spi_m_async_dev *const device, const enum _spi_m_async_dev_cb_type type,
                                 const bool state);
+//@}
 
 #ifdef __cplusplus
 }

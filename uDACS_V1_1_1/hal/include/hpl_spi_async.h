@@ -59,18 +59,20 @@ enum _spi_async_dev_cb_type {
 	SPI_DEV_CB_RX,
 	/** Callback type for \ref _spi_async_dev_cb_complete_t. */
 	SPI_DEV_CB_COMPLETE,
+	/** Callback type for error */
+	SPI_DEV_CB_ERROR,
 	/** Number of callbacks. */
 	SPI_DEV_CB_N
 };
 
 struct _spi_async_dev;
 
-/** \brief The prototype for callback on SPI transfer complete.
+/** \brief The prototype for callback on SPI transfer error.
  *  If status code is zero, it indicates the normal completion, that is,
  *  SS deactivation.
  *  If status code belows zero, it indicates complete.
  */
-typedef void (*_spi_async_dev_cb_complete_t)(struct _spi_async_dev *dev, int32_t status);
+typedef void (*_spi_async_dev_cb_error_t)(struct _spi_async_dev *dev, int32_t status);
 
 /** \brief The prototype for callback on SPI transmit/receive event
  *  For TX, the callback is invoked when transmit is done or ready to start
@@ -91,7 +93,9 @@ struct _spi_async_dev_callbacks {
 	/** RX callback, see \ref _spi_async_dev_cb_xfer_t. */
 	_spi_async_dev_cb_xfer_t rx;
 	/** Complete or complete callback, see \ref _spi_async_dev_cb_complete_t. */
-	_spi_async_dev_cb_complete_t complete;
+	_spi_async_dev_cb_xfer_t complete;
+	/** Error callback, see \ref */
+	_spi_async_dev_cb_error_t err;
 };
 //@}
 

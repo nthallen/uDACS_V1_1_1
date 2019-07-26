@@ -87,10 +87,10 @@ struct spi_m_async_descriptor;
 /** The callback types */
 enum spi_m_async_cb_type {
 	/** Callback type for read/write/transfer buffer done,
-     *  see \ref spi_m_async_cb_xfer_t. */
+	 *  see \ref spi_m_async_cb_xfer_t. */
 	SPI_M_ASYNC_CB_XFER,
 	/** Callback type for CS deactivate, error, or abort,
-     *  see \ref spi_m_async_cb_error_t. */
+	 *  see \ref spi_m_async_cb_error_t. */
 	SPI_M_ASYNC_CB_ERROR,
 	SPI_M_ASYNC_CB_N
 };
@@ -123,6 +123,7 @@ struct spi_m_callbacks {
 /** \brief SPI HAL driver struct for asynchronous access
  */
 struct spi_m_async_descriptor {
+	struct _spi_m_async_hpl_interface *func;
 	/** Pointer to the SPI device instance */
 	struct _spi_m_async_dev dev;
 	/** I/O read/write */
@@ -138,6 +139,16 @@ struct spi_m_async_descriptor {
 	/** Character count in current transfer */
 	uint32_t xfercnt;
 };
+
+/** \brief Set the SPI HAL instance function pointer for HPL APIs.
+ *
+ *  Set SPI HAL instance function pointer for HPL APIs.
+ *
+ *  \param[in] spi Pointer to the HAL SPI instance.
+ *  \param[in] func Pointer to the HPL api structure.
+ *
+ */
+void spi_m_async_set_func_ptr(struct spi_m_async_descriptor *spi, void *const func);
 
 /** \brief Initialize the SPI HAL instance and hardware for callback mode
  *

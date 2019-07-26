@@ -36,6 +36,9 @@
 #include <hpl_rtc_config.h>
 #include <utils_assert.h>
 
+#define hri_rtcmode0_wait_for_sync(a) hri_rtc_wait_for_sync(a)
+#define hri_rtcmode0_set_READREQ_RCONT_bit(a) hri_rtc_set_READREQ_RCONT_bit(a)
+
 /*!< Pointer to hpl device */
 
 static struct _timer_device *_rtc_dev = NULL;
@@ -67,19 +70,15 @@ int32_t _timer_init(struct _timer_device *const dev, void *const hw)
 	hri_rtcmode0_write_COMP_COMP_bf(dev->hw, 0, CONF_RTC_COMP_VAL);
 	hri_rtcmode0_set_INTEN_CMP0_bit(dev->hw);
 
-/* set event control */
+	/* set event control */
 #if CONF_RTC_EVENT_CONTROL_ENABLE == 1
-	hri_rtcmode0_write_EVCTRL_reg(dev->hw,
-	                              (CONF_RTC_PEREO0 << RTC_MODE0_EVCTRL_PEREO0_Pos)
-	                                  | (CONF_RTC_PEREO1 << RTC_MODE0_EVCTRL_PEREO1_Pos)
-	                                  | (CONF_RTC_PEREO2 << RTC_MODE0_EVCTRL_PEREO2_Pos)
-	                                  | (CONF_RTC_PEREO3 << RTC_MODE0_EVCTRL_PEREO3_Pos)
-	                                  | (CONF_RTC_PEREO4 << RTC_MODE0_EVCTRL_PEREO4_Pos)
-	                                  | (CONF_RTC_PEREO5 << RTC_MODE0_EVCTRL_PEREO5_Pos)
-	                                  | (CONF_RTC_PEREO6 << RTC_MODE0_EVCTRL_PEREO6_Pos)
-	                                  | (CONF_RTC_PEREO7 << RTC_MODE0_EVCTRL_PEREO7_Pos)
-	                                  | (CONF_RTC_COMPE0 << RTC_MODE0_EVCTRL_CMPEO_Pos)
-	                                  | (CONF_RTC_OVFEO << RTC_MODE0_EVCTRL_OVFEO_Pos));
+	hri_rtcmode0_write_EVCTRL_reg(
+	    dev->hw,
+	    (CONF_RTC_PEREO0 << RTC_MODE0_EVCTRL_PEREO0_Pos) | (CONF_RTC_PEREO1 << RTC_MODE0_EVCTRL_PEREO1_Pos)
+	        | (CONF_RTC_PEREO2 << RTC_MODE0_EVCTRL_PEREO2_Pos) | (CONF_RTC_PEREO3 << RTC_MODE0_EVCTRL_PEREO3_Pos)
+	        | (CONF_RTC_PEREO4 << RTC_MODE0_EVCTRL_PEREO4_Pos) | (CONF_RTC_PEREO5 << RTC_MODE0_EVCTRL_PEREO5_Pos)
+	        | (CONF_RTC_PEREO6 << RTC_MODE0_EVCTRL_PEREO6_Pos) | (CONF_RTC_PEREO7 << RTC_MODE0_EVCTRL_PEREO7_Pos)
+	        | (CONF_RTC_COMPE0 << RTC_MODE0_EVCTRL_CMPEO_Pos) | (CONF_RTC_OVFEO << RTC_MODE0_EVCTRL_OVFEO_Pos));
 #endif
 
 	_rtc_dev = dev;

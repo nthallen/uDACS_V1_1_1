@@ -23,8 +23,8 @@
   <conditions>
     <condition id="CMSIS Device Startup">
       <description>Dependency on CMSIS core and Device Startup components</description>
-      <require Cclass="CMSIS" Cgroup="CORE" Cversion="5.0.1"/>
-      <require Cclass="Device" Cgroup="Startup" Cversion="1.2.0"/>
+      <require Cclass="CMSIS" Cgroup="CORE" Cversion="5.1.2"/>
+      <require Cclass="Device" Cgroup="Startup" Cversion="1.3.0"/>
     </condition>
     <condition id="ARMCC, GCC, IAR">
       <require Dname="ATSAMD21G18A"/>
@@ -71,11 +71,6 @@
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_async.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_dma.h"/>
-        <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_m_async.h"/>
-        <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_m_dma.h"/>
-        <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_m_sync.h"/>
-        <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_s_async.h"/>
-        <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_s_sync.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_sync.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_usart.h"/>
         <file category="source" condition="ARMCC, GCC, IAR" name="hal/src/hal_atomic.c"/>
@@ -85,7 +80,6 @@
         <file category="source" condition="ARMCC, GCC, IAR" name="hal/src/hal_init.c"/>
         <file category="source" condition="ARMCC, GCC, IAR" name="hal/src/hal_io.c"/>
         <file category="source" condition="ARMCC, GCC, IAR" name="hal/src/hal_sleep.c"/>
-        <file category="source" condition="ARMCC, GCC, IAR" name="hal/src/hal_spi_m_async.c"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/utils/include/compiler.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/utils/include/err_codes.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/utils/include/events.h"/>
@@ -140,10 +134,16 @@
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_calendar.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_missing_features.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_reset.h"/>
+        <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_m_async.h"/>
+        <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_m_dma.h"/>
+        <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_m_sync.h"/>
+        <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_s_async.h"/>
+        <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_spi_s_sync.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_timer.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_usart_async.h"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/include/hpl_usart_sync.h"/>
         <file category="source" condition="ARMCC, GCC, IAR" name="hal/src/hal_ext_irq.c"/>
+        <file category="source" condition="ARMCC, GCC, IAR" name="hal/src/hal_spi_m_async.c"/>
         <file category="source" condition="ARMCC, GCC, IAR" name="hal/src/hal_timer.c"/>
         <file category="source" condition="ARMCC, GCC, IAR" name="hal/src/hal_usart_async.c"/>
         <file category="header" condition="ARMCC, GCC, IAR" name="hal/utils/include/parts.h"/>

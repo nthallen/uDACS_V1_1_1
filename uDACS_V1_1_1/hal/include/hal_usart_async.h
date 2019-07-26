@@ -147,7 +147,7 @@ int32_t usart_async_deinit(struct usart_async_descriptor *const descr);
  * \param[in] descr A USART descriptor which is used to communicate via USART
  *
  * \return Enabling status.
-*/
+ */
 int32_t usart_async_enable(struct usart_async_descriptor *const descr);
 
 /**
@@ -158,7 +158,7 @@ int32_t usart_async_enable(struct usart_async_descriptor *const descr);
  * \param[in] descr A USART descriptor which is used to communicate via USART
  *
  * \return Disabling status.
-*/
+ */
 int32_t usart_async_disable(struct usart_async_descriptor *const descr);
 
 /**

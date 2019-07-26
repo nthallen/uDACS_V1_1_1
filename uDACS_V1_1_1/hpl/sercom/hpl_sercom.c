@@ -4,7 +4,7 @@
  *
  * \brief SAM Serial Communication Interface
  *
- * Copyright (c) 2014-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2014-2019 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *
@@ -73,9 +73,7 @@
 /** Amount of SERCOM that is used as USART. */
 #define SERCOM_USART_AMOUNT                                                                                            \
 	(CONF_SERCOM_0_USART_ENABLE + CONF_SERCOM_1_USART_ENABLE + CONF_SERCOM_2_USART_ENABLE + CONF_SERCOM_3_USART_ENABLE \
-	 + CONF_SERCOM_4_USART_ENABLE                                                                                      \
-	 + CONF_SERCOM_5_USART_ENABLE                                                                                      \
-	 + CONF_SERCOM_6_USART_ENABLE                                                                                      \
+	 + CONF_SERCOM_4_USART_ENABLE + CONF_SERCOM_5_USART_ENABLE + CONF_SERCOM_6_USART_ENABLE                            \
 	 + CONF_SERCOM_7_USART_ENABLE)
 
 /**
@@ -86,17 +84,18 @@
  */
 #define SERCOM_CONFIGURATION(n)                                                                                        \
 	{                                                                                                                  \
-		n, SERCOM_USART_CTRLA_MODE(CONF_SERCOM_##n##_USART_MODE)                                                       \
-		       | (CONF_SERCOM_##n##_USART_RUNSTDBY << SERCOM_USART_CTRLA_RUNSTDBY_Pos)                                 \
-		       | (CONF_SERCOM_##n##_USART_IBON << SERCOM_USART_CTRLA_IBON_Pos)                                         \
-		       | SERCOM_USART_CTRLA_SAMPR(CONF_SERCOM_##n##_USART_SAMPR)                                               \
-		       | SERCOM_USART_CTRLA_TXPO(CONF_SERCOM_##n##_USART_TXPO)                                                 \
-		       | SERCOM_USART_CTRLA_RXPO(CONF_SERCOM_##n##_USART_RXPO)                                                 \
-		       | SERCOM_USART_CTRLA_SAMPA(CONF_SERCOM_##n##_USART_SAMPA)                                               \
-		       | SERCOM_USART_CTRLA_FORM(CONF_SERCOM_##n##_USART_FORM)                                                 \
-		       | (CONF_SERCOM_##n##_USART_CMODE << SERCOM_USART_CTRLA_CMODE_Pos)                                       \
-		       | (CONF_SERCOM_##n##_USART_CPOL << SERCOM_USART_CTRLA_CPOL_Pos)                                         \
-		       | (CONF_SERCOM_##n##_USART_DORD << SERCOM_USART_CTRLA_DORD_Pos),                                        \
+		n,                                                                                                             \
+		    SERCOM_USART_CTRLA_MODE(CONF_SERCOM_##n##_USART_MODE)                                                      \
+		        | (CONF_SERCOM_##n##_USART_RUNSTDBY << SERCOM_USART_CTRLA_RUNSTDBY_Pos)                                \
+		        | (CONF_SERCOM_##n##_USART_IBON << SERCOM_USART_CTRLA_IBON_Pos)                                        \
+		        | SERCOM_USART_CTRLA_SAMPR(CONF_SERCOM_##n##_USART_SAMPR)                                              \
+		        | SERCOM_USART_CTRLA_TXPO(CONF_SERCOM_##n##_USART_TXPO)                                                \
+		        | SERCOM_USART_CTRLA_RXPO(CONF_SERCOM_##n##_USART_RXPO)                                                \
+		        | SERCOM_USART_CTRLA_SAMPA(CONF_SERCOM_##n##_USART_SAMPA)                                              \
+		        | SERCOM_USART_CTRLA_FORM(CONF_SERCOM_##n##_USART_FORM)                                                \
+		        | (CONF_SERCOM_##n##_USART_CMODE << SERCOM_USART_CTRLA_CMODE_Pos)                                      \
+		        | (CONF_SERCOM_##n##_USART_CPOL << SERCOM_USART_CTRLA_CPOL_Pos)                                        \
+		        | (CONF_SERCOM_##n##_USART_DORD << SERCOM_USART_CTRLA_DORD_Pos),                                       \
 		    SERCOM_USART_CTRLB_CHSIZE(CONF_SERCOM_##n##_USART_CHSIZE)                                                  \
 		        | (CONF_SERCOM_##n##_USART_SBMODE << SERCOM_USART_CTRLB_SBMODE_Pos)                                    \
 		        | (CONF_SERCOM_##n##_USART_CLODEN << SERCOM_USART_CTRLB_COLDEN_Pos)                                    \
@@ -108,6 +107,7 @@
 		    (uint16_t)(CONF_SERCOM_##n##_USART_BAUD_RATE), CONF_SERCOM_##n##_USART_FRACTIONAL,                         \
 		    CONF_SERCOM_##n##_USART_RECEIVE_PULSE_LENGTH, CONF_SERCOM_##n##_USART_DEBUG_STOP_MODE,                     \
 	}
+
 /**
  * \brief SERCOM USART configuration type
  */
@@ -166,19 +166,19 @@ static struct _usart_async_device *_sercom5_dev = NULL;
 
 static uint8_t _get_sercom_index(const void *const hw);
 static uint8_t _sercom_get_irq_num(const void *const hw);
-static void _sercom_init_irq_param(const void *const hw, void *dev);
+static void    _sercom_init_irq_param(const void *const hw, void *dev);
 static uint8_t _sercom_get_hardware_index(const void *const hw);
 
-static int32_t _usart_init(void *const hw);
+static int32_t     _usart_init(void *const hw);
 static inline void _usart_deinit(void *const hw);
-static uint16_t _usart_calculate_baud_rate(const uint32_t baud, const uint32_t clock_rate, const uint8_t samples,
-                                           const enum usart_baud_rate_mode mode, const uint8_t fraction);
-static void _usart_set_baud_rate(void *const hw, const uint32_t baud_rate);
-static void _usart_set_data_order(void *const hw, const enum usart_data_order order);
-static void _usart_set_mode(void *const hw, const enum usart_mode mode);
-static void _usart_set_parity(void *const hw, const enum usart_parity parity);
-static void _usart_set_stop_bits(void *const hw, const enum usart_stop_bits stop_bits);
-static void _usart_set_character_size(void *const hw, const enum usart_character_size size);
+static uint16_t    _usart_calculate_baud_rate(const uint32_t baud, const uint32_t clock_rate, const uint8_t samples,
+                                              const enum usart_baud_rate_mode mode, const uint8_t fraction);
+static void        _usart_set_baud_rate(void *const hw, const uint32_t baud_rate);
+static void        _usart_set_data_order(void *const hw, const enum usart_data_order order);
+static void        _usart_set_mode(void *const hw, const enum usart_mode mode);
+static void        _usart_set_parity(void *const hw, const enum usart_parity parity);
+static void        _usart_set_stop_bits(void *const hw, const enum usart_stop_bits stop_bits);
+static void        _usart_set_character_size(void *const hw, const enum usart_character_size size);
 
 /**
  * \brief Initialize synchronous SERCOM USART
@@ -420,9 +420,17 @@ uint8_t _usart_sync_read_byte(const struct _usart_sync_device *const device)
 /**
  * \brief Check if USART is ready to send next byte
  */
-bool _usart_sync_is_byte_sent(const struct _usart_sync_device *const device)
+bool _usart_sync_is_ready_to_send(const struct _usart_sync_device *const device)
 {
 	return hri_sercomusart_get_interrupt_DRE_bit(device->hw);
+}
+
+/**
+ * \brief Check if USART transmission complete
+ */
+bool _usart_sync_is_transmit_done(const struct _usart_sync_device *const device)
+{
+	return hri_sercomusart_get_interrupt_TXC_bit(device->hw);
 }
 
 /**
@@ -512,13 +520,6 @@ static uint8_t _sercom_get_hardware_index(const void *const hw)
 	return ((uint32_t)hw - (uint32_t)SERCOM0) / sizeof(Sercom);
 #endif
 
-#if defined __SAML21E18B__ || defined __ATSAML21E18B__ || defined __SAML21G18B__ || defined __ATSAML21G18B__           \
-    || defined __SAML21J18B__ || defined __ATSAML21J18B__ || defined __ATSAMR30G18A__ || defined __ATSAMR30E18A__
-	if ((uint32_t)SERCOM5 == (uint32_t)hw) {
-		return 5;
-	}
-#endif
-
 	return ((uint32_t)hw - (uint32_t)SERCOM0) >> 10;
 }
 
@@ -574,8 +575,7 @@ static void _sercom_usart_interrupt_handler(struct _usart_async_device *device)
 	} else if (hri_sercomusart_get_interrupt_RXC_bit(hw)) {
 		if (hri_sercomusart_read_STATUS_reg(hw)
 		    & (SERCOM_USART_STATUS_PERR | SERCOM_USART_STATUS_FERR | SERCOM_USART_STATUS_BUFOVF
-		       | SERCOM_USART_STATUS_ISF
-		       | SERCOM_USART_STATUS_COLL)) {
+		       | SERCOM_USART_STATUS_ISF | SERCOM_USART_STATUS_COLL)) {
 			hri_sercomusart_clear_STATUS_reg(hw, SERCOM_USART_STATUS_MASK);
 			return;
 		}
@@ -841,7 +841,7 @@ static void _usart_set_character_size(void *const hw, const enum usart_character
 	}
 }
 
-/* Sercom I2C implementation */
+	/* Sercom I2C implementation */
 
 #ifndef CONF_SERCOM_0_I2CM_ENABLE
 #define CONF_SERCOM_0_I2CM_ENABLE 0
@@ -871,10 +871,7 @@ static void _usart_set_character_size(void *const hw, const enum usart_character
 /** Amount of SERCOM that is used as I2C Master. */
 #define SERCOM_I2CM_AMOUNT                                                                                             \
 	(CONF_SERCOM_0_I2CM_ENABLE + CONF_SERCOM_1_I2CM_ENABLE + CONF_SERCOM_2_I2CM_ENABLE + CONF_SERCOM_3_I2CM_ENABLE     \
-	 + CONF_SERCOM_4_I2CM_ENABLE                                                                                       \
-	 + CONF_SERCOM_5_I2CM_ENABLE                                                                                       \
-	 + CONF_SERCOM_6_I2CM_ENABLE                                                                                       \
-	 + CONF_SERCOM_7_I2CM_ENABLE)
+	 + CONF_SERCOM_4_I2CM_ENABLE + CONF_SERCOM_5_I2CM_ENABLE + CONF_SERCOM_6_I2CM_ENABLE + CONF_SERCOM_7_I2CM_ENABLE)
 
 /**
  * \brief Macro is used to fill i2cm configuration structure based on
@@ -884,13 +881,14 @@ static void _usart_set_character_size(void *const hw, const enum usart_character
  */
 #define I2CM_CONFIGURATION(n)                                                                                          \
 	{                                                                                                                  \
-		(n), (SERCOM_I2CM_CTRLA_MODE_I2C_MASTER) | (CONF_SERCOM_##n##_I2CM_RUNSTDBY << SERCOM_I2CM_CTRLA_RUNSTDBY_Pos) \
-		         | (CONF_SERCOM_##n##_I2CM_SPEED << SERCOM_I2CM_CTRLA_SPEED_Pos)                                       \
-		         | (CONF_SERCOM_##n##_I2CM_MEXTTOEN << SERCOM_I2CM_CTRLA_MEXTTOEN_Pos)                                 \
-		         | (CONF_SERCOM_##n##_I2CM_SEXTTOEN << SERCOM_I2CM_CTRLA_SEXTTOEN_Pos)                                 \
-		         | (CONF_SERCOM_##n##_I2CM_INACTOUT << SERCOM_I2CM_CTRLA_INACTOUT_Pos)                                 \
-		         | (CONF_SERCOM_##n##_I2CM_LOWTOUT << SERCOM_I2CM_CTRLA_LOWTOUTEN_Pos)                                 \
-		         | (CONF_SERCOM_##n##_I2CM_SDAHOLD << SERCOM_I2CM_CTRLA_SDAHOLD_Pos),                                  \
+		(n),                                                                                                           \
+		    (SERCOM_I2CM_CTRLA_MODE_I2C_MASTER) | (CONF_SERCOM_##n##_I2CM_RUNSTDBY << SERCOM_I2CM_CTRLA_RUNSTDBY_Pos)  \
+		        | (CONF_SERCOM_##n##_I2CM_SPEED << SERCOM_I2CM_CTRLA_SPEED_Pos)                                        \
+		        | (CONF_SERCOM_##n##_I2CM_MEXTTOEN << SERCOM_I2CM_CTRLA_MEXTTOEN_Pos)                                  \
+		        | (CONF_SERCOM_##n##_I2CM_SEXTTOEN << SERCOM_I2CM_CTRLA_SEXTTOEN_Pos)                                  \
+		        | (CONF_SERCOM_##n##_I2CM_INACTOUT << SERCOM_I2CM_CTRLA_INACTOUT_Pos)                                  \
+		        | (CONF_SERCOM_##n##_I2CM_LOWTOUT << SERCOM_I2CM_CTRLA_LOWTOUTEN_Pos)                                  \
+		        | (CONF_SERCOM_##n##_I2CM_SDAHOLD << SERCOM_I2CM_CTRLA_SDAHOLD_Pos),                                   \
 		    SERCOM_I2CM_CTRLB_SMEN, (uint32_t)(CONF_SERCOM_##n##_I2CM_BAUD_RATE),                                      \
 		    CONF_SERCOM_##n##_I2CM_DEBUG_STOP_MODE, CONF_SERCOM_##n##_I2CM_TRISE, CONF_GCLK_SERCOM##n##_CORE_FREQUENCY \
 	}
@@ -921,8 +919,8 @@ struct i2cm_configuration {
 	uint32_t                     clk; /* SERCOM peripheral clock frequency */
 };
 
-static inline void _i2c_m_enable_implementation(void *hw);
-static int32_t _i2c_m_sync_init_impl(struct _i2c_m_service *const service, void *const hw);
+static inline int32_t _i2c_m_enable_implementation(void *hw);
+static int32_t        _i2c_m_sync_init_impl(struct _i2c_m_service *const service, void *const hw);
 
 #if SERCOM_I2CM_AMOUNT < 1
 /** Dummy array to pass compiling. */
@@ -1057,6 +1055,7 @@ static inline int32_t _sercom_i2c_sync_analyse_flags(void *const hw, uint32_t fl
 
 			if (msg->len == 0) {
 				if (msg->flags & I2C_M_STOP) {
+					hri_sercomi2cm_clear_CTRLB_SMEN_bit(hw);
 					_sercom_i2c_send_stop(hw);
 				}
 
@@ -1129,9 +1128,7 @@ int32_t _i2c_m_async_enable(struct _i2c_m_async_device *const i2c_dev)
 {
 	ASSERT(i2c_dev);
 
-	_i2c_m_enable_implementation(i2c_dev->hw);
-
-	return ERR_NONE;
+	return _i2c_m_enable_implementation(i2c_dev->hw);
 }
 
 /**
@@ -1304,6 +1301,7 @@ int32_t _i2c_m_async_transfer(struct _i2c_m_async_device *i2c_dev, struct _i2c_m
 
 	msg->flags |= I2C_M_BUSY;
 	i2c_dev->service.msg = *msg;
+	hri_sercomi2cm_set_CTRLB_SMEN_bit(i2c_dev->hw);
 
 	ret = _sercom_i2c_send_address(i2c_dev);
 
@@ -1416,9 +1414,7 @@ int32_t _i2c_m_sync_enable(struct _i2c_m_sync_device *const i2c_dev)
 {
 	ASSERT(i2c_dev);
 
-	_i2c_m_enable_implementation(i2c_dev->hw);
-
-	return ERR_NONE;
+	return _i2c_m_enable_implementation(i2c_dev->hw);
 }
 
 /**
@@ -1581,6 +1577,7 @@ int32_t _i2c_m_sync_transfer(struct _i2c_m_sync_device *const i2c_dev, struct _i
 
 	msg->flags |= I2C_M_BUSY;
 	i2c_dev->service.msg = *msg;
+	hri_sercomi2cm_set_CTRLB_SMEN_bit(hw);
 
 	ret = _sercom_i2c_sync_send_address(i2c_dev);
 
@@ -1618,9 +1615,10 @@ int32_t _i2c_m_sync_send_stop(struct _i2c_m_sync_device *const i2c_dev)
 	return I2C_OK;
 }
 
-static inline void _i2c_m_enable_implementation(void *const hw)
+static inline int32_t _i2c_m_enable_implementation(void *const hw)
 {
-	int timeout = 65535;
+	int timeout         = 65535;
+	int timeout_attempt = 4;
 
 	ASSERT(hw);
 
@@ -1631,9 +1629,14 @@ static inline void _i2c_m_enable_implementation(void *const hw)
 		timeout--;
 
 		if (timeout <= 0) {
+			if (--timeout_attempt)
+				timeout = 65535;
+			else
+				return I2C_ERR_BUSY;
 			hri_sercomi2cm_clear_STATUS_reg(hw, SERCOM_I2CM_STATUS_BUSSTATE(I2C_IDLE));
 		}
 	}
+	return ERR_NONE;
 }
 
 static int32_t _i2c_m_sync_init_impl(struct _i2c_m_service *const service, void *const hw)
@@ -1662,7 +1665,7 @@ static int32_t _i2c_m_sync_init_impl(struct _i2c_m_service *const service, void 
 	return ERR_NONE;
 }
 
-/* SERCOM I2C slave */
+	/* SERCOM I2C slave */
 
 #ifndef CONF_SERCOM_0_I2CS_ENABLE
 #define CONF_SERCOM_0_I2CS_ENABLE 0
@@ -1692,10 +1695,7 @@ static int32_t _i2c_m_sync_init_impl(struct _i2c_m_service *const service, void 
 /** Amount of SERCOM that is used as I2C Slave. */
 #define SERCOM_I2CS_AMOUNT                                                                                             \
 	(CONF_SERCOM_0_I2CS_ENABLE + CONF_SERCOM_1_I2CS_ENABLE + CONF_SERCOM_2_I2CS_ENABLE + CONF_SERCOM_3_I2CS_ENABLE     \
-	 + CONF_SERCOM_4_I2CS_ENABLE                                                                                       \
-	 + CONF_SERCOM_5_I2CS_ENABLE                                                                                       \
-	 + CONF_SERCOM_6_I2CS_ENABLE                                                                                       \
-	 + CONF_SERCOM_7_I2CS_ENABLE)
+	 + CONF_SERCOM_4_I2CS_ENABLE + CONF_SERCOM_5_I2CS_ENABLE + CONF_SERCOM_6_I2CS_ENABLE + CONF_SERCOM_7_I2CS_ENABLE)
 
 /**
  * \brief Macro is used to fill I2C slave configuration structure based on
@@ -1705,12 +1705,13 @@ static int32_t _i2c_m_sync_init_impl(struct _i2c_m_service *const service, void 
  */
 #define I2CS_CONFIGURATION(n)                                                                                          \
 	{                                                                                                                  \
-		n, SERCOM_I2CM_CTRLA_MODE_I2C_SLAVE | (CONF_SERCOM_##n##_I2CS_RUNSTDBY << SERCOM_I2CS_CTRLA_RUNSTDBY_Pos)      \
-		       | SERCOM_I2CS_CTRLA_SDAHOLD(CONF_SERCOM_##n##_I2CS_SDAHOLD)                                             \
-		       | (CONF_SERCOM_##n##_I2CS_SEXTTOEN << SERCOM_I2CS_CTRLA_SEXTTOEN_Pos)                                   \
-		       | (CONF_SERCOM_##n##_I2CS_SPEED << SERCOM_I2CS_CTRLA_SPEED_Pos)                                         \
-		       | (CONF_SERCOM_##n##_I2CS_SCLSM << SERCOM_I2CS_CTRLA_SCLSM_Pos)                                         \
-		       | (CONF_SERCOM_##n##_I2CS_LOWTOUT << SERCOM_I2CS_CTRLA_LOWTOUTEN_Pos),                                  \
+		n,                                                                                                             \
+		    SERCOM_I2CM_CTRLA_MODE_I2C_SLAVE | (CONF_SERCOM_##n##_I2CS_RUNSTDBY << SERCOM_I2CS_CTRLA_RUNSTDBY_Pos)     \
+		        | SERCOM_I2CS_CTRLA_SDAHOLD(CONF_SERCOM_##n##_I2CS_SDAHOLD)                                            \
+		        | (CONF_SERCOM_##n##_I2CS_SEXTTOEN << SERCOM_I2CS_CTRLA_SEXTTOEN_Pos)                                  \
+		        | (CONF_SERCOM_##n##_I2CS_SPEED << SERCOM_I2CS_CTRLA_SPEED_Pos)                                        \
+		        | (CONF_SERCOM_##n##_I2CS_SCLSM << SERCOM_I2CS_CTRLA_SCLSM_Pos)                                        \
+		        | (CONF_SERCOM_##n##_I2CS_LOWTOUT << SERCOM_I2CS_CTRLA_LOWTOUTEN_Pos),                                 \
 		    SERCOM_I2CS_CTRLB_SMEN | SERCOM_I2CS_CTRLB_AACKEN | SERCOM_I2CS_CTRLB_AMODE(CONF_SERCOM_##n##_I2CS_AMODE), \
 		    (CONF_SERCOM_##n##_I2CS_GENCEN << SERCOM_I2CS_ADDR_GENCEN_Pos)                                             \
 		        | SERCOM_I2CS_ADDR_ADDR(CONF_SERCOM_##n##_I2CS_ADDRESS)                                                \
@@ -1723,10 +1724,10 @@ static int32_t _i2c_m_sync_init_impl(struct _i2c_m_service *const service, void 
  */
 #define I2CS_7BIT_ADDRESSING_MASK 0x7F
 
-static int32_t _i2c_s_init(void *const hw);
-static int8_t _get_i2c_s_index(const void *const hw);
+static int32_t     _i2c_s_init(void *const hw);
+static int8_t      _get_i2c_s_index(const void *const hw);
 static inline void _i2c_s_deinit(void *const hw);
-static int32_t _i2c_s_set_address(void *const hw, const uint16_t address);
+static int32_t     _i2c_s_set_address(void *const hw, const uint16_t address);
 
 /**
  * \brief SERCOM I2C slave configuration type
@@ -1950,6 +1951,16 @@ i2c_s_status_t _i2c_s_sync_get_status(const struct _i2c_s_sync_device *const dev
 }
 
 /**
+ * \brief Clear the Data Ready interrupt flag
+ */
+int32_t _i2c_s_sync_clear_data_ready_flag(const struct _i2c_s_sync_device *const device)
+{
+	hri_sercomi2cs_clear_INTFLAG_DRDY_bit(device->hw);
+
+	return ERR_NONE;
+}
+
+/**
  * \brief Retrieve I2C slave status
  */
 i2c_s_status_t _i2c_s_async_get_status(const struct _i2c_s_async_device *const device)
@@ -2072,7 +2083,7 @@ static int32_t _i2c_s_set_address(void *const hw, const uint16_t address)
 	return ERR_NONE;
 }
 
-/* Sercom SPI implementation */
+	/* Sercom SPI implementation */
 
 #ifndef SERCOM_USART_CTRLA_MODE_SPI_SLAVE
 #define SERCOM_USART_CTRLA_MODE_SPI_SLAVE (2 << 2)
@@ -2099,11 +2110,11 @@ COMPILER_PACK_RESET()
 /** Build configuration from header macros. */
 #define SERCOMSPI_REGS(n)                                                                                              \
 	{                                                                                                                  \
-		((CONF_SERCOM_##n##_SPI_DORD) | (CONF_SERCOM_##n##_SPI_CPOL << SERCOM_SPI_CTRLA_CPOL_Pos)                      \
+		(((CONF_SERCOM_##n##_SPI_DORD) << SERCOM_SPI_CTRLA_DORD_Pos)                                                   \
+		 | (CONF_SERCOM_##n##_SPI_CPOL << SERCOM_SPI_CTRLA_CPOL_Pos)                                                   \
 		 | (CONF_SERCOM_##n##_SPI_CPHA << SERCOM_SPI_CTRLA_CPHA_Pos)                                                   \
 		 | (CONF_SERCOM_##n##_SPI_AMODE_EN ? SERCOM_SPI_CTRLA_FORM(2) : SERCOM_SPI_CTRLA_FORM(0))                      \
-		 | SERCOM_SPI_CTRLA_DOPO(CONF_SERCOM_##n##_SPI_TXPO)                                                           \
-		 | SERCOM_SPI_CTRLA_DIPO(CONF_SERCOM_##n##_SPI_RXPO)                                                           \
+		 | SERCOM_SPI_CTRLA_DOPO(CONF_SERCOM_##n##_SPI_TXPO) | SERCOM_SPI_CTRLA_DIPO(CONF_SERCOM_##n##_SPI_RXPO)       \
 		 | (CONF_SERCOM_##n##_SPI_IBON << SERCOM_SPI_CTRLA_IBON_Pos)                                                   \
 		 | (CONF_SERCOM_##n##_SPI_RUNSTDBY << SERCOM_SPI_CTRLA_RUNSTDBY_Pos)                                           \
 		 | SERCOM_SPI_CTRLA_MODE(CONF_SERCOM_##n##_SPI_MODE)), /* ctrla */                                             \
@@ -2149,10 +2160,7 @@ COMPILER_PACK_RESET()
 /** Amount of SERCOM that is used as SPI */
 #define SERCOM_SPI_AMOUNT                                                                                              \
 	(CONF_SERCOM_0_SPI_ENABLE + CONF_SERCOM_1_SPI_ENABLE + CONF_SERCOM_2_SPI_ENABLE + CONF_SERCOM_3_SPI_ENABLE         \
-	 + CONF_SERCOM_4_SPI_ENABLE                                                                                        \
-	 + CONF_SERCOM_5_SPI_ENABLE                                                                                        \
-	 + CONF_SERCOM_6_SPI_ENABLE                                                                                        \
-	 + CONF_SERCOM_7_SPI_ENABLE)
+	 + CONF_SERCOM_4_SPI_ENABLE + CONF_SERCOM_5_SPI_ENABLE + CONF_SERCOM_6_SPI_ENABLE + CONF_SERCOM_7_SPI_ENABLE)
 
 #if SERCOM_SPI_AMOUNT < 1
 /** Dummy array for compiling. */
@@ -2433,11 +2441,11 @@ static void _spi_handler(struct _spi_async_dev *dev)
 		dev->callbacks.rx(dev);
 	} else if (st & SERCOM_SPI_INTFLAG_TXC) {
 		hri_sercomspi_clear_INTFLAG_reg(hw, SERCOM_SPI_INTFLAG_TXC);
-		dev->callbacks.complete(dev, 0);
+		dev->callbacks.complete(dev);
 	} else if (st & SERCOM_SPI_INTFLAG_ERROR) {
 		hri_sercomspi_clear_STATUS_reg(hw, SERCOM_SPI_STATUS_BUFOVF);
 		hri_sercomspi_clear_INTFLAG_reg(hw, SERCOM_SPI_INTFLAG_ERROR);
-		dev->callbacks.complete(dev, ERR_OVERFLOW);
+		dev->callbacks.err(dev, ERR_OVERFLOW);
 	}
 }
 
@@ -2898,7 +2906,7 @@ int32_t _spi_s_async_enable_rx(struct _spi_s_async_dev *dev, bool state)
 	return _spi_m_async_enable_rx(dev, state);
 }
 
-int32_t _spi_m_async_enable_ss_detect(struct _spi_async_dev *dev, bool state)
+int32_t _spi_m_async_enable_tx_complete(struct _spi_async_dev *dev, bool state)
 {
 	ASSERT(dev && dev->prvt);
 
@@ -2913,7 +2921,7 @@ int32_t _spi_m_async_enable_ss_detect(struct _spi_async_dev *dev, bool state)
 
 int32_t _spi_s_async_enable_ss_detect(struct _spi_s_async_dev *dev, bool state)
 {
-	return _spi_m_async_enable_ss_detect(dev, state);
+	return _spi_m_async_enable_tx_complete(dev, state);
 }
 
 int32_t _spi_m_async_write_one(struct _spi_async_dev *dev, uint16_t data)
@@ -3037,7 +3045,20 @@ void _spi_m_async_set_irq_state(struct _spi_async_dev *const device, const enum 
 {
 	ASSERT(device);
 
-	if (SPI_DEV_CB_COMPLETE == type) {
+	if (SPI_DEV_CB_ERROR == type) {
 		hri_sercomspi_write_INTEN_ERROR_bit(device->prvt, state);
 	}
+}
+
+/**
+ * \brief Enable/disable SPI slave interrupt
+ *
+ * param[in] device The pointer to SPI slave device instance
+ * param[in] type The type of interrupt to disable/enable if applicable
+ * param[in] state Enable or disable
+ */
+void _spi_s_async_set_irq_state(struct _spi_async_dev *const device, const enum _spi_async_dev_cb_type type,
+                                const bool state)
+{
+	_spi_m_async_set_irq_state(device, type, state);
 }

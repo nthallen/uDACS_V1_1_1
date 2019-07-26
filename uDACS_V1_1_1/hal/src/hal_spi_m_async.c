@@ -64,13 +64,9 @@ static void _spi_dev_tx(struct _spi_m_async_dev *dev)
 		_spi_m_async_write_one(dev, ((uint16_t *)spi->xfer.txbuf)[spi->xfercnt++]);
 	}
 
-	if (spi->xfercnt >= spi->xfer.size) {
+	if (spi->xfercnt == spi->xfer.size) {
 		_spi_m_async_enable_tx(dev, false);
-		spi->stat = 0;
-
-		if (spi->callbacks.cb_xfer) {
-			spi->callbacks.cb_xfer(spi);
-		}
+		_spi_m_async_enable_tx_complete(dev, true);
 	}
 }
 
@@ -82,12 +78,18 @@ static void _spi_dev_rx(struct _spi_m_async_dev *dev)
 {
 	struct spi_m_async_descriptor *spi = CONTAINER_OF(dev, struct spi_m_async_descriptor, dev);
 
-	if (!(dev->char_size > 1)) {
-		/* 8-bit or less */
-		spi->xfer.rxbuf[spi->xfercnt++] = (uint8_t)_spi_m_async_read_one(dev);
+	if (spi->xfer.rxbuf) {
+		if (!(dev->char_size > 1)) {
+			/* 8-bit or less */
+			spi->xfer.rxbuf[spi->xfercnt++] = (uint8_t)_spi_m_async_read_one(dev);
+		} else {
+			/* 9-bit or more */
+			((uint16_t *)spi->xfer.rxbuf)[spi->xfercnt++] = (uint16_t)_spi_m_async_read_one(dev);
+		}
 	} else {
-		/* 9-bit or more */
-		((uint16_t *)spi->xfer.rxbuf)[spi->xfercnt++] = (uint16_t)_spi_m_async_read_one(dev);
+		/* dummy data read if rxbuf is NULL */
+		_spi_m_async_read_one(dev);
+		spi->xfercnt++;
 	}
 
 	if (spi->xfercnt < spi->xfer.size) {
@@ -111,6 +113,24 @@ static void _spi_dev_rx(struct _spi_m_async_dev *dev)
 }
 
 /**
+ *  \brief Callback for complete
+ *  \param[in, out] dev Pointer to the SPI device instance.
+ */
+static void _spi_dev_complete(struct _spi_m_async_dev *dev)
+{
+	struct spi_m_async_descriptor *spi = CONTAINER_OF(dev, struct spi_m_async_descriptor, dev);
+
+	if (spi->xfercnt >= spi->xfer.size) {
+		_spi_m_async_enable_tx_complete(dev, false);
+		spi->stat = 0;
+
+		if (spi->callbacks.cb_xfer) {
+			spi->callbacks.cb_xfer(spi);
+		}
+	}
+}
+
+/**
  *  \brief Callback for error
  *  \param[in, out] dev Pointer to the SPI device instance.
  *  \param[in] status Error status.
@@ -119,12 +139,9 @@ static void _spi_dev_error(struct _spi_m_async_dev *dev, int32_t status)
 {
 	struct spi_m_async_descriptor *spi = CONTAINER_OF(dev, struct spi_m_async_descriptor, dev);
 
-	if (status == 0) {
-		return;
-	}
-
 	_spi_m_async_enable_tx(dev, false);
 	_spi_m_async_enable_rx(dev, false);
+	_spi_m_async_enable_tx_complete(dev, false);
 	spi->stat = 0;
 
 	/* Invoke complete callback */
@@ -133,18 +150,27 @@ static void _spi_dev_error(struct _spi_m_async_dev *dev, int32_t status)
 	}
 }
 
+/**
+ *  \brief Initialize the SPI HAL instance function pointer for HPL APIs.
+ */
+void spi_m_async_set_func_ptr(struct spi_m_async_descriptor *spi, void *const func)
+{
+	ASSERT(spi);
+	spi->func = (struct _spi_m_async_hpl_interface *)func;
+}
+
 int32_t spi_m_async_init(struct spi_m_async_descriptor *spi, void *const hw)
 {
 	int32_t rc = 0;
-
 	ASSERT(spi && hw);
 	spi->dev.prvt = (void *)hw;
+	rc            = _spi_m_async_init(&spi->dev, hw);
 
-	rc = _spi_m_async_init(&spi->dev, hw);
 	if (rc >= 0) {
 		_spi_m_async_register_callback(&spi->dev, SPI_DEV_CB_TX, (FUNC_PTR)_spi_dev_tx);
 		_spi_m_async_register_callback(&spi->dev, SPI_DEV_CB_RX, (FUNC_PTR)_spi_dev_rx);
-		_spi_m_async_register_callback(&spi->dev, SPI_DEV_CB_COMPLETE, (FUNC_PTR)_spi_dev_error);
+		_spi_m_async_register_callback(&spi->dev, SPI_DEV_CB_COMPLETE, (FUNC_PTR)_spi_dev_complete);
+		_spi_m_async_register_callback(&spi->dev, SPI_DEV_CB_ERROR, (FUNC_PTR)_spi_dev_error);
 	} else {
 		return rc;
 	}
@@ -157,7 +183,6 @@ int32_t spi_m_async_init(struct spi_m_async_descriptor *spi, void *const hw)
 void spi_m_async_deinit(struct spi_m_async_descriptor *spi)
 {
 	ASSERT(spi);
-
 	_spi_m_async_deinit(&spi->dev);
 	spi->callbacks.cb_error = NULL;
 	spi->callbacks.cb_xfer  = NULL;
@@ -166,17 +191,14 @@ void spi_m_async_deinit(struct spi_m_async_descriptor *spi)
 void spi_m_async_enable(struct spi_m_async_descriptor *spi)
 {
 	ASSERT(spi);
-
 	_spi_m_async_enable(&spi->dev);
 }
 
 void spi_m_async_disable(struct spi_m_async_descriptor *spi)
 {
 	ASSERT(spi);
-
 	_spi_m_async_enable_tx(&spi->dev, false);
 	_spi_m_async_enable_rx(&spi->dev, false);
-
 	_spi_m_async_disable(&spi->dev);
 }
 
@@ -187,7 +209,6 @@ int32_t spi_m_async_set_baudrate(struct spi_m_async_descriptor *spi, const uint3
 	if (spi->stat & SPI_M_ASYNC_STATUS_BUSY) {
 		return ERR_BUSY;
 	}
-
 	return _spi_m_async_set_baudrate(&spi->dev, baud_val);
 }
 
@@ -198,7 +219,6 @@ int32_t spi_m_async_set_mode(struct spi_m_async_descriptor *spi, const enum spi_
 	if (spi->stat & SPI_M_ASYNC_STATUS_BUSY) {
 		return ERR_BUSY;
 	}
-
 	return _spi_m_async_set_mode(&spi->dev, mode);
 }
 
@@ -209,7 +229,6 @@ int32_t spi_m_async_set_char_size(struct spi_m_async_descriptor *spi, const enum
 	if (spi->stat & SPI_M_ASYNC_STATUS_BUSY) {
 		return ERR_BUSY;
 	}
-
 	return _spi_m_async_set_char_size(&spi->dev, char_size);
 }
 
@@ -220,7 +239,6 @@ int32_t spi_m_async_set_data_order(struct spi_m_async_descriptor *spi, const enu
 	if (spi->stat & SPI_M_ASYNC_STATUS_BUSY) {
 		return ERR_BUSY;
 	}
-
 	return _spi_m_async_set_data_order(&spi->dev, dord);
 }
 
@@ -249,7 +267,6 @@ static int32_t _spi_m_async_io_read(struct io_descriptor *io, uint8_t *const buf
 	spi->xfercnt    = 0;
 
 	spi->stat = SPI_M_ASYNC_STATUS_BUSY;
-
 	_spi_m_async_enable_rx(&spi->dev, true);
 	_spi_m_async_write_one(&spi->dev, SPI_DUMMY_CHAR);
 
@@ -284,7 +301,6 @@ static int32_t _spi_m_async_io_write(struct io_descriptor *io, const uint8_t *co
 	spi->xfercnt    = 0;
 
 	spi->stat = SPI_M_ASYNC_STATUS_BUSY;
-
 	_spi_m_async_enable_tx(&spi->dev, true);
 
 	return ERR_NONE;
@@ -302,9 +318,16 @@ int32_t spi_m_async_transfer(struct spi_m_async_descriptor *spi, uint8_t const *
 	spi->xfercnt    = 0;
 
 	spi->stat = SPI_M_ASYNC_STATUS_BUSY;
-
 	_spi_m_async_enable_rx(&spi->dev, true);
-	_spi_m_async_write_one(&spi->dev, txbuf[spi->xfercnt]);
+	if (txbuf) {
+		if (!(spi->dev.char_size > 1)) {
+			_spi_m_async_write_one(&spi->dev, txbuf[spi->xfercnt]);
+		} else {
+			_spi_m_async_write_one(&spi->dev, ((uint16_t *)txbuf)[spi->xfercnt]);
+		}
+	} else {
+		_spi_m_async_write_one(&spi->dev, spi->dev.dummy_byte);
+	}
 
 	return ERR_NONE;
 }
@@ -333,10 +356,9 @@ void spi_m_async_register_callback(struct spi_m_async_descriptor *spi, const enu
 
 	if (SPI_M_ASYNC_CB_XFER == type) {
 		spi->callbacks.cb_xfer = (spi_m_async_cb_xfer_t)func;
-		_spi_m_async_set_irq_state(&spi->dev, SPI_DEV_CB_RX, NULL != func);
 	} else {
 		spi->callbacks.cb_error = (spi_m_async_cb_error_t)func;
-		_spi_m_async_set_irq_state(&spi->dev, SPI_DEV_CB_COMPLETE, NULL != func);
+		_spi_m_async_set_irq_state(&spi->dev, SPI_DEV_CB_ERROR, NULL != func);
 	}
 }
 

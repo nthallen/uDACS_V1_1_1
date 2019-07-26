@@ -683,7 +683,7 @@
 // </e>
 
 #ifndef CONFIG_EIC_EXTINT_MAP
-#define CONFIG_EIC_EXTINT_MAP {3, PIN_PB03},
+#define CONFIG_EIC_EXTINT_MAP {3, PIN_PA03},
 #endif
 
 // <<< end of configuration section >>>

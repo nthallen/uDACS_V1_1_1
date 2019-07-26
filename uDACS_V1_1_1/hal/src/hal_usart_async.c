@@ -43,10 +43,10 @@
 
 static int32_t usart_async_write(struct io_descriptor *const io_descr, const uint8_t *const buf, const uint16_t length);
 static int32_t usart_async_read(struct io_descriptor *const io_descr, uint8_t *const buf, const uint16_t length);
-static void usart_process_byte_sent(struct _usart_async_device *device);
-static void usart_transmission_complete(struct _usart_async_device *device);
-static void usart_error(struct _usart_async_device *device);
-static void usart_fill_rx_buffer(struct _usart_async_device *device, uint8_t data);
+static void    usart_process_byte_sent(struct _usart_async_device *device);
+static void    usart_transmission_complete(struct _usart_async_device *device);
+static void    usart_error(struct _usart_async_device *device);
+static void    usart_fill_rx_buffer(struct _usart_async_device *device, uint8_t data);
 
 /**
  * \brief Initialize usart interface

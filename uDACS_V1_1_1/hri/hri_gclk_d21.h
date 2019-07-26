@@ -28,6 +28,7 @@
  * THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
  *
  * \asf_license_stop
+ *
  */
 
 #ifdef _SAMD21_GCLK_COMPONENT_
@@ -87,8 +88,8 @@ static inline hri_gclk_status_reg_t hri_gclk_read_STATUS_reg(const void *const h
 static inline void hri_gclk_set_CTRL_SWRST_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->CTRL.reg |= GCLK_CTRL_SWRST;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -104,8 +105,8 @@ static inline bool hri_gclk_get_CTRL_SWRST_bit(const void *const hw)
 static inline void hri_gclk_set_CTRL_reg(const void *const hw, hri_gclk_ctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->CTRL.reg |= mask;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -121,24 +122,24 @@ static inline hri_gclk_ctrl_reg_t hri_gclk_get_CTRL_reg(const void *const hw, hr
 static inline void hri_gclk_write_CTRL_reg(const void *const hw, hri_gclk_ctrl_reg_t data)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->CTRL.reg = data;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_clear_CTRL_reg(const void *const hw, hri_gclk_ctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->CTRL.reg &= ~mask;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_toggle_CTRL_reg(const void *const hw, hri_gclk_ctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->CTRL.reg ^= mask;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -368,8 +369,8 @@ static inline hri_gclk_clkctrl_reg_t hri_gclk_read_CLKCTRL_reg(const void *const
 static inline void hri_gclk_set_GENCTRL_GENEN_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg |= GCLK_GENCTRL_GENEN;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -386,35 +387,35 @@ static inline void hri_gclk_write_GENCTRL_GENEN_bit(const void *const hw, bool v
 {
 	uint32_t tmp;
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	tmp = ((Gclk *)hw)->GENCTRL.reg;
 	tmp &= ~GCLK_GENCTRL_GENEN;
 	tmp |= value << GCLK_GENCTRL_GENEN_Pos;
 	((Gclk *)hw)->GENCTRL.reg = tmp;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_clear_GENCTRL_GENEN_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg &= ~GCLK_GENCTRL_GENEN;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_toggle_GENCTRL_GENEN_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg ^= GCLK_GENCTRL_GENEN;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_set_GENCTRL_IDC_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg |= GCLK_GENCTRL_IDC;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -431,35 +432,35 @@ static inline void hri_gclk_write_GENCTRL_IDC_bit(const void *const hw, bool val
 {
 	uint32_t tmp;
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	tmp = ((Gclk *)hw)->GENCTRL.reg;
 	tmp &= ~GCLK_GENCTRL_IDC;
 	tmp |= value << GCLK_GENCTRL_IDC_Pos;
 	((Gclk *)hw)->GENCTRL.reg = tmp;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_clear_GENCTRL_IDC_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg &= ~GCLK_GENCTRL_IDC;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_toggle_GENCTRL_IDC_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg ^= GCLK_GENCTRL_IDC;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_set_GENCTRL_OOV_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg |= GCLK_GENCTRL_OOV;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -476,35 +477,35 @@ static inline void hri_gclk_write_GENCTRL_OOV_bit(const void *const hw, bool val
 {
 	uint32_t tmp;
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	tmp = ((Gclk *)hw)->GENCTRL.reg;
 	tmp &= ~GCLK_GENCTRL_OOV;
 	tmp |= value << GCLK_GENCTRL_OOV_Pos;
 	((Gclk *)hw)->GENCTRL.reg = tmp;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_clear_GENCTRL_OOV_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg &= ~GCLK_GENCTRL_OOV;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_toggle_GENCTRL_OOV_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg ^= GCLK_GENCTRL_OOV;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_set_GENCTRL_OE_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg |= GCLK_GENCTRL_OE;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -521,35 +522,35 @@ static inline void hri_gclk_write_GENCTRL_OE_bit(const void *const hw, bool valu
 {
 	uint32_t tmp;
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	tmp = ((Gclk *)hw)->GENCTRL.reg;
 	tmp &= ~GCLK_GENCTRL_OE;
 	tmp |= value << GCLK_GENCTRL_OE_Pos;
 	((Gclk *)hw)->GENCTRL.reg = tmp;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_clear_GENCTRL_OE_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg &= ~GCLK_GENCTRL_OE;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_toggle_GENCTRL_OE_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg ^= GCLK_GENCTRL_OE;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_set_GENCTRL_DIVSEL_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg |= GCLK_GENCTRL_DIVSEL;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -566,35 +567,35 @@ static inline void hri_gclk_write_GENCTRL_DIVSEL_bit(const void *const hw, bool 
 {
 	uint32_t tmp;
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	tmp = ((Gclk *)hw)->GENCTRL.reg;
 	tmp &= ~GCLK_GENCTRL_DIVSEL;
 	tmp |= value << GCLK_GENCTRL_DIVSEL_Pos;
 	((Gclk *)hw)->GENCTRL.reg = tmp;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_clear_GENCTRL_DIVSEL_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg &= ~GCLK_GENCTRL_DIVSEL;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_toggle_GENCTRL_DIVSEL_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg ^= GCLK_GENCTRL_DIVSEL;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_set_GENCTRL_RUNSTDBY_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg |= GCLK_GENCTRL_RUNSTDBY;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -611,35 +612,35 @@ static inline void hri_gclk_write_GENCTRL_RUNSTDBY_bit(const void *const hw, boo
 {
 	uint32_t tmp;
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	tmp = ((Gclk *)hw)->GENCTRL.reg;
 	tmp &= ~GCLK_GENCTRL_RUNSTDBY;
 	tmp |= value << GCLK_GENCTRL_RUNSTDBY_Pos;
 	((Gclk *)hw)->GENCTRL.reg = tmp;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_clear_GENCTRL_RUNSTDBY_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg &= ~GCLK_GENCTRL_RUNSTDBY;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_toggle_GENCTRL_RUNSTDBY_bit(const void *const hw)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg ^= GCLK_GENCTRL_RUNSTDBY;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_set_GENCTRL_ID_bf(const void *const hw, hri_gclk_genctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg |= GCLK_GENCTRL_ID(mask);
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -656,27 +657,27 @@ static inline void hri_gclk_write_GENCTRL_ID_bf(const void *const hw, hri_gclk_g
 {
 	uint32_t tmp;
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	tmp = ((Gclk *)hw)->GENCTRL.reg;
 	tmp &= ~GCLK_GENCTRL_ID_Msk;
 	tmp |= GCLK_GENCTRL_ID(data);
 	((Gclk *)hw)->GENCTRL.reg = tmp;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_clear_GENCTRL_ID_bf(const void *const hw, hri_gclk_genctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg &= ~GCLK_GENCTRL_ID(mask);
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_toggle_GENCTRL_ID_bf(const void *const hw, hri_gclk_genctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg ^= GCLK_GENCTRL_ID(mask);
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -692,8 +693,8 @@ static inline hri_gclk_genctrl_reg_t hri_gclk_read_GENCTRL_ID_bf(const void *con
 static inline void hri_gclk_set_GENCTRL_SRC_bf(const void *const hw, hri_gclk_genctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg |= GCLK_GENCTRL_SRC(mask);
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -710,27 +711,27 @@ static inline void hri_gclk_write_GENCTRL_SRC_bf(const void *const hw, hri_gclk_
 {
 	uint32_t tmp;
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	tmp = ((Gclk *)hw)->GENCTRL.reg;
 	tmp &= ~GCLK_GENCTRL_SRC_Msk;
 	tmp |= GCLK_GENCTRL_SRC(data);
 	((Gclk *)hw)->GENCTRL.reg = tmp;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_clear_GENCTRL_SRC_bf(const void *const hw, hri_gclk_genctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg &= ~GCLK_GENCTRL_SRC(mask);
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_toggle_GENCTRL_SRC_bf(const void *const hw, hri_gclk_genctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg ^= GCLK_GENCTRL_SRC(mask);
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -746,8 +747,8 @@ static inline hri_gclk_genctrl_reg_t hri_gclk_read_GENCTRL_SRC_bf(const void *co
 static inline void hri_gclk_set_GENCTRL_reg(const void *const hw, hri_gclk_genctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg |= mask;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
@@ -763,24 +764,24 @@ static inline hri_gclk_genctrl_reg_t hri_gclk_get_GENCTRL_reg(const void *const 
 static inline void hri_gclk_write_GENCTRL_reg(const void *const hw, hri_gclk_genctrl_reg_t data)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg = data;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_clear_GENCTRL_reg(const void *const hw, hri_gclk_genctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg &= ~mask;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_gclk_toggle_GENCTRL_reg(const void *const hw, hri_gclk_genctrl_reg_t mask)
 {
 	GCLK_CRITICAL_SECTION_ENTER();
-	hri_gclk_wait_for_sync(hw);
 	((Gclk *)hw)->GENCTRL.reg ^= mask;
+	hri_gclk_wait_for_sync(hw);
 	GCLK_CRITICAL_SECTION_LEAVE();
 }
 

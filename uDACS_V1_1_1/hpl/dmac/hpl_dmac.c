@@ -4,7 +4,7 @@
  *
  * \brief Generic DMAC related functionality.
  *
- * Copyright (c) 2016-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2016-2019 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *
@@ -42,11 +42,11 @@
 
 /* Section containing first descriptors for all DMAC channels */
 COMPILER_ALIGNED(16)
-static DmacDescriptor _descriptor_section[DMAC_CH_NUM] SECTION_DMAC_DESCRIPTOR;
+DmacDescriptor _descriptor_section[DMAC_CH_NUM] SECTION_DMAC_DESCRIPTOR;
 
 /* Section containing current descriptors for all DMAC channels */
 COMPILER_ALIGNED(16)
-static DmacDescriptor _write_back_section[DMAC_CH_NUM] SECTION_DMAC_DESCRIPTOR;
+DmacDescriptor _write_back_section[DMAC_CH_NUM] SECTION_DMAC_DESCRIPTOR;
 
 /* Array containing callbacks for DMAC channels */
 static struct _dma_resource _resources[DMAC_CH_NUM];
@@ -55,15 +55,11 @@ static struct _dma_resource _resources[DMAC_CH_NUM];
 #define DMAC_CHANNEL_CFG(i, n)                                                                                         \
 	{(CONF_DMAC_ENABLE_##n << DMAC_CHCTRLA_ENABLE_Pos),                                                                \
 	 DMAC_CHCTRLB_TRIGACT(CONF_DMAC_TRIGACT_##n) | DMAC_CHCTRLB_TRIGSRC(CONF_DMAC_TRIGSRC_##n)                         \
-	     | DMAC_CHCTRLB_LVL(CONF_DMAC_LVL_##n)                                                                         \
-	     | (CONF_DMAC_EVOE_##n << DMAC_CHCTRLB_EVOE_Pos)                                                               \
-	     | (CONF_DMAC_EVIE_##n << DMAC_CHCTRLB_EVIE_Pos)                                                               \
-	     | DMAC_CHCTRLB_EVACT(CONF_DMAC_EVACT_##n),                                                                    \
+	     | DMAC_CHCTRLB_LVL(CONF_DMAC_LVL_##n) | (CONF_DMAC_EVOE_##n << DMAC_CHCTRLB_EVOE_Pos)                         \
+	     | (CONF_DMAC_EVIE_##n << DMAC_CHCTRLB_EVIE_Pos) | DMAC_CHCTRLB_EVACT(CONF_DMAC_EVACT_##n),                    \
 	 DMAC_BTCTRL_STEPSIZE(CONF_DMAC_STEPSIZE_##n) | (CONF_DMAC_STEPSEL_##n << DMAC_BTCTRL_STEPSEL_Pos)                 \
-	     | (CONF_DMAC_DSTINC_##n << DMAC_BTCTRL_DSTINC_Pos)                                                            \
-	     | (CONF_DMAC_SRCINC_##n << DMAC_BTCTRL_SRCINC_Pos)                                                            \
-	     | DMAC_BTCTRL_BEATSIZE(CONF_DMAC_BEATSIZE_##n)                                                                \
-	     | DMAC_BTCTRL_BLOCKACT(CONF_DMAC_BLOCKACT_##n)                                                                \
+	     | (CONF_DMAC_DSTINC_##n << DMAC_BTCTRL_DSTINC_Pos) | (CONF_DMAC_SRCINC_##n << DMAC_BTCTRL_SRCINC_Pos)         \
+	     | DMAC_BTCTRL_BEATSIZE(CONF_DMAC_BEATSIZE_##n) | DMAC_BTCTRL_BLOCKACT(CONF_DMAC_BLOCKACT_##n)                 \
 	     | DMAC_BTCTRL_EVOSEL(CONF_DMAC_EVOSEL_##n)},
 
 /* DMAC channel configuration */
@@ -93,14 +89,12 @@ int32_t _dma_init(void)
 	                            | (CONF_DMAC_LVLEN3 << DMAC_CTRL_LVLEN3_Pos));
 	hri_dmac_write_DBGCTRL_DBGRUN_bit(DMAC, CONF_DMAC_DBGRUN);
 
-	hri_dmac_write_PRICTRL0_reg(DMAC,
-	                            DMAC_PRICTRL0_LVLPRI0(CONF_DMAC_LVLPRI0) | DMAC_PRICTRL0_LVLPRI1(CONF_DMAC_LVLPRI1)
-	                                | DMAC_PRICTRL0_LVLPRI2(CONF_DMAC_LVLPRI2)
-	                                | DMAC_PRICTRL0_LVLPRI3(CONF_DMAC_LVLPRI3)
-	                                | (CONF_DMAC_RRLVLEN0 << DMAC_PRICTRL0_RRLVLEN0_Pos)
-	                                | (CONF_DMAC_RRLVLEN1 << DMAC_PRICTRL0_RRLVLEN1_Pos)
-	                                | (CONF_DMAC_RRLVLEN2 << DMAC_PRICTRL0_RRLVLEN2_Pos)
-	                                | (CONF_DMAC_RRLVLEN3 << DMAC_PRICTRL0_RRLVLEN3_Pos));
+	hri_dmac_write_PRICTRL0_reg(
+	    DMAC,
+	    DMAC_PRICTRL0_LVLPRI0(CONF_DMAC_LVLPRI0) | DMAC_PRICTRL0_LVLPRI1(CONF_DMAC_LVLPRI1)
+	        | DMAC_PRICTRL0_LVLPRI2(CONF_DMAC_LVLPRI2) | DMAC_PRICTRL0_LVLPRI3(CONF_DMAC_LVLPRI3)
+	        | (CONF_DMAC_RRLVLEN0 << DMAC_PRICTRL0_RRLVLEN0_Pos) | (CONF_DMAC_RRLVLEN1 << DMAC_PRICTRL0_RRLVLEN1_Pos)
+	        | (CONF_DMAC_RRLVLEN2 << DMAC_PRICTRL0_RRLVLEN2_Pos) | (CONF_DMAC_RRLVLEN3 << DMAC_PRICTRL0_RRLVLEN3_Pos));
 	hri_dmac_write_BASEADDR_reg(DMAC, (uint32_t)_descriptor_section);
 	hri_dmac_write_WRBADDR_reg(DMAC, (uint32_t)_write_back_section);
 
@@ -109,6 +103,7 @@ int32_t _dma_init(void)
 
 		hri_dmac_write_CHCTRLB_reg(DMAC, _cfgs[i].ctrlb);
 		hri_dmacdescriptor_write_BTCTRL_reg(&_descriptor_section[i], _cfgs[i].btctrl);
+		hri_dmacdescriptor_write_DESCADDR_reg(&_descriptor_section[i], 0x0);
 	}
 
 	NVIC_DisableIRQ(DMAC_IRQn);
@@ -202,20 +197,31 @@ int32_t _dma_get_channel_resource(struct _dma_resource **resource, const uint8_t
 	return ERR_NONE;
 }
 
+int32_t _dma_dstinc_enable(const uint8_t channel, const bool enable)
+{
+	hri_dmacdescriptor_write_BTCTRL_DSTINC_bit(&_descriptor_section[channel], enable);
+
+	return ERR_NONE;
+}
+
 /**
  * \internal DMAC interrupt handler
  */
 static inline void _dmac_handler(void)
 {
-	uint8_t               channel      = hri_dmac_read_INTPEND_ID_bf(DMAC);
+	uint8_t               channel         = hri_dmac_read_INTPEND_ID_bf(DMAC);
+	uint8_t               current_channel = hri_dmac_read_CHID_reg(DMAC);
+	uint8_t               flag_status;
 	struct _dma_resource *tmp_resource = &_resources[channel];
 
 	hri_dmac_write_CHID_reg(DMAC, channel);
+	flag_status = hri_dmac_get_CHINTFLAG_reg(DMAC, DMAC_CHINTFLAG_MASK);
+	hri_dmac_write_CHID_reg(DMAC, current_channel);
 
-	if (hri_dmac_get_CHINTFLAG_TERR_bit(DMAC)) {
+	if (flag_status & DMAC_CHINTFLAG_TERR) {
 		hri_dmac_clear_CHINTFLAG_TERR_bit(DMAC);
 		tmp_resource->dma_cb.error(tmp_resource);
-	} else if (hri_dmac_get_CHINTFLAG_TCMPL_bit(DMAC)) {
+	} else if (flag_status & DMAC_CHINTFLAG_TCMPL) {
 		hri_dmac_clear_CHINTFLAG_TCMPL_bit(DMAC);
 		tmp_resource->dma_cb.transfer_done(tmp_resource);
 	}

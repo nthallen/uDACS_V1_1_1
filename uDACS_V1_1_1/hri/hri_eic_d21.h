@@ -28,6 +28,7 @@
  * THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
  *
  * \asf_license_stop
+ *
  */
 
 #ifdef _SAMD21_EIC_COMPONENT_
@@ -870,8 +871,8 @@ static inline hri_eic_status_reg_t hri_eic_read_STATUS_reg(const void *const hw)
 static inline void hri_eic_set_CTRL_SWRST_bit(const void *const hw)
 {
 	EIC_CRITICAL_SECTION_ENTER();
-	hri_eic_wait_for_sync(hw);
 	((Eic *)hw)->CTRL.reg |= EIC_CTRL_SWRST;
+	hri_eic_wait_for_sync(hw);
 	EIC_CRITICAL_SECTION_LEAVE();
 }
 
@@ -887,8 +888,8 @@ static inline bool hri_eic_get_CTRL_SWRST_bit(const void *const hw)
 static inline void hri_eic_set_CTRL_ENABLE_bit(const void *const hw)
 {
 	EIC_CRITICAL_SECTION_ENTER();
-	hri_eic_wait_for_sync(hw);
 	((Eic *)hw)->CTRL.reg |= EIC_CTRL_ENABLE;
+	hri_eic_wait_for_sync(hw);
 	EIC_CRITICAL_SECTION_LEAVE();
 }
 
@@ -905,35 +906,35 @@ static inline void hri_eic_write_CTRL_ENABLE_bit(const void *const hw, bool valu
 {
 	uint8_t tmp;
 	EIC_CRITICAL_SECTION_ENTER();
-	hri_eic_wait_for_sync(hw);
 	tmp = ((Eic *)hw)->CTRL.reg;
 	tmp &= ~EIC_CTRL_ENABLE;
 	tmp |= value << EIC_CTRL_ENABLE_Pos;
 	((Eic *)hw)->CTRL.reg = tmp;
+	hri_eic_wait_for_sync(hw);
 	EIC_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_eic_clear_CTRL_ENABLE_bit(const void *const hw)
 {
 	EIC_CRITICAL_SECTION_ENTER();
-	hri_eic_wait_for_sync(hw);
 	((Eic *)hw)->CTRL.reg &= ~EIC_CTRL_ENABLE;
+	hri_eic_wait_for_sync(hw);
 	EIC_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_eic_toggle_CTRL_ENABLE_bit(const void *const hw)
 {
 	EIC_CRITICAL_SECTION_ENTER();
-	hri_eic_wait_for_sync(hw);
 	((Eic *)hw)->CTRL.reg ^= EIC_CTRL_ENABLE;
+	hri_eic_wait_for_sync(hw);
 	EIC_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_eic_set_CTRL_reg(const void *const hw, hri_eic_ctrl_reg_t mask)
 {
 	EIC_CRITICAL_SECTION_ENTER();
-	hri_eic_wait_for_sync(hw);
 	((Eic *)hw)->CTRL.reg |= mask;
+	hri_eic_wait_for_sync(hw);
 	EIC_CRITICAL_SECTION_LEAVE();
 }
 
@@ -949,24 +950,24 @@ static inline hri_eic_ctrl_reg_t hri_eic_get_CTRL_reg(const void *const hw, hri_
 static inline void hri_eic_write_CTRL_reg(const void *const hw, hri_eic_ctrl_reg_t data)
 {
 	EIC_CRITICAL_SECTION_ENTER();
-	hri_eic_wait_for_sync(hw);
 	((Eic *)hw)->CTRL.reg = data;
+	hri_eic_wait_for_sync(hw);
 	EIC_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_eic_clear_CTRL_reg(const void *const hw, hri_eic_ctrl_reg_t mask)
 {
 	EIC_CRITICAL_SECTION_ENTER();
-	hri_eic_wait_for_sync(hw);
 	((Eic *)hw)->CTRL.reg &= ~mask;
+	hri_eic_wait_for_sync(hw);
 	EIC_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_eic_toggle_CTRL_reg(const void *const hw, hri_eic_ctrl_reg_t mask)
 {
 	EIC_CRITICAL_SECTION_ENTER();
-	hri_eic_wait_for_sync(hw);
 	((Eic *)hw)->CTRL.reg ^= mask;
+	hri_eic_wait_for_sync(hw);
 	EIC_CRITICAL_SECTION_LEAVE();
 }
 

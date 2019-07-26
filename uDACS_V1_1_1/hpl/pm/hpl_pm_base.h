@@ -195,7 +195,7 @@ static inline void _pm_disable_bus_clock(const enum _pm_bus bus, const void *con
 	}
 }
 
-/**@}*/
+	/**@}*/
 
 #ifdef __cplusplus
 }

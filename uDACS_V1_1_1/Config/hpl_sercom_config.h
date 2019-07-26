@@ -33,7 +33,6 @@
 #ifndef CONF_SERCOM_0_SPI_CHSIZE
 #define CONF_SERCOM_0_SPI_CHSIZE 0x0
 #endif
-
 // <o> Baud rate <1-12000000>
 // <i> The SPI data transfer rate
 // <id> spi_master_baud_rate
@@ -269,7 +268,7 @@
 #if CONF_SERCOM_3_I2CM_TRISE < 215 || CONF_SERCOM_3_I2CM_TRISE > 300
 #warning Bad I2C Rise time for Standard/Fast mode, reset to 215ns
 #undef CONF_SERCOM_3_I2CM_TRISE
-#define CONF_SERCOM_3_I2CM_TRISE 215
+#define CONF_SERCOM_3_I2CM_TRISE 215U
 #endif
 
 //                  gclk_freq - (i2c_scl_freq * 10) - (gclk_freq * i2c_scl_freq * Trise)
@@ -278,12 +277,12 @@
 // BAUD:    register value low  [7:0]
 // BAUDLOW: register value high [15:8], only used for odd BAUD + BAUDLOW
 #define CONF_SERCOM_3_I2CM_BAUD_BAUDLOW                                                                                \
-	(((CONF_GCLK_SERCOM3_CORE_FREQUENCY - (CONF_SERCOM_3_I2CM_BAUD * 10)                                               \
-	   - (CONF_SERCOM_3_I2CM_TRISE * (CONF_SERCOM_3_I2CM_BAUD / 100) * (CONF_GCLK_SERCOM3_CORE_FREQUENCY / 10000)      \
-	      / 1000))                                                                                                     \
-	      * 10                                                                                                         \
-	  + 5)                                                                                                             \
-	 / (CONF_SERCOM_3_I2CM_BAUD * 10))
+	(((CONF_GCLK_SERCOM3_CORE_FREQUENCY - (CONF_SERCOM_3_I2CM_BAUD * 10U)                                              \
+	   - (CONF_SERCOM_3_I2CM_TRISE * (CONF_SERCOM_3_I2CM_BAUD / 100U) * (CONF_GCLK_SERCOM3_CORE_FREQUENCY / 10000U)    \
+	      / 1000U))                                                                                                    \
+	      * 10U                                                                                                        \
+	  + 5U)                                                                                                            \
+	 / (CONF_SERCOM_3_I2CM_BAUD * 10U))
 #ifndef CONF_SERCOM_3_I2CM_BAUD_RATE
 #if CONF_SERCOM_3_I2CM_BAUD_BAUDLOW > (0xFF * 2)
 #warning Requested I2C baudrate too low, please check
@@ -328,7 +327,6 @@
 #ifndef CONF_SERCOM_4_SPI_CHSIZE
 #define CONF_SERCOM_4_SPI_CHSIZE 0x0
 #endif
-
 // <o> Baud rate <1-12000000>
 // <i> The SPI data transfer rate
 // <id> spi_master_baud_rate
@@ -569,8 +567,8 @@
 // <0x1=>16x fractional
 // <0x2=>8x arithmetic
 // <0x3=>8x fractional
-// <0x3=>3x
-// <i> How many over-sampling bits used when samling data state
+// <0x4=>3x arithmetic
+// <i> How many over-sampling bits used when sampling data state
 // <id> usart_arch_sampr
 #ifndef CONF_SERCOM_5_USART_SAMPR
 #define CONF_SERCOM_5_USART_SAMPR 0x0

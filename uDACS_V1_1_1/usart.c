@@ -20,6 +20,7 @@ static struct io_descriptor *USART_CTRL_io;
 extern "C" {
 #endif
 
+#if 0
 /**
  * \brief USART Clock initialization function
  *
@@ -47,6 +48,7 @@ void USART_CTRL_PORT_init() {
   gpio_set_pin_function(UART_TX, PINMUX_PB22D_SERCOM5_PAD2);
   gpio_set_pin_function(UART_RX, PINMUX_PB23D_SERCOM5_PAD3);
 }
+#endif
 
 static void tx_cb_USART_CTRL(const struct usart_async_descriptor *const io_descr) {
 	/* Transfer completed */

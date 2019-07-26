@@ -36,9 +36,9 @@ void EXTERNAL_IRQ_0_init(void)
 	_gclk_enable_channel(EIC_GCLK_ID, CONF_GCLK_EIC_SRC);
 
 	// Set pin direction to input
-	gpio_set_pin_direction(DRDY, GPIO_DIRECTION_IN);
+	gpio_set_pin_direction(PA03, GPIO_DIRECTION_IN);
 
-	gpio_set_pin_pull_mode(DRDY,
+	gpio_set_pin_pull_mode(PA03,
 	                       // <y> Pull configuration
 	                       // <id> pad_pull_config
 	                       // <GPIO_PULL_OFF"> Off
@@ -46,16 +46,13 @@ void EXTERNAL_IRQ_0_init(void)
 	                       // <GPIO_PULL_DOWN"> Pull-down
 	                       GPIO_PULL_OFF);
 
-	gpio_set_pin_function(DRDY, PINMUX_PB03A_EIC_EXTINT3);
+	gpio_set_pin_function(PA03, PINMUX_PA03A_EIC_EXTINT3);
 
 	ext_irq_init();
 }
 
 void AD_SPI_PORT_init(void)
 {
-
-	// Set pin direction to output
-	gpio_set_pin_direction(AD_MOSI, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_level(AD_MOSI,
 	                   // <y> Initial level
@@ -64,10 +61,10 @@ void AD_SPI_PORT_init(void)
 	                   // <true"> High
 	                   false);
 
-	gpio_set_pin_function(AD_MOSI, PINMUX_PA08C_SERCOM0_PAD0);
-
 	// Set pin direction to output
-	gpio_set_pin_direction(AD_SCLK, GPIO_DIRECTION_OUT);
+	gpio_set_pin_direction(AD_MOSI, GPIO_DIRECTION_OUT);
+
+	gpio_set_pin_function(AD_MOSI, PINMUX_PA08C_SERCOM0_PAD0);
 
 	gpio_set_pin_level(AD_SCLK,
 	                   // <y> Initial level
@@ -75,6 +72,9 @@ void AD_SPI_PORT_init(void)
 	                   // <false"> Low
 	                   // <true"> High
 	                   false);
+
+	// Set pin direction to output
+	gpio_set_pin_direction(AD_SCLK, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_function(AD_SCLK, PINMUX_PA09C_SERCOM0_PAD1);
 
@@ -146,9 +146,6 @@ void UC_I2C_init(void)
 void SD_SPI_PORT_init(void)
 {
 
-	// Set pin direction to output
-	gpio_set_pin_direction(SD_MOSI, GPIO_DIRECTION_OUT);
-
 	gpio_set_pin_level(SD_MOSI,
 	                   // <y> Initial level
 	                   // <id> pad_initial_level
@@ -156,10 +153,10 @@ void SD_SPI_PORT_init(void)
 	                   // <true"> High
 	                   false);
 
-	gpio_set_pin_function(SD_MOSI, PINMUX_PA12D_SERCOM4_PAD0);
-
 	// Set pin direction to output
-	gpio_set_pin_direction(SD_SCLK, GPIO_DIRECTION_OUT);
+	gpio_set_pin_direction(SD_MOSI, GPIO_DIRECTION_OUT);
+
+	gpio_set_pin_function(SD_MOSI, PINMUX_PA12D_SERCOM4_PAD0);
 
 	gpio_set_pin_level(SD_SCLK,
 	                   // <y> Initial level
@@ -167,6 +164,9 @@ void SD_SPI_PORT_init(void)
 	                   // <false"> Low
 	                   // <true"> High
 	                   false);
+
+	// Set pin direction to output
+	gpio_set_pin_direction(SD_SCLK, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_function(SD_SCLK, PINMUX_PA13D_SERCOM4_PAD1);
 
@@ -202,20 +202,18 @@ void SD_SPI_init(void)
  *
  * Enables register interface and peripheral clock
  */
-#if 0
 void USART_CTRL_CLOCK_init()
 {
 
 	_pm_enable_bus_clock(PM_BUS_APBC, SERCOM5);
 	_gclk_enable_channel(SERCOM5_GCLK_ID_CORE, CONF_GCLK_SERCOM5_CORE_SRC);
 }
-#endif
+
 /**
  * \brief USART pinmux initialization function
  *
  * Set each required pin to USART functionality
  */
-#if 0
 void USART_CTRL_PORT_init()
 {
 
@@ -223,13 +221,13 @@ void USART_CTRL_PORT_init()
 
 	gpio_set_pin_function(UART_RX, PINMUX_PB23D_SERCOM5_PAD3);
 }
-#endif
+
+#if 0
 /**
  * \brief USART initialization function
  *
  * Enables USART peripheral, clocks and initializes USART driver
  */
-#if 0
 void USART_CTRL_init(void)
 {
 	USART_CTRL_CLOCK_init();
@@ -237,12 +235,13 @@ void USART_CTRL_init(void)
 	USART_CTRL_PORT_init();
 }
 #endif
+
+#if 0
 /**
  * \brief Timer initialization function
  *
  * Enables Timer peripheral, clocks and initializes Timer driver
  */
-#if 0
 static void TIMER_0_init(void)
 {
 	_pm_enable_bus_clock(PM_BUS_APBA, RTC);
@@ -257,9 +256,6 @@ void system_init(void)
 
 	// GPIO on PA11
 
-	// Set pin direction to output
-	gpio_set_pin_direction(ADC_CS, GPIO_DIRECTION_OUT);
-
 	gpio_set_pin_level(ADC_CS,
 	                   // <y> Initial level
 	                   // <id> pad_initial_level
@@ -267,12 +263,12 @@ void system_init(void)
 	                   // <true"> High
 	                   true);
 
+	// Set pin direction to output
+	gpio_set_pin_direction(ADC_CS, GPIO_DIRECTION_OUT);
+
 	gpio_set_pin_function(ADC_CS, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PA14
-
-	// Set pin direction to output
-	gpio_set_pin_direction(SD_CS, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_level(SD_CS,
 	                   // <y> Initial level
@@ -280,6 +276,9 @@ void system_init(void)
 	                   // <false"> Low
 	                   // <true"> High
 	                   true);
+
+	// Set pin direction to output
+	gpio_set_pin_direction(SD_CS, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_function(SD_CS, GPIO_PIN_FUNCTION_OFF);
 
@@ -405,15 +404,15 @@ void system_init(void)
 
 	// GPIO on PB02
 
-	// Set pin direction to output
-	gpio_set_pin_direction(START, GPIO_DIRECTION_OUT);
-
 	gpio_set_pin_level(START,
 	                   // <y> Initial level
 	                   // <id> pad_initial_level
 	                   // <false"> Low
 	                   // <true"> High
 	                   true);
+
+	// Set pin direction to output
+	gpio_set_pin_direction(START, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_function(START, GPIO_PIN_FUNCTION_OFF);
 
@@ -434,9 +433,6 @@ void system_init(void)
 
 	// GPIO on PB08
 
-	// Set pin direction to output
-	gpio_set_pin_direction(SPR7, GPIO_DIRECTION_OUT);
-
 	gpio_set_pin_level(SPR7,
 	                   // <y> Initial level
 	                   // <id> pad_initial_level
@@ -444,12 +440,12 @@ void system_init(void)
 	                   // <true"> High
 	                   false);
 
+	// Set pin direction to output
+	gpio_set_pin_direction(SPR7, GPIO_DIRECTION_OUT);
+
 	gpio_set_pin_function(SPR7, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PB09
-
-	// Set pin direction to output
-	gpio_set_pin_direction(DAC_CS, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_level(DAC_CS,
 	                   // <y> Initial level
@@ -457,6 +453,9 @@ void system_init(void)
 	                   // <false"> Low
 	                   // <true"> High
 	                   true);
+
+	// Set pin direction to output
+	gpio_set_pin_direction(DAC_CS, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_function(DAC_CS, GPIO_PIN_FUNCTION_OFF);
 

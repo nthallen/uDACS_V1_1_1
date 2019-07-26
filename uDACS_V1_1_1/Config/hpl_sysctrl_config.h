@@ -109,7 +109,7 @@
 // <i> Indicates whether configuration for OSC32K is enabled or not
 // <id> enable_osc32k
 #ifndef CONF_OSC32K_CONFIG
-#define CONF_OSC32K_CONFIG 0
+#define CONF_OSC32K_CONFIG 1
 #endif
 
 // <h> 32kHz Internal Oscillator (OSC32K) Control
@@ -117,7 +117,7 @@
 // <i> Indicates whether Internal 32K Oscillator is enabled or not
 // <id> osc32k_arch_enable
 #ifndef CONF_OSC32K_ENABLE
-#define CONF_OSC32K_ENABLE 0
+#define CONF_OSC32K_ENABLE 1
 #endif
 
 // <q> On Demand Control
@@ -197,7 +197,7 @@
 // <i> Indicates whether configuration for External 32K Osc is enabled or not
 // <id> enable_xosc32k
 #ifndef CONF_XOSC32K_CONFIG
-#define CONF_XOSC32K_CONFIG 1
+#define CONF_XOSC32K_CONFIG 0
 #endif
 
 // <h> 32kHz External Crystal Oscillator (XOSC32K) Control
@@ -205,7 +205,7 @@
 // <i> Indicates whether External 32K Oscillator is enabled or not
 // <id> xosc32k_arch_enable
 #ifndef CONF_XOSC32K_ENABLE
-#define CONF_XOSC32K_ENABLE 1
+#define CONF_XOSC32K_ENABLE 0
 #endif
 
 // <q> On Demand

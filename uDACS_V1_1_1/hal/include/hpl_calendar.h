@@ -90,7 +90,6 @@ struct calendar_dev {
 	/** IRQ struct */
 	struct _irq_descriptor irq;
 };
-
 /**
  * \brief Time struct for calendar
  */

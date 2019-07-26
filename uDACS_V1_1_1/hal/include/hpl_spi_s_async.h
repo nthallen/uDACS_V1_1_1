@@ -53,11 +53,15 @@ extern "C" {
 #define _spi_s_async_dev_cb_type _spi_async_dev_cb_type
 
 /** Uses common SPI async device driver complete callback type. */
-#define _spi_s_async_dev_cb_complete_t _spi_async_dev_cb_complete_t
+#define _spi_m_async_dev_cb_error_t _spi_async_dev_cb_error_t
 
 /** Uses common SPI async device driver transfer callback type. */
 #define _spi_s_async_dev_cb_xfer_t _spi_async_dev_cb_xfer_t
 
+/**
+ * \name HPL functions
+ */
+//@{
 /**
  *  \brief Initialize SPI for access with interrupts
  *  It will load default hardware configuration and software struct.
@@ -208,6 +212,17 @@ int32_t _spi_s_async_write_one(struct _spi_s_async_dev *dev, uint16_t data);
  */
 int32_t _spi_s_async_register_callback(struct _spi_s_async_dev *dev, const enum _spi_s_async_dev_cb_type cb_type,
                                        const FUNC_PTR func);
+
+/**
+ * \brief Enable/disable SPI slave interrupt
+ *
+ * param[in] device The pointer to SPI slave device instance
+ * param[in] type The type of interrupt to disable/enable if applicable
+ * param[in] state Enable or disable
+ */
+void _spi_s_async_set_irq_state(struct _spi_s_async_dev *const device, const enum _spi_async_dev_cb_type type,
+                                const bool state);
+//@}
 
 #ifdef __cplusplus
 }

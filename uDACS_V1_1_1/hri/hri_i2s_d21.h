@@ -28,6 +28,7 @@
  * THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
  *
  * \asf_license_stop
+ *
  */
 
 #ifdef _SAMD21_I2S_COMPONENT_
@@ -523,8 +524,8 @@ static inline hri_i2s_syncbusy_reg_t hri_i2s_read_SYNCBUSY_reg(const void *const
 static inline void hri_i2s_set_CTRLA_SWRST_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST);
 	((I2s *)hw)->CTRLA.reg |= I2S_CTRLA_SWRST;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
@@ -540,21 +541,15 @@ static inline bool hri_i2s_get_CTRLA_SWRST_bit(const void *const hw)
 static inline void hri_i2s_set_CTRLA_ENABLE_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg |= I2S_CTRLA_ENABLE;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline bool hri_i2s_get_CTRLA_ENABLE_bit(const void *const hw)
 {
 	uint8_t tmp;
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp = (tmp & I2S_CTRLA_ENABLE) >> I2S_CTRLA_ENABLE_Pos;
 	return (bool)tmp;
@@ -564,57 +559,42 @@ static inline void hri_i2s_write_CTRLA_ENABLE_bit(const void *const hw, bool val
 {
 	uint8_t tmp;
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp &= ~I2S_CTRLA_ENABLE;
 	tmp |= value << I2S_CTRLA_ENABLE_Pos;
 	((I2s *)hw)->CTRLA.reg = tmp;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_clear_CTRLA_ENABLE_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg &= ~I2S_CTRLA_ENABLE;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_toggle_CTRLA_ENABLE_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg ^= I2S_CTRLA_ENABLE;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_set_CTRLA_CKEN0_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg |= I2S_CTRLA_CKEN0;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline bool hri_i2s_get_CTRLA_CKEN0_bit(const void *const hw)
 {
 	uint8_t tmp;
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp = (tmp & I2S_CTRLA_CKEN0) >> I2S_CTRLA_CKEN0_Pos;
 	return (bool)tmp;
@@ -624,57 +604,42 @@ static inline void hri_i2s_write_CTRLA_CKEN0_bit(const void *const hw, bool valu
 {
 	uint8_t tmp;
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp &= ~I2S_CTRLA_CKEN0;
 	tmp |= value << I2S_CTRLA_CKEN0_Pos;
 	((I2s *)hw)->CTRLA.reg = tmp;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_clear_CTRLA_CKEN0_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg &= ~I2S_CTRLA_CKEN0;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_toggle_CTRLA_CKEN0_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg ^= I2S_CTRLA_CKEN0;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_set_CTRLA_CKEN1_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg |= I2S_CTRLA_CKEN1;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline bool hri_i2s_get_CTRLA_CKEN1_bit(const void *const hw)
 {
 	uint8_t tmp;
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp = (tmp & I2S_CTRLA_CKEN1) >> I2S_CTRLA_CKEN1_Pos;
 	return (bool)tmp;
@@ -684,57 +649,42 @@ static inline void hri_i2s_write_CTRLA_CKEN1_bit(const void *const hw, bool valu
 {
 	uint8_t tmp;
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp &= ~I2S_CTRLA_CKEN1;
 	tmp |= value << I2S_CTRLA_CKEN1_Pos;
 	((I2s *)hw)->CTRLA.reg = tmp;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_clear_CTRLA_CKEN1_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg &= ~I2S_CTRLA_CKEN1;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_toggle_CTRLA_CKEN1_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg ^= I2S_CTRLA_CKEN1;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_set_CTRLA_SEREN0_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg |= I2S_CTRLA_SEREN0;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline bool hri_i2s_get_CTRLA_SEREN0_bit(const void *const hw)
 {
 	uint8_t tmp;
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp = (tmp & I2S_CTRLA_SEREN0) >> I2S_CTRLA_SEREN0_Pos;
 	return (bool)tmp;
@@ -744,57 +694,42 @@ static inline void hri_i2s_write_CTRLA_SEREN0_bit(const void *const hw, bool val
 {
 	uint8_t tmp;
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp &= ~I2S_CTRLA_SEREN0;
 	tmp |= value << I2S_CTRLA_SEREN0_Pos;
 	((I2s *)hw)->CTRLA.reg = tmp;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_clear_CTRLA_SEREN0_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg &= ~I2S_CTRLA_SEREN0;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_toggle_CTRLA_SEREN0_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg ^= I2S_CTRLA_SEREN0;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_set_CTRLA_SEREN1_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg |= I2S_CTRLA_SEREN1;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline bool hri_i2s_get_CTRLA_SEREN1_bit(const void *const hw)
 {
 	uint8_t tmp;
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp = (tmp & I2S_CTRLA_SEREN1) >> I2S_CTRLA_SEREN1_Pos;
 	return (bool)tmp;
@@ -804,57 +739,42 @@ static inline void hri_i2s_write_CTRLA_SEREN1_bit(const void *const hw, bool val
 {
 	uint8_t tmp;
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp &= ~I2S_CTRLA_SEREN1;
 	tmp |= value << I2S_CTRLA_SEREN1_Pos;
 	((I2s *)hw)->CTRLA.reg = tmp;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_clear_CTRLA_SEREN1_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg &= ~I2S_CTRLA_SEREN1;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_toggle_CTRLA_SEREN1_bit(const void *const hw)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg ^= I2S_CTRLA_SEREN1;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_set_CTRLA_reg(const void *const hw, hri_i2s_ctrla_reg_t mask)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg |= mask;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline hri_i2s_ctrla_reg_t hri_i2s_get_CTRLA_reg(const void *const hw, hri_i2s_ctrla_reg_t mask)
 {
 	uint8_t tmp;
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	tmp = ((I2s *)hw)->CTRLA.reg;
 	tmp &= mask;
 	return tmp;
@@ -863,42 +783,30 @@ static inline hri_i2s_ctrla_reg_t hri_i2s_get_CTRLA_reg(const void *const hw, hr
 static inline void hri_i2s_write_CTRLA_reg(const void *const hw, hri_i2s_ctrla_reg_t data)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg = data;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_clear_CTRLA_reg(const void *const hw, hri_i2s_ctrla_reg_t mask)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg &= ~mask;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_toggle_CTRLA_reg(const void *const hw, hri_i2s_ctrla_reg_t mask)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
 	((I2s *)hw)->CTRLA.reg ^= mask;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline hri_i2s_ctrla_reg_t hri_i2s_read_CTRLA_reg(const void *const hw)
 {
-	hri_i2s_wait_for_sync(hw,
-	                      I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE | I2S_SYNCBUSY_CKEN0 | I2S_SYNCBUSY_CKEN1
-	                          | I2S_SYNCBUSY_SEREN0
-	                          | I2S_SYNCBUSY_SEREN1);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_SWRST | I2S_SYNCBUSY_ENABLE);
 	return ((I2s *)hw)->CTRLA.reg;
 }
 
@@ -2430,15 +2338,15 @@ static inline hri_i2s_serctrl_reg_t hri_i2s_read_SERCTRL_reg(const void *const h
 static inline void hri_i2s_set_DATA_DATA_bf(const void *const hw, uint8_t index, hri_i2s_data_reg_t mask)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	((I2s *)hw)->DATA[index].reg |= I2S_DATA_DATA(mask);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline hri_i2s_data_reg_t hri_i2s_get_DATA_DATA_bf(const void *const hw, uint8_t index, hri_i2s_data_reg_t mask)
 {
 	uint32_t tmp;
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	tmp = ((I2s *)hw)->DATA[index].reg;
 	tmp = (tmp & I2S_DATA_DATA(mask)) >> I2S_DATA_DATA_Pos;
 	return tmp;
@@ -2448,34 +2356,34 @@ static inline void hri_i2s_write_DATA_DATA_bf(const void *const hw, uint8_t inde
 {
 	uint32_t tmp;
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	tmp = ((I2s *)hw)->DATA[index].reg;
 	tmp &= ~I2S_DATA_DATA_Msk;
 	tmp |= I2S_DATA_DATA(data);
 	((I2s *)hw)->DATA[index].reg = tmp;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_clear_DATA_DATA_bf(const void *const hw, uint8_t index, hri_i2s_data_reg_t mask)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	((I2s *)hw)->DATA[index].reg &= ~I2S_DATA_DATA(mask);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_toggle_DATA_DATA_bf(const void *const hw, uint8_t index, hri_i2s_data_reg_t mask)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	((I2s *)hw)->DATA[index].reg ^= I2S_DATA_DATA(mask);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline hri_i2s_data_reg_t hri_i2s_read_DATA_DATA_bf(const void *const hw, uint8_t index)
 {
 	uint32_t tmp;
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	tmp = ((I2s *)hw)->DATA[index].reg;
 	tmp = (tmp & I2S_DATA_DATA_Msk) >> I2S_DATA_DATA_Pos;
 	return tmp;
@@ -2484,15 +2392,15 @@ static inline hri_i2s_data_reg_t hri_i2s_read_DATA_DATA_bf(const void *const hw,
 static inline void hri_i2s_set_DATA_reg(const void *const hw, uint8_t index, hri_i2s_data_reg_t mask)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	((I2s *)hw)->DATA[index].reg |= mask;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline hri_i2s_data_reg_t hri_i2s_get_DATA_reg(const void *const hw, uint8_t index, hri_i2s_data_reg_t mask)
 {
 	uint32_t tmp;
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	tmp = ((I2s *)hw)->DATA[index].reg;
 	tmp &= mask;
 	return tmp;
@@ -2501,30 +2409,30 @@ static inline hri_i2s_data_reg_t hri_i2s_get_DATA_reg(const void *const hw, uint
 static inline void hri_i2s_write_DATA_reg(const void *const hw, uint8_t index, hri_i2s_data_reg_t data)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	((I2s *)hw)->DATA[index].reg = data;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_clear_DATA_reg(const void *const hw, uint8_t index, hri_i2s_data_reg_t mask)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	((I2s *)hw)->DATA[index].reg &= ~mask;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline void hri_i2s_toggle_DATA_reg(const void *const hw, uint8_t index, hri_i2s_data_reg_t mask)
 {
 	I2S_CRITICAL_SECTION_ENTER();
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
 	((I2s *)hw)->DATA[index].reg ^= mask;
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	I2S_CRITICAL_SECTION_LEAVE();
 }
 
 static inline hri_i2s_data_reg_t hri_i2s_read_DATA_reg(const void *const hw, uint8_t index)
 {
-	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_MASK);
+	hri_i2s_wait_for_sync(hw, I2S_SYNCBUSY_DATA0 | I2S_SYNCBUSY_DATA1);
 	return ((I2s *)hw)->DATA[index].reg;
 }
 
