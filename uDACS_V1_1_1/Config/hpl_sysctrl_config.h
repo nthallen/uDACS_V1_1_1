@@ -126,7 +126,7 @@
 // <i> If this bit is 1, the oscillator will only be running when requested by a peripheral.
 // <id> osc32k_arch_ondemand
 #ifndef CONF_OSC32K_ONDEMAND
-#define CONF_OSC32K_ONDEMAND 1
+#define CONF_OSC32K_ONDEMAND 0
 #endif
 
 // <q> Run In Standby
@@ -142,7 +142,7 @@
 // <i> Enable 32 Khz Output
 // <id> osc32k_arch_en32k
 #ifndef CONF_OSC32K_EN32K
-#define CONF_OSC32K_EN32K 0
+#define CONF_OSC32K_EN32K 1
 #endif
 
 // <q> Enable 1K

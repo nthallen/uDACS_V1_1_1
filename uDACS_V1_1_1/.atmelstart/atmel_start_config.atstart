@@ -755,9 +755,9 @@ drivers:
       fdpll96m_ref_clock: Generic clock generator 1
       osc32k_arch_calib: 0
       osc32k_arch_en1k: false
-      osc32k_arch_en32k: false
+      osc32k_arch_en32k: true
       osc32k_arch_enable: true
-      osc32k_arch_ondemand: true
+      osc32k_arch_ondemand: false
       osc32k_arch_overwrite_calibration: false
       osc32k_arch_runstdby: false
       osc32k_arch_startup: 3 Clock Cycles (92us)

@@ -21,9 +21,7 @@
 struct usart_async_descriptor USART_CTRL;
 struct timer_descriptor       TIMER_0;
 
-#if 0
 static uint8_t USART_CTRL_buffer[USART_CTRL_BUFFER_SIZE];
-#endif
 
 struct spi_m_async_descriptor AD_SPI;
 
@@ -222,7 +220,6 @@ void USART_CTRL_PORT_init()
 	gpio_set_pin_function(UART_RX, PINMUX_PB23D_SERCOM5_PAD3);
 }
 
-#if 0
 /**
  * \brief USART initialization function
  *
@@ -234,9 +231,7 @@ void USART_CTRL_init(void)
 	usart_async_init(&USART_CTRL, SERCOM5, USART_CTRL_buffer, USART_CTRL_BUFFER_SIZE, (void *)NULL);
 	USART_CTRL_PORT_init();
 }
-#endif
 
-#if 0
 /**
  * \brief Timer initialization function
  *
@@ -248,7 +243,6 @@ static void TIMER_0_init(void)
 	_gclk_enable_channel(RTC_GCLK_ID, CONF_GCLK_RTC_SRC);
 	timer_init(&TIMER_0, RTC, _rtc_get_timer());
 }
-#endif
 
 void system_init(void)
 {
@@ -491,12 +485,12 @@ void system_init(void)
 
 	EXTERNAL_IRQ_0_init();
 
-	// AD_SPI_init();
+	AD_SPI_init();
 
-	// UC_I2C_init();
+	UC_I2C_init();
 
-	// SD_SPI_init();
-	// USART_CTRL_init();
+	SD_SPI_init();
+	USART_CTRL_init();
 
-	// TIMER_0_init();
+	TIMER_0_init();
 }
