@@ -1,4 +1,5 @@
 .vs
 *.avs
 Debug
+DEBUG_SN1
 *.atzip
