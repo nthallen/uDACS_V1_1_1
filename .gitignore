@@ -1,5 +1,6 @@
 .vs
 *.avs
 Debug
-DEBUG_SN1
+Debug_SN*
 *.atzip
+.atmel-start-backup
