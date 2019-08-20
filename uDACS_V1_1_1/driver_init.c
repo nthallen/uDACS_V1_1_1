@@ -491,9 +491,9 @@ void system_init(void)
 
 	EXTERNAL_IRQ_0_init();
 
-#if 0
 	AD_SPI_init();
 
+#if 0
 	UC_I2C_init();
 
 	SD_SPI_init();

@@ -2,14 +2,15 @@
 #include "usart.h"
 #include "subbus.h"
 #include "control.h"
-//#include "spi.h"
+#include "spi.h"
 
 int main(void)
 {
   /* Initializes MCU, drivers and middleware */
   atmel_start_init();
   if (subbus_add_driver(&sb_base) ||
-      subbus_add_driver(&sb_fail_sw)) {
+      subbus_add_driver(&sb_fail_sw) ||
+      subbus_add_driver(&sb_spi)) {
     while (true) ; // some driver is misconfigured.
   }
   subbus_reset();
@@ -22,11 +23,5 @@ int main(void)
         intr_service();
     #endif
     // possibly check for watchdog features
-    // delay_ms(500);
-    // gpio_set_pin_level(SPR7, true);
-    // delay_ms(500);
-    // gpio_set_pin_level(SPR7, false);
-    // uart_send_char('Z');
-    // uart_flush_output();
   }
 }
