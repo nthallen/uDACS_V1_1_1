@@ -143,12 +143,13 @@ typedef struct {
 } dac_poll_def;
 
 static dac_poll_def dac_u13 = {
-  SPI_DAC_U13_ENABLED, dac_init, DAC_CS,
+  SPI_DAC_U13_ENABLED, dac_idle, DAC_CS,
   {0x10, 0x11, 0x12, 0x13}, 0
 };
 static uint8_t DACREFENABLE[3] = {0x38, 0x00, 0x01};
 static uint8_t DACupdate[3];
 
+static bool dac_vref_enabled = false;
 /**
  * Only called when SPI bus is free
  * @return true if we have relinquished the bus and cleared our chip select
@@ -159,11 +160,12 @@ static bool poll_dac(void) {
   switch (dac_u13.state) {
     case dac_init: // Need to send the internal reference enable signal
       start_spi_transfer(dac_u13.cs_pin, DACREFENABLE, 3);
+      dac_vref_enabled = true;
       dac_u13.state = dac_tx;
       return false;
     case dac_tx:
       chip_deselect(dac_u13.cs_pin);
-      dac_u13.state = dac_idle;
+      dac_u13.state = dac_vref_enabled ? dac_idle : dac_init;
       return true;
     case dac_idle:
       if (subbus_cache_iswritten(&sb_spi, dac_u13.addr[dac_u13.current], &value)) {
