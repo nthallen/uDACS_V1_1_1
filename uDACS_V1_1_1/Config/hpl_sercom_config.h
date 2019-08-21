@@ -45,7 +45,7 @@
 // <e> Advanced Configuration
 // <id> spi_master_advanced
 #ifndef CONF_SERCOM_0_SPI_ADVANCED
-#define CONF_SERCOM_0_SPI_ADVANCED 0
+#define CONF_SERCOM_0_SPI_ADVANCED 1
 #endif
 
 // <o> Dummy byte <0x00-0x1ff>
@@ -79,7 +79,7 @@
 // <i> Determines if input data is sampled on leading or trailing SCK edge. (CPHA)
 // <id> spi_master_arch_cpha
 #ifndef CONF_SERCOM_0_SPI_CPHA
-#define CONF_SERCOM_0_SPI_CPHA 0x0
+#define CONF_SERCOM_0_SPI_CPHA 0x1
 #endif
 
 // <o> Immediate Buffer Overflow Notification

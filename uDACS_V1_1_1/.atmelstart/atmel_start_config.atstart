@@ -232,8 +232,8 @@ drivers:
     functionality: SPI
     api: HAL:Driver:SPI_Master_Async
     configuration:
-      spi_master_advanced: false
-      spi_master_arch_cpha: Sample input on leading edge
+      spi_master_advanced: true
+      spi_master_arch_cpha: Sample input on trailing edge
       spi_master_arch_cpol: SCK is low when idle
       spi_master_arch_dbgstop: Keep running
       spi_master_arch_dord: MSB first
