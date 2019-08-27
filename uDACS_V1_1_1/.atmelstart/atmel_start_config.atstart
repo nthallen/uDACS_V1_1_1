@@ -105,7 +105,7 @@ drivers:
       eic_arch_wakeupen9: false
     optional_signals:
     - identifier: EXTERNAL_IRQ_0:EXTINT/3
-      pad: PA03
+      pad: PB03
       mode: Enabled
       configuration: null
       definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::optional_signal_definition::EIC.EXTINT.3
@@ -793,12 +793,6 @@ drivers:
     clocks:
       domain_group: null
 pads:
-  PA03:
-    name: PA03
-    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA03
-    mode: Digital input
-    user_label: PA03
-    configuration: null
   SPR7:
     name: PB08
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB08
