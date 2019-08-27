@@ -230,6 +230,7 @@ static void spi_reset(void) {
  * 0x10-0x13 RW: DAC Flow Setpoints
  */
 static subbus_cache_word_t spi_cache[SPI_HIGH_ADDR-SPI_BASE_ADDR+1] = {
+  // AD5664 DAC outputs
   { 0, 0, true,  false, true,  false, false }, // Offset 0: RW: DAC Setpoint 0
   { 0, 0, true,  false, true,  false, false }, // Offset 1: RW: DAC Setpoint 1
   { 0, 0, true,  false, true,  false, false }, // Offset 2: RW: DAC Setpoint 2
