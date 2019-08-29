@@ -29,6 +29,7 @@ static void complete_cb_AD_SPI(const struct spi_m_async_descriptor *const io_des
 }
 
 static uint8_t spi_read_data[MAX_SPI_READ_LENGTH];
+static void adc_update_regs();
 
 static void start_spi_transfer(uint8_t pin, uint8_t const *txbuf, int length) {
   assert(length <= MAX_SPI_READ_LENGTH,__FILE__,__LINE__);
@@ -37,101 +38,124 @@ static void start_spi_transfer(uint8_t pin, uint8_t const *txbuf, int length) {
   spi_m_async_transfer(&AD_SPI, txbuf, spi_read_data, length);
 }
 
-#if 0
-enum adc_state_t {adc_init, adc_init_tx,
-           adc_ain0_wait, adc_ain0_tx,
-           adc_ain2_wait, adc_ain2_tx,
-           adc_temp_wait, adc_temp_tx};
-typedef struct {
-  bool enabled;
-  enum adc_state_t state;
-  uint8_t cs_pin;
-  uint16_t AIN0_addr;
-  uint16_t AIN2_addr;
-  uint16_t TEMP_addr;
-  uint16_t poll_count;
-} adc_poll_def;
+static uint8_t adc_sd_read_output[32] = {
+  0x80, 0x00, 0x80, 0x00,
+  0x80, 0x00, 0x80, 0x00,
+  0x80, 0x00, 0x80, 0x00,
+  0x80, 0x00, 0x80, 0x00,
+  0x80, 0x00, 0x80, 0x00,
+  0x80, 0x00, 0x80, 0x00,
+  0x80, 0x00, 0x80, 0x00,
+  0x80, 0x00, 0x80, 0x00
+};
 
-static adc_poll_def adc_u2 = {AD_SPI_U2_ENABLED, adc_init, CS0, 0x10, 0x11, 0x19};
-static adc_poll_def adc_u3 = {AD_SPI_U3_ENABLED, adc_init, CS1, 0x12, 0x13, 0x1A};
+enum ad7770_state_t {ad7770_init, ad7770_init_tx,
+           ad7770_read, ad7770_read_tx};
+enum adc_regs_state_t {adc_regs_ready, adc_regs_frozen, adc_regs_diverted};
+enum adc_mode_t {adc_unknown_mode, adc_reg_mode, adc_sd_mode};
+static enum adc_mode_t adc_mode = adc_unknown_mode;
+static int DRDY_observed;
+
+typedef struct {
+  uint8_t msg[2];
+} ad7770_init_word;
+
+/************************************************************************/
+/* Initialization commands:                                             */
+/* Note that if the ADC is int sigma-delta readback mode, then the      */
+/* first byte could be part of the sigma-delta readback error header    */
+/* rather than the response from the registers.                         */
+/************************************************************************/
+#define N_AD7770_INIT 6
+ad7770_init_word ad7770_init_codes[N_AD7770_INIT] = {
+  { { 0x13, 0x80 } }, // readback regs on SDO
+  { { 0x15, 0x40 } }, // Internal reference
+  { { 0x60, 0x0F } }, // SRC N MSB
+  { { 0x60, 0xA0 } }, // SRC N LSB
+  { { 0x64, 0x00 } }, // SRC LOAD
+  { { 0x13, 0x90 } }  // read back ADC on SDO
+};
+
+static struct {
+  bool enabled;
+  enum ad7770_state_t state;
+  enum adc_regs_state_t regs_state;
+  uint8_t cs_pin;
+  uint16_t n_init;
+  uint16_t status;
+  uint16_t poll_count;
+  uint8_t hdr[8];
+  uint32_t ain[8];
+} stage = {SPI_AD7770_ENABLED, ad7770_init, adc_regs_ready, ADC_CS, 0, 0, 0};
 
 /**
  * poll_adc() is only called when AD_SPI_txfr_complete is non-zero
  * @return true if we are relinquishing the SPI bus
  */
-static bool poll_adc(adc_poll_def *adc) {
-  uint16_t value;
-  if (!adc->enabled) return true;
-  switch (adc->state) {
-    case adc_init:
-      start_spi_transfer(adc->cs_pin, CONVERT_AIN0, 4);
-      adc->state = adc_init_tx;
+static bool poll_adc() {
+  // uint16_t value;
+  if (!stage.enabled) return true;
+  switch (stage.state) {
+    case ad7770_init:
+      while (stage.n_init >= N_AD7770_INIT) ;
+      start_spi_transfer(stage.cs_pin, (&ad7770_init_codes[stage.n_init].msg[0]), 2);
+      stage.state = ad7770_init_tx;
       return false;
-    case adc_init_tx:
-      chip_deselect(adc->cs_pin);
-      adc->poll_count = 0;
-      adc->state = adc_ain0_wait;
-      return true;
-    case adc_ain0_wait:
-      chip_select(adc->cs_pin);
-      if (gpio_get_pin_level(MISO)) {
-        chip_deselect(adc->cs_pin);
-        if (++adc->poll_count <= ADC_CONVERT_TIMEOUT) {
-          return true;
-        } // Otherwise just go ahead to the next step
+    case ad7770_init_tx:
+      chip_deselect(stage.cs_pin);
+      if (adc_mode == adc_reg_mode && spi_read_data[0] != 0x20) {
+        stage.status |= 0x200;
       }
-      start_spi_transfer(adc->cs_pin, CONVERT_AIN2, 4);
-      adc->state = adc_ain0_tx;
-      return false;
-    case adc_ain0_tx:
-      chip_deselect(adc->cs_pin);
-      value = (spi_read_data[0] << 8) + spi_read_data[1];
-      subbus_cache_update(&sb_spi, adc->AIN0_addr, value);
-      adc->poll_count = 0;
-      adc->state = adc_ain2_wait;
-      return true;
-    case adc_ain2_wait:
-      chip_select(adc->cs_pin);
-      if (gpio_get_pin_level(MISO)) {
-        chip_deselect(adc->cs_pin);
-        if (++adc->poll_count <= ADC_CONVERT_TIMEOUT) {
-          return true;
-        } // Otherwise just go ahead to the next step
+      if (ad7770_init_codes[stage.n_init].msg[0] == 0x13) {
+        adc_mode = (ad7770_init_codes[stage.n_init].msg[1] & 0x10) ?
+          adc_sd_mode : adc_reg_mode;
       }
-      start_spi_transfer(adc->cs_pin, CONVERT_TEMP, 4);
-      adc->state = adc_ain2_tx;
-      return false;
-    case adc_ain2_tx:
-      chip_deselect(adc->cs_pin);
-      value = (spi_read_data[0] << 8) + spi_read_data[1];
-      subbus_cache_update(&sb_spi, adc->AIN2_addr, value);
-      adc->poll_count = 0;
-      adc->state = adc_temp_wait;
+      // check the readback for basic formatting. Set bits in a status register
+      stage.poll_count = 0;
+      stage.state =
+        (++stage.n_init >= N_AD7770_INIT) ? ad7770_read : ad7770_init;
       return true;
-    case adc_temp_wait:
-      chip_select(adc->cs_pin);
-      if (gpio_get_pin_level(MISO)) {
-        chip_deselect(adc->cs_pin);
-        if (++adc->poll_count <= ADC_CONVERT_TIMEOUT) {
-          return true;
-        } // Otherwise just go ahead to the next step
-      }
-      start_spi_transfer(adc->cs_pin, CONVERT_AIN0, 4);
-      adc->state = adc_temp_tx;
+    case ad7770_read:
+      if (DRDY_observed == 0)
+        return true;
+      start_spi_transfer(stage.cs_pin, adc_sd_read_output, 32);
+      stage.state = ad7770_read_tx;
       return false;
-    case adc_temp_tx:
-      chip_deselect(adc->cs_pin);
-      value = (spi_read_data[0] << 8) + spi_read_data[1];
-      subbus_cache_update(&sb_spi, adc->TEMP_addr, value);
-      adc->poll_count = 0;
-      adc->state = adc_ain0_wait;
+    case ad7770_read_tx:
+      ext_irq_disable(DRDY);
+      if (DRDY_observed > 1)
+        stage.status |= 0x100;
+      DRDY_observed = 0;
+      ext_irq_enable(DRDY);
+      chip_deselect(stage.cs_pin);
+      stage.status &= 0x01FF;
+      // check the readback for basic formatting. Set bits in stage.status register
+      // Update stage.ain,
+      for (int i = 0; i < 8; ++i) {
+        int offset = 4*i;
+        uint8_t hdr = spi_read_data[offset];
+        if ((hdr & 0x80) || ((hdr&0x70)>>4) != i) {
+          stage.status |= 1<<i;
+        }
+        stage.hdr[i] = hdr;
+        stage.ain[i] =
+          (((uint32_t)spi_read_data[offset+1])<<16) +
+          (((uint32_t)spi_read_data[offset+2])<<8) +
+          spi_read_data[offset+3];
+      }
+      ++stage.poll_count;
+      if (stage.regs_state == adc_regs_ready) {
+        adc_update_regs();
+      } else {
+        stage.regs_state = adc_regs_diverted;
+      }
+      stage.state = ad7770_read;
       return true;
     default:
       assert(false, __FILE__, __LINE__);
   }
   return true;
 }
-#endif
 
 enum dac_state_t {dac_init, dac_tx, dac_idle};
 typedef struct {
@@ -195,16 +219,14 @@ void spi_poll(void) {
   if (!spi_enabled) return;
   while (AD_SPI_txfr_complete) {
     switch (spi_state) {
-      #if 0
       case spi_adc:
         if (poll_adc()) {
           spi_state = spi_dac;
         }
         break;
-      #endif
       case spi_dac:
         if (poll_dac()) {
-          spi_state = spi_dac;
+          spi_state = spi_adc;
         }
         break;
       default:
@@ -214,12 +236,17 @@ void spi_poll(void) {
   }
 }
 
+static void DRDY_handler(void) {
+  ++DRDY_observed;
+}
+
 static void spi_reset(void) {
   if (!sb_spi.initialized) {
     // This type of initialization should not be repeated
     // AD_SPI_init() is called by system_init()
     spi_m_async_register_callback(&AD_SPI, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_AD_SPI);
     spi_m_async_enable(&AD_SPI);
+    ext_irq_register(DRDY, DRDY_handler);
     sb_spi.initialized = true;
   }
   // What should reset do? Write zeros to all DACS? For now, do nothing.
@@ -231,16 +258,77 @@ static void spi_reset(void) {
  */
 static subbus_cache_word_t spi_cache[SPI_HIGH_ADDR-SPI_BASE_ADDR+1] = {
   // AD5664 DAC outputs
-  { 0, 0, true,  false, true,  false, false }, // Offset 0: RW: DAC Setpoint 0
-  { 0, 0, true,  false, true,  false, false }, // Offset 1: RW: DAC Setpoint 1
-  { 0, 0, true,  false, true,  false, false }, // Offset 2: RW: DAC Setpoint 2
-  { 0, 0, true,  false, true,  false, false }, // Offset 3: RW: DAC Setpoint 3
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x00: RW: DAC Setpoint 0
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x01: RW: DAC Setpoint 1
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x02: RW: DAC Setpoint 2
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x03: RW: DAC Setpoint 3
+  { 0, 0, true,  false, true,  false,  true }, // Offset 0x04: RW: ADC Status Register
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x05: RW: ADC AIN[0] LSW
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x06: RW: ADC AIN[0] HDR+MSB
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x07: RW: ADC AIN[1] LSW
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x08: RW: ADC AIN[1] HDR+MSB
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x09: RW: ADC AIN[2] LSW
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x0A: RW: ADC AIN[2] HDR+MSB
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x0B: RW: ADC AIN[3] LSW
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x0C: RW: ADC AIN[3] HDR+MSB
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x0D: RW: ADC AIN[4] LSW
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x0E: RW: ADC AIN[4] HDR+MSB
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x0F: RW: ADC AIN[5] LSW
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x10: RW: ADC AIN[5] HDR+MSB
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x11: RW: ADC AIN[6] LSW
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x12: RW: ADC AIN[6] HDR+MSB
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x13: RW: ADC AIN[7] LSW
+  { 0, 0, true,  false, true,  false, false }, // Offset 0x14: RW: ADC AIN[7] HDR+MSB
+  { 0, 0, true,  false, true,  false,  true }, // Offset 0x15: RW: ADC Poll Count
 };
+
+static void adc_update_regs() {
+  spi_cache[0x4].cache = stage.status;
+  for (int i = 0; i < 8; ++i) {
+    spi_cache[0x5+2*i].cache = (uint16_t)(stage.ain[i] & 0xFFFF);
+    spi_cache[0x6+2*i].cache = ((uint16_t)((stage.ain[i] & 0xFF0000)>>16)) |
+       (((uint16_t)stage.hdr[i]) << 8);
+  }
+  spi_cache[0x15].cache = stage.poll_count;
+}
+
+void spi_action(uint16_t offset) {
+  uint16_t last_poll_count;
+  switch (offset) {
+    case 0x04: // Status register
+      // freeze updates to counts, poll_count
+      stage.regs_state = adc_regs_frozen;
+      break;
+    case 0x15: // Poll Count
+      // release updates to counts, poll_count
+      last_poll_count = spi_cache[0x15].cache;
+      if (last_poll_count <= stage.poll_count) {
+        stage.poll_count -= last_poll_count;
+      } else {
+        stage.poll_count = 0;
+      }
+      spi_cache[0x15].cache = 0;
+      switch (stage.regs_state) {
+        case adc_regs_ready:
+        case adc_regs_frozen:
+        default:
+          break;
+        case adc_regs_diverted:
+          adc_update_regs();
+          break;
+      }
+      stage.regs_state = adc_regs_ready;
+      break;
+    default:
+      assert(false,__FILE__,__LINE__);
+  }
+}
 
 subbus_driver_t sb_spi = {
   SPI_BASE_ADDR, SPI_HIGH_ADDR, // address range
   spi_cache,
   spi_reset,
   spi_poll,
+  spi_action,
   false
 };
