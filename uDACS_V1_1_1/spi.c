@@ -30,9 +30,18 @@ static void complete_cb_AD_SPI(const struct spi_m_async_descriptor *const io_des
 
 static uint8_t spi_read_data[MAX_SPI_READ_LENGTH];
 static void adc_update_regs();
+// We will use modes 1 (AD5664) and 3 (AD7770). Initialize this
+// to mode 0 so we will initialize whichever goes first.
+static enum spi_transfer_mode spi_current_transfer_mode = SPI_MODE_0;
 
-static void start_spi_transfer(uint8_t pin, uint8_t const *txbuf, int length) {
+static void start_spi_transfer(uint8_t pin, uint8_t const *txbuf, int length, enum spi_transfer_mode mode) {
   assert(length <= MAX_SPI_READ_LENGTH,__FILE__,__LINE__);
+  if (spi_current_transfer_mode != mode) {
+    spi_m_async_disable(&AD_SPI);
+    spi_m_async_set_mode(&AD_SPI, mode);
+    spi_current_transfer_mode = mode;
+    spi_m_async_enable(&AD_SPI);
+  }
   chip_select(pin);
   AD_SPI_txfr_complete = false;
   spi_m_async_transfer(&AD_SPI, txbuf, spi_read_data, length);
@@ -52,8 +61,8 @@ static uint8_t adc_sd_read_output[32] = {
 enum ad7770_state_t {ad7770_init, ad7770_init_tx,
            ad7770_read, ad7770_read_tx};
 enum adc_regs_state_t {adc_regs_ready, adc_regs_frozen, adc_regs_diverted};
-enum adc_mode_t {adc_unknown_mode, adc_reg_mode, adc_sd_mode};
-static enum adc_mode_t adc_mode = adc_unknown_mode;
+enum adc_readback_mode_t {adc_unknown_mode, adc_reg_mode, adc_sd_mode};
+static enum adc_readback_mode_t adc_mode = adc_unknown_mode;
 static int DRDY_observed;
 
 typedef struct {
@@ -71,7 +80,7 @@ ad7770_init_word ad7770_init_codes[N_AD7770_INIT] = {
   { { 0x13, 0x80 } }, // readback regs on SDO
   { { 0x15, 0x40 } }, // Internal reference
   { { 0x60, 0x0F } }, // SRC N MSB
-  { { 0x60, 0xA0 } }, // SRC N LSB
+  { { 0x61, 0xA0 } }, // SRC N LSB
   { { 0x64, 0x00 } }, // SRC LOAD
   { { 0x13, 0x90 } }  // read back ADC on SDO
 };
@@ -98,7 +107,7 @@ static bool poll_adc() {
   switch (stage.state) {
     case ad7770_init:
       while (stage.n_init >= N_AD7770_INIT) ;
-      start_spi_transfer(stage.cs_pin, (&ad7770_init_codes[stage.n_init].msg[0]), 2);
+      start_spi_transfer(stage.cs_pin, (&ad7770_init_codes[stage.n_init].msg[0]), 2, SPI_MODE_3);
       stage.state = ad7770_init_tx;
       return false;
     case ad7770_init_tx:
@@ -118,7 +127,7 @@ static bool poll_adc() {
     case ad7770_read:
       if (DRDY_observed == 0)
         return true;
-      start_spi_transfer(stage.cs_pin, adc_sd_read_output, 32);
+      start_spi_transfer(stage.cs_pin, adc_sd_read_output, 32, SPI_MODE_3);
       stage.state = ad7770_read_tx;
       return false;
     case ad7770_read_tx:
@@ -183,7 +192,7 @@ static bool poll_dac(void) {
   if (!dac_u13.enabled) return true;
   switch (dac_u13.state) {
     case dac_init: // Need to send the internal reference enable signal
-      start_spi_transfer(dac_u13.cs_pin, DACREFENABLE, 3);
+      start_spi_transfer(dac_u13.cs_pin, DACREFENABLE, 3, SPI_MODE_1);
       dac_vref_enabled = true;
       dac_u13.state = dac_tx;
       return false;
@@ -196,7 +205,7 @@ static bool poll_dac(void) {
         DACupdate[0] = 0x18+dac_u13.current;
         DACupdate[1] = (value>>8) & 0xFF;
         DACupdate[2] = value & 0xFF;
-        start_spi_transfer(dac_u13.cs_pin, DACupdate, 3);
+        start_spi_transfer(dac_u13.cs_pin, DACupdate, 3, SPI_MODE_1);
         subbus_cache_update(&sb_spi, dac_u13.addr[dac_u13.current], value);
         dac_u13.current = (dac_u13.current + 1) & 0x3;
         dac_u13.state = dac_tx;
