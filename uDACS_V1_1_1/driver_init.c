@@ -21,9 +21,7 @@
 struct usart_async_descriptor USART_CTRL;
 struct timer_descriptor       TIMER_0;
 
-#if 0
 static uint8_t USART_CTRL_buffer[USART_CTRL_BUFFER_SIZE];
-#endif
 
 struct spi_m_async_descriptor AD_SPI;
 
@@ -222,7 +220,6 @@ void USART_CTRL_PORT_init()
 	gpio_set_pin_function(UART_RX, PINMUX_PB23D_SERCOM5_PAD3);
 }
 
-#if 0
 /**
  * \brief USART initialization function
  *
@@ -234,9 +231,7 @@ void USART_CTRL_init(void)
 	usart_async_init(&USART_CTRL, SERCOM5, USART_CTRL_buffer, USART_CTRL_BUFFER_SIZE, (void *)NULL);
 	USART_CTRL_PORT_init();
 }
-#endif
 
-#if 0
 /**
  * \brief Timer initialization function
  *
@@ -248,11 +243,25 @@ static void TIMER_0_init(void)
 	_gclk_enable_channel(RTC_GCLK_ID, CONF_GCLK_RTC_SRC);
 	timer_init(&TIMER_0, RTC, _rtc_get_timer());
 }
-#endif
 
 void system_init(void)
 {
 	init_mcu();
+
+	// GPIO on PA01
+
+	// Set pin direction to input
+	gpio_set_pin_direction(ADC_ALERT, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(ADC_ALERT,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(ADC_ALERT, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PA11
 
@@ -478,12 +487,10 @@ void system_init(void)
 
 	AD_SPI_init();
 
-#if 0
-	UC_I2C_init(); // not ready for this
+	UC_I2C_init();
 
-	SD_SPI_init(); // not ready for this
-	// USART_CTRL_init(); replaced in our usart module
+	SD_SPI_init();
+	USART_CTRL_init();
 
-	TIMER_0_init(); // not ready for this
-#endif
+	TIMER_0_init();
 }

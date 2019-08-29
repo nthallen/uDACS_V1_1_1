@@ -793,6 +793,12 @@ drivers:
     clocks:
       domain_group: null
 pads:
+  ADC_ALERT:
+    name: PA01
+    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA01
+    mode: Digital input
+    user_label: ADC_ALERT
+    configuration: null
   SPR7:
     name: PB08
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB08
