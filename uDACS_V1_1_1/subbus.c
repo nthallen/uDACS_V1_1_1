@@ -50,7 +50,7 @@ int subbus_read( uint16_t addr, uint16_t *rv ) {
         *rv = cache->cache;
         cache->was_read = true;
         if (cache->dynamic && drivers[i]->sb_action)
-          drivers[i]->sb_action();
+          drivers[i]->sb_action(offset);
         return 1;
       }
     }
@@ -73,7 +73,7 @@ int subbus_write( uint16_t addr, uint16_t data) {
         cache->wvalue = data;
         cache->written = true;
         if (cache->dynamic && drivers[i]->sb_action)
-          drivers[i]->sb_action();
+          drivers[i]->sb_action(offset);
         return 1;
       }
     }

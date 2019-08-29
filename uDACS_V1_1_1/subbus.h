@@ -58,7 +58,7 @@ typedef struct {
   subbus_cache_word_t *cache;
   void (*reset)(void);
   void (*poll)(void);
-  void (*sb_action)(void); // called if dynamic
+  void (*sb_action)(uint16_t offset); // called if dynamic
   bool initialized;
 } subbus_driver_t;
 
