@@ -75,12 +75,13 @@ typedef struct {
 /* first byte could be part of the sigma-delta readback error header    */
 /* rather than the response from the registers.                         */
 /************************************************************************/
-#define N_AD7770_INIT 6
+#define N_AD7770_INIT 7
 ad7770_init_word ad7770_init_codes[N_AD7770_INIT] = {
   { { 0x13, 0x80 } }, // readback regs on SDO
   { { 0x15, 0x40 } }, // Internal reference
   { { 0x60, 0x0F } }, // SRC N MSB
   { { 0x61, 0xA0 } }, // SRC N LSB
+  { { 0x64, 0x01 } }, // SRC LOAD
   { { 0x64, 0x00 } }, // SRC LOAD
   { { 0x13, 0x90 } }  // read back ADC on SDO
 };
@@ -132,12 +133,12 @@ static bool poll_adc() {
       return false;
     case ad7770_read_tx:
       ext_irq_disable(DRDY);
+      stage.status &= ~0x01FF;
       if (DRDY_observed > 1)
         stage.status |= 0x100;
       DRDY_observed = 0;
       ext_irq_enable(DRDY);
       chip_deselect(stage.cs_pin);
-      stage.status &= 0x01FF;
       // check the readback for basic formatting. Set bits in stage.status register
       // Update stage.ain,
       for (int i = 0; i < 8; ++i) {
@@ -267,28 +268,28 @@ static void spi_reset(void) {
  */
 static subbus_cache_word_t spi_cache[SPI_HIGH_ADDR-SPI_BASE_ADDR+1] = {
   // AD5664 DAC outputs
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x00: RW: DAC Setpoint 0
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x01: RW: DAC Setpoint 1
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x02: RW: DAC Setpoint 2
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x03: RW: DAC Setpoint 3
-  { 0, 0, true,  false, true,  false,  true }, // Offset 0x04: RW: ADC Status Register
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x05: RW: ADC AIN[0] LSW
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x06: RW: ADC AIN[0] HDR+MSB
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x07: RW: ADC AIN[1] LSW
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x08: RW: ADC AIN[1] HDR+MSB
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x09: RW: ADC AIN[2] LSW
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x0A: RW: ADC AIN[2] HDR+MSB
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x0B: RW: ADC AIN[3] LSW
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x0C: RW: ADC AIN[3] HDR+MSB
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x0D: RW: ADC AIN[4] LSW
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x0E: RW: ADC AIN[4] HDR+MSB
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x0F: RW: ADC AIN[5] LSW
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x10: RW: ADC AIN[5] HDR+MSB
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x11: RW: ADC AIN[6] LSW
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x12: RW: ADC AIN[6] HDR+MSB
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x13: RW: ADC AIN[7] LSW
-  { 0, 0, true,  false, true,  false, false }, // Offset 0x14: RW: ADC AIN[7] HDR+MSB
-  { 0, 0, true,  false, true,  false,  true }, // Offset 0x15: RW: ADC Poll Count
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x00: RW: DAC Setpoint 0
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x01: RW: DAC Setpoint 1
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x02: RW: DAC Setpoint 2
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x03: RW: DAC Setpoint 3
+  { 0, 0, true,  false, false,  false,  true }, // Offset 0x04: RW: ADC Status Register
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x05: RW: ADC AIN[0] LSW
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x06: RW: ADC AIN[0] HDR+MSB
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x07: RW: ADC AIN[1] LSW
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x08: RW: ADC AIN[1] HDR+MSB
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x09: RW: ADC AIN[2] LSW
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x0A: RW: ADC AIN[2] HDR+MSB
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x0B: RW: ADC AIN[3] LSW
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x0C: RW: ADC AIN[3] HDR+MSB
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x0D: RW: ADC AIN[4] LSW
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x0E: RW: ADC AIN[4] HDR+MSB
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x0F: RW: ADC AIN[5] LSW
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x10: RW: ADC AIN[5] HDR+MSB
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x11: RW: ADC AIN[6] LSW
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x12: RW: ADC AIN[6] HDR+MSB
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x13: RW: ADC AIN[7] LSW
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x14: RW: ADC AIN[7] HDR+MSB
+  { 0, 0, true,  false, false,  false,  true }, // Offset 0x15: RW: ADC Poll Count
 };
 
 static void adc_update_regs() {

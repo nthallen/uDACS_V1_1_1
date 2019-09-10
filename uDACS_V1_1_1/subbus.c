@@ -198,7 +198,7 @@ static void board_desc_init(void) {
   (board_desc.desc[0] & 0xFF) + (board_desc.desc[1]<<8));
 }
 
-static void board_desc_action(void) {
+static void board_desc_action(uint16_t addr) {
   if (board_desc_cache[1].was_read) {
     board_desc.cp += 2;
     if (board_desc.cp >= board_desc.nc) {
