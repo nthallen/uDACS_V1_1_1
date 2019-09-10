@@ -1,18 +1,6 @@
 function uDACS_dfs
 % uDACS DFS test
 serial_port_clear();
-[ud.s,port] = serial_port_init('COM9');
-set(ud.s,'BaudRate',57600);
-% First check that the board is a uDACS
-BdID = read_subbus(ud.s, 2);
-if BdID ~= 9
-  error('Expected BdID 9 (uDACS). Reported %d', BdID);
-end
-Build = read_subbus(ud.s,3);
-[SerialNo,SNack] = read_subbus(ud.s,4);
-[InstID,InstIDack] = read_subbus(ud.s,5);
-fprintf(1, 'Attached to uDACS S/N %d Build # %d\n', SerialNo, Build);
-ud.rm_obj = read_multi_prep([16,1,37]);
 
 % Set up the data screen
 fig = figure;
@@ -48,9 +36,25 @@ dfs.field('uDACS','AIN5', '%6.4f', true);
 dfs.field('uDACS','AIN6', '%6.4f', true);
 dfs.field('uDACS','AIN7', '%6.4f', true);
 dfs.end_col();
-ud.MFCtr = 0;
 
+ud = sup_setup;
 sup = data_super(dfs, ud, @sup_acq);
+end
+
+function ud = sup_setup
+  [ud.s,port] = serial_port_init('COM9');
+  set(ud.s,'BaudRate',57600);
+  % First check that the board is a uDACS
+  BdID = read_subbus(ud.s, 2);
+  if BdID ~= 9
+    error('Expected BdID 9 (uDACS). Reported %d', BdID);
+  end
+  Build = read_subbus(ud.s,3);
+  [SerialNo,SNack] = read_subbus(ud.s,4);
+  [InstID,InstIDack] = read_subbus(ud.s,5);
+  fprintf(1, 'Attached to uDACS S/N %d Build # %d\n', SerialNo, Build);
+  ud.rm_obj = read_multi_prep([16,1,37]);
+  ud.MFCtr = 0;
 end
 
 function sup_acq(sup)
@@ -82,4 +86,8 @@ function sup_acq(sup)
   
   sup.dfs.process_record('uDACS', str);
   % fprintf(1, 'sup_acq(%d)\n', sup.ud.MFCtr);
+end
+
+function sup_shutdown
+  serial_port_clear();
 end
