@@ -58,8 +58,16 @@ static uint8_t adc_sd_read_output[32] = {
   0x80, 0x00, 0x80, 0x00
 };
 
+static uint8_t adc_read_gen_errs[8] = {
+  0x13, 0x80, // read back Regs on SDO
+  0xD9, 0x00, // Read GEN_ERR_REG_1 0x59+R
+  0xDB, 0x00, // Read GEN_ERR_REG_2 0x5B+R
+  0x13, 0x90, // read back ADC on SDO
+};
+
 enum ad7770_state_t {ad7770_init, ad7770_init_tx,
-           ad7770_read, ad7770_read_tx};
+           ad7770_read, ad7770_read_tx,
+           ad7770_read_errs, ad7770_read_errs_tx};
 enum adc_regs_state_t {adc_regs_ready, adc_regs_frozen, adc_regs_diverted};
 enum adc_readback_mode_t {adc_unknown_mode, adc_reg_mode, adc_sd_mode};
 static enum adc_readback_mode_t adc_mode = adc_unknown_mode;
@@ -159,6 +167,20 @@ static bool poll_adc() {
         adc_update_regs();
       } else {
         stage.regs_state = adc_regs_diverted;
+      }
+      if (subbus_cache_was_read(&sb_spi, GEN_ERRS_ADDR)) {
+        stage.state = ad7770_read_errs;
+      } else {
+        stage.state = ad7770_read;
+      }
+      return true;
+    case ad7770_read_errs:
+      start_spi_transfer(stage.cs_pin, adc_read_gen_errs, 8, SPI_MODE_3);
+      stage.state = ad7770_read_errs_tx;
+      return false;
+    case ad7770_read_errs_tx:
+      { uint16_t errs = spi_read_data[3] + (spi_read_data[5]<<8);
+        subbus_cache_update(&sb_spi, GEN_ERRS_ADDR, errs);
       }
       stage.state = ad7770_read;
       return true;
@@ -273,7 +295,7 @@ static subbus_cache_word_t spi_cache[SPI_HIGH_ADDR-SPI_BASE_ADDR+1] = {
   { 0, 0, true,  false,  true,  false, false }, // Offset 0x01: RW: DAC Setpoint 1
   { 0, 0, true,  false,  true,  false, false }, // Offset 0x02: RW: DAC Setpoint 2
   { 0, 0, true,  false,  true,  false, false }, // Offset 0x03: RW: DAC Setpoint 3
-  { 0, 0, true,  false, false,  false,  true }, // Offset 0x04: RW: ADC Status Register
+  { 0, 0, true,  false, false,  false,  true }, // Offset 0x04: R:  ADC Status Register
   { 0, 0, true,  false,  true,  false, false }, // Offset 0x05: RW: ADC AIN[0] LSW
   { 0, 0, true,  false,  true,  false, false }, // Offset 0x06: RW: ADC AIN[0] HDR+MSB
   { 0, 0, true,  false,  true,  false, false }, // Offset 0x07: RW: ADC AIN[1] LSW
@@ -290,7 +312,8 @@ static subbus_cache_word_t spi_cache[SPI_HIGH_ADDR-SPI_BASE_ADDR+1] = {
   { 0, 0, true,  false,  true,  false, false }, // Offset 0x12: RW: ADC AIN[6] HDR+MSB
   { 0, 0, true,  false,  true,  false, false }, // Offset 0x13: RW: ADC AIN[7] LSW
   { 0, 0, true,  false,  true,  false, false }, // Offset 0x14: RW: ADC AIN[7] HDR+MSB
-  { 0, 0, true,  false, false,  false,  true }, // Offset 0x15: RW: ADC Poll Count
+  { 0, 0, true,  false, false,  false,  true }, // Offset 0x15: R:  ADC Poll Count
+  { 0, 0, true,  false, false,  false, false }, // Offset 0x16: R:  ADC General Errors
 };
 
 static void adc_update_regs() {

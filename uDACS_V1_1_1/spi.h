@@ -12,7 +12,8 @@
 #define SPI_AD7770_ENABLED true
 #define SPI_DAC_U13_ENABLED true
 #define SPI_BASE_ADDR 0x10
-#define SPI_HIGH_ADDR 0x25
+#define GEN_ERRS_ADDR 0x26
+#define SPI_HIGH_ADDR 0x26
 #define ADC_LSW_OFFSET(x) (5+2*(x))
 #define ADC_MSB_OFFSET(x) (6+2*(x))
 
