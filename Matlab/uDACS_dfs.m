@@ -1,6 +1,6 @@
 function uDACS_dfs
 % uDACS DFS test
-serial_port_clear();
+% serial_port_clear();
 
 % Set up the data screen
 fig = figure;
@@ -13,6 +13,7 @@ dfs.field('uDACS','VSet1','%5.3f');
 dfs.field('uDACS','VSet2','%5.3f');
 dfs.field('uDACS','VSet3','%5.3f');
 dfs.field('uDACS','ADCStat', '%04X');
+dfs.field('uDACS','ADCerrs', '%04X');
 dfs.field('uDACS','ADCNcvt', '%5d');
 dfs.field('uDACS','MFCtr', '%5d');
 dfs.end_col();
@@ -37,42 +38,45 @@ dfs.field('uDACS','AIN6', '%6.4f', true);
 dfs.field('uDACS','AIN7', '%6.4f', true);
 dfs.end_col();
 
-ud = sup_setup;
-sup = data_super(dfs, ud, @sup_acq);
+sup = data_super(dfs, @sup_setup, @sup_acq, @sup_cleanup);
 end
 
-function ud = sup_setup
-  [ud.s,port] = serial_port_init('COM9');
-  set(ud.s,'BaudRate',57600);
+function sup_setup(sup)
+  [s,~] = serial_port_init('COM9');
+  sup.ud.s = s;
+  set(s,'BaudRate',57600);
   % First check that the board is a uDACS
-  BdID = read_subbus(ud.s, 2);
+  BdID = read_subbus(s, 2);
   if BdID ~= 9
     error('Expected BdID 9 (uDACS). Reported %d', BdID);
   end
-  Build = read_subbus(ud.s,3);
-  [SerialNo,SNack] = read_subbus(ud.s,4);
-  [InstID,InstIDack] = read_subbus(ud.s,5);
-  fprintf(1, 'Attached to uDACS S/N %d Build # %d\n', SerialNo, Build);
-  ud.rm_obj = read_multi_prep([16,1,37]);
-  ud.MFCtr = 0;
+  Build = read_subbus(s,3);
+  [SerialNo,~] = read_subbus(s,4);
+  [InstID,~] = read_subbus(s,5);
+  fprintf(1, 'Attached to uDACS S/N %d Inst %d Build # %d\n', ...
+    SerialNo, InstID, Build);
+  sup.ud.rm_obj = read_multi_prep([16,1,38]);
+  if ~isfield(sup.ud,'MFCtr')
+    sup.ud.MFCtr = 0;
+  end
 end
 
 function sup_acq(sup)
   str.MFCtr = sup.ud.MFCtr;
   str.TuDACS = str.MFCtr;
   sup.ud.MFCtr = sup.ud.MFCtr + 1;
-  [vals,ack] = read_multi(sup.ud.s,sup.ud.rm_obj);
+  [vals,~] = read_multi(sup.ud.s,sup.ud.rm_obj);
   % fprintf(1,'%04X %d\n', vals(1),vals(end));
   str.ADCStat = vals(5);
-  str.ADCNcvt = vals(end);
+  str.ADCNcvt = vals(22);
   vset = vals(1:4)*5/(2^16);
   for i=0:3
     name = sprintf('VSet%d',i);
     str.(name) = vset(i+1);
   end
-  hdr = floor(vals(7:2:end-1)/256);
-  adc = bitand(vals(7:2:end-1),255)*65536 + vals(6:2:end-2);
-  V = adc >= 2^23;
+  ri = 6+2*[0:7]; % address of LSW in vals
+  hdr = floor(vals(ri+1)/256);
+  adc = bitand(vals(ri+1),255)*65536 + vals(ri);
   sadc = adc - (adc>=2^23)*2^24;
   vref = 2.5;
   vadc = vref * sadc / (2^23);
@@ -83,11 +87,12 @@ function sup_acq(sup)
     name = sprintf('AIN%d',i-1);
     str.(name) = vadc(i);
   end
+  str.ADCerrs = vals(23);
   
   sup.dfs.process_record('uDACS', str);
   % fprintf(1, 'sup_acq(%d)\n', sup.ud.MFCtr);
 end
 
-function sup_shutdown
+function sup_cleanup(~)
   serial_port_clear();
 end

@@ -1,5 +1,5 @@
 %%
-cd C:\Users\nort\Documents\Documents\Exp\HCHO\uDACS_V1_1_1\Matlab
+cd C:\Users\nort\Documents\Documents\Exp\Boards\uDACS\uDACS_V1_1_1\Matlab
 %%
 serial_port_clear();
 %%
@@ -16,10 +16,17 @@ Build = read_subbus(s,3);
 [SerialNo,SNack] = read_subbus(s,4);
 [InstID,InstIDack] = read_subbus(s,5);
 fprintf(1, 'Attached to uDACS S/N %d Build # %d\n', SerialNo, Build);
-%%
-% The verbose output apparently doesn't come here on uDACS
-%rm_obj = read_multi_prep([8,40,9,0]);
-%[vals,ack] = read_multi(s,rm_obj);
+
+rm_obj = read_multi_prep([8,40,9,0]);
+[vals,ack] = read_multi(s,rm_obj);
+even = mod(vals(2:end),256);
+odd = floor(vals(2:end)/256);
+il = [even odd]';
+il = il(:)';
+nc = find(il == 0,1);
+il = il(1:(nc-1));
+desc = char(il);
+fprintf(1,'Description is: %s\n', desc);
 %fprintf(1, 'Now figure out how to interpret the result\n');
 %%
 rm_obj = read_multi_prep([20,1,37]);
@@ -41,3 +48,6 @@ while true
   %%
   pause(1);
 end
+%%
+[value,ack] = read_subbus(s,39); % General read register
+fprintf(1,'ack=%d value=%04X\n', ack,value);

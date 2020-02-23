@@ -16,7 +16,7 @@
 #define SUBBUS_BOARD_BOARD_TYPE "uDACS"
 #define SUBBUS_BOARD_BOARD_REV "Rev A"
 #define SUBBUS_BOARD_FIRMWARE_REV "V1.1"
-#define SUBBUS_BOARD_BUILD_NUM 4
+#define SUBBUS_BOARD_BUILD_NUM 5
 
 /**
  * Build definitions

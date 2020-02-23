@@ -65,9 +65,16 @@ static uint8_t adc_read_gen_errs[8] = {
   0x13, 0x90, // read back ADC on SDO
 };
 
+static uint8_t adc_rw_regs[6] = {
+  0x13, 0x80, // read back Regs on SDO
+  0x80, 0x00, // Reg register 0
+  0x13, 0x90, // read back ADC on SDO
+};
+
 enum ad7770_state_t {ad7770_init, ad7770_init_tx,
            ad7770_read, ad7770_read_tx,
-           ad7770_read_errs, ad7770_read_errs_tx};
+           ad7770_read_errs, ad7770_read_errs_tx, ad7770_check_sb,
+           ad7770_regq, ad7770_regq_tx};
 enum adc_regs_state_t {adc_regs_ready, adc_regs_frozen, adc_regs_diverted};
 enum adc_readback_mode_t {adc_unknown_mode, adc_reg_mode, adc_sd_mode};
 static enum adc_readback_mode_t adc_mode = adc_unknown_mode;
@@ -112,7 +119,7 @@ static struct {
  * @return true if we are relinquishing the SPI bus
  */
 static bool poll_adc() {
-  // uint16_t value;
+  uint16_t value;
   if (!stage.enabled) return true;
   switch (stage.state) {
     case ad7770_init:
@@ -135,8 +142,13 @@ static bool poll_adc() {
         (++stage.n_init >= N_AD7770_INIT) ? ad7770_read : ad7770_init;
       return true;
     case ad7770_read:
-      if (DRDY_observed == 0)
+      if (DRDY_observed == 0) {
+        subbus_cache_word_t *cw = &sb_spi.cache[POLL_COUNT_ADDR-SPI_BASE_ADDR];
+        if (cw->was_read && cw->cache == 0) {
+          stage.state = ad7770_check_sb;
+        }
         return true;
+      }
       start_spi_transfer(stage.cs_pin, adc_sd_read_output, 32, SPI_MODE_3);
       stage.state = ad7770_read_tx;
       return false;
@@ -168,8 +180,23 @@ static bool poll_adc() {
       } else {
         stage.regs_state = adc_regs_diverted;
       }
+    case ad7770_check_sb: // Check here for subbus reads or writes
       if (subbus_cache_was_read(&sb_spi, GEN_ERRS_ADDR)) {
         stage.state = ad7770_read_errs;
+        return false;
+      } else if (subbus_cache_was_read(&sb_spi,REG_QUERY_ADDR)) {
+        uint16_t addrval = sb_spi.cache[REG_QUERY_ADDR-SPI_BASE_ADDR].cache;
+        uint8_t addr = (addrval & 0x7F) + ((addrval&0x80) ? 1 : 0);
+        if (addr > 0x64) addr = 0;
+        adc_rw_regs[2] = addr | 0x80; // Read only
+        adc_rw_regs[3] = 0; // Does not matter
+        stage.state = ad7770_regq;
+        return false;
+      } else if (subbus_cache_iswritten(&sb_spi,REG_QUERY_ADDR, &value)) {
+        adc_rw_regs[2] = value&0xFF;
+        adc_rw_regs[3] = (value>>8)&0xFF;
+        stage.state = ad7770_regq;
+        return false;
       } else {
         stage.state = ad7770_read;
       }
@@ -182,6 +209,16 @@ static bool poll_adc() {
       { uint16_t errs = spi_read_data[3] + (spi_read_data[5]<<8);
         subbus_cache_update(&sb_spi, GEN_ERRS_ADDR, errs);
       }
+      stage.state = ad7770_read;
+      return true;
+    case ad7770_regq:
+      start_spi_transfer(stage.cs_pin, adc_rw_regs, 8, SPI_MODE_3);
+      stage.state = ad7770_regq_tx;
+      return false;
+    case ad7770_regq_tx:
+      value = adc_rw_regs[2];
+      value += (value&0x80) ? (spi_read_data[3]<<8) : (adc_rw_regs[3]<<8);
+      subbus_cache_update(&sb_spi, REG_QUERY_ADDR, value);
       stage.state = ad7770_read;
       return true;
     default:
@@ -314,6 +351,7 @@ static subbus_cache_word_t spi_cache[SPI_HIGH_ADDR-SPI_BASE_ADDR+1] = {
   { 0, 0, true,  false,  true,  false, false }, // Offset 0x14: RW: ADC AIN[7] HDR+MSB
   { 0, 0, true,  false, false,  false,  true }, // Offset 0x15: R:  ADC Poll Count
   { 0, 0, true,  false, false,  false, false }, // Offset 0x16: R:  ADC General Errors
+  { 0, 0, true,  false,  true,  false, false }, // Offset 0x17: RW: ADC Register Query
 };
 
 static void adc_update_regs() {
@@ -323,7 +361,7 @@ static void adc_update_regs() {
     spi_cache[0x6+2*i].cache = ((uint16_t)((stage.ain[i] & 0xFF0000)>>16)) |
        (((uint16_t)stage.hdr[i]) << 8);
   }
-  spi_cache[0x15].cache = stage.poll_count;
+  subbus_cache_update(&sb_spi, POLL_COUNT_ADDR, stage.poll_count);
 }
 
 void spi_action(uint16_t offset) {

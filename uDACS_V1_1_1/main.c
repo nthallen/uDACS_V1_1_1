@@ -10,6 +10,7 @@ int main(void)
   atmel_start_init();
   if (subbus_add_driver(&sb_base) ||
       subbus_add_driver(&sb_fail_sw) ||
+      subbus_add_driver(&sb_board_desc) ||
       subbus_add_driver(&sb_spi)) {
     while (true) ; // some driver is misconfigured.
   }

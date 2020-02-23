@@ -68,13 +68,15 @@ static void hex_out(uint16_t data) {
  *     : <addr>|<count>@<addr>
  *        Read count2 from first addr. Read count2 or count words from
  *        second addr, whichever is less.
- * Output string: [Mm]<data>...[E\d+]
+ * Output string: [Mm]<data>...[U\d+]
  * The output string reports acknowledge for each input address. If there is
  * no acknowledge, a zero value (i.e. 'm0') will be reported. If there is an
  * acknowledge, the hex value read will be returned preceeded by 'M'
  * (e.g. M32B5). If at any point in parsing the command string a syntax error
  * is encountered, and error code is returned to terminate the output.
- * (e.g. M32B5m0M32B6E3)
+ * (e.g. M32B5m0M32B6U3). Note that the error prefix encoding has changed
+ * from the DACS implementation from 'E' to 'U', since 'E' is a valid
+ * hex digit.
  */
 static void read_multi(uint8_t *cmd) {
   uint16_t addr, start, incr, end, count, rep;
