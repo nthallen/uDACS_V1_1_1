@@ -25,6 +25,8 @@ extern "C" {
 
 #include <hal_spi_m_async.h>
 
+#include <hal_spi_m_async.h>
+
 #include <hal_i2c_m_async.h>
 
 #include <hal_spi_m_async.h>
@@ -32,6 +34,8 @@ extern "C" {
 #include <hal_timer.h>
 
 extern struct spi_m_async_descriptor AD_SPI;
+
+extern struct spi_m_async_descriptor PS_SPI;
 
 extern struct i2c_m_async_desc UC_I2C;
 
@@ -42,6 +46,10 @@ extern struct timer_descriptor       TIMER_0;
 void AD_SPI_PORT_init(void);
 void AD_SPI_CLOCK_init(void);
 void AD_SPI_init(void);
+
+void PS_SPI_PORT_init(void);
+void PS_SPI_CLOCK_init(void);
+void PS_SPI_init(void);
 
 void UC_I2C_PORT_init(void);
 void UC_I2C_CLOCK_init(void);
