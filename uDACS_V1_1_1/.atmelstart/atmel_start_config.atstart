@@ -894,18 +894,20 @@ pads:
     user_label: ADC_CS
     configuration:
       pad_initial_level: High
-  PMOD8:
+  PMOD8_CSADC1:
     name: PB10
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB10
-    mode: Digital input
-    user_label: PMOD8
-    configuration: null
-  PMOD6:
+    mode: Digital output
+    user_label: PMOD8_CSADC1
+    configuration:
+      pad_initial_level: High
+  PMOD6_CSADC2:
     name: PB11
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB11
-    mode: Digital input
-    user_label: PMOD6
-    configuration: null
+    mode: Digital output
+    user_label: PMOD6_CSADC2
+    configuration:
+      pad_initial_level: High
   SD_MOSI:
     name: PA12
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA12
@@ -961,12 +963,13 @@ pads:
     mode: Digital input
     user_label: SPR29
     configuration: null
-  PMOD2:
+  PMOD2_CSEE2:
     name: PA21
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA21
-    mode: Digital input
-    user_label: PMOD2
-    configuration: null
+    mode: Digital output
+    user_label: PMOD2_CSEE2
+    configuration:
+      pad_initial_level: High
   UC_SDA:
     name: PA22
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA22
@@ -997,12 +1000,13 @@ pads:
     mode: Digital input
     user_label: SD
     configuration: null
-  PMOD4:
+  PMOD4_CSEE1:
     name: PA28
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA28
-    mode: Digital input
-    user_label: PMOD4
-    configuration: null
+    mode: Digital output
+    user_label: PMOD4_CSEE1
+    configuration:
+      pad_initial_level: High
   START:
     name: PB02
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB02

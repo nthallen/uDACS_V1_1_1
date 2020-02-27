@@ -385,18 +385,17 @@ void system_init(void)
 
 	// GPIO on PA21
 
-	// Set pin direction to input
-	gpio_set_pin_direction(PMOD2, GPIO_DIRECTION_IN);
+	gpio_set_pin_level(PMOD2_CSEE2,
+	                   // <y> Initial level
+	                   // <id> pad_initial_level
+	                   // <false"> Low
+	                   // <true"> High
+	                   true);
 
-	gpio_set_pin_pull_mode(PMOD2,
-	                       // <y> Pull configuration
-	                       // <id> pad_pull_config
-	                       // <GPIO_PULL_OFF"> Off
-	                       // <GPIO_PULL_UP"> Pull-up
-	                       // <GPIO_PULL_DOWN"> Pull-down
-	                       GPIO_PULL_OFF);
+	// Set pin direction to output
+	gpio_set_pin_direction(PMOD2_CSEE2, GPIO_DIRECTION_OUT);
 
-	gpio_set_pin_function(PMOD2, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_function(PMOD2_CSEE2, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PA27
 
@@ -415,18 +414,17 @@ void system_init(void)
 
 	// GPIO on PA28
 
-	// Set pin direction to input
-	gpio_set_pin_direction(PMOD4, GPIO_DIRECTION_IN);
+	gpio_set_pin_level(PMOD4_CSEE1,
+	                   // <y> Initial level
+	                   // <id> pad_initial_level
+	                   // <false"> Low
+	                   // <true"> High
+	                   true);
 
-	gpio_set_pin_pull_mode(PMOD4,
-	                       // <y> Pull configuration
-	                       // <id> pad_pull_config
-	                       // <GPIO_PULL_OFF"> Off
-	                       // <GPIO_PULL_UP"> Pull-up
-	                       // <GPIO_PULL_DOWN"> Pull-down
-	                       GPIO_PULL_OFF);
+	// Set pin direction to output
+	gpio_set_pin_direction(PMOD4_CSEE1, GPIO_DIRECTION_OUT);
 
-	gpio_set_pin_function(PMOD4, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_function(PMOD4_CSEE1, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PB02
 
@@ -472,33 +470,31 @@ void system_init(void)
 
 	// GPIO on PB10
 
-	// Set pin direction to input
-	gpio_set_pin_direction(PMOD8, GPIO_DIRECTION_IN);
+	gpio_set_pin_level(PMOD8_CSADC1,
+	                   // <y> Initial level
+	                   // <id> pad_initial_level
+	                   // <false"> Low
+	                   // <true"> High
+	                   true);
 
-	gpio_set_pin_pull_mode(PMOD8,
-	                       // <y> Pull configuration
-	                       // <id> pad_pull_config
-	                       // <GPIO_PULL_OFF"> Off
-	                       // <GPIO_PULL_UP"> Pull-up
-	                       // <GPIO_PULL_DOWN"> Pull-down
-	                       GPIO_PULL_OFF);
+	// Set pin direction to output
+	gpio_set_pin_direction(PMOD8_CSADC1, GPIO_DIRECTION_OUT);
 
-	gpio_set_pin_function(PMOD8, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_function(PMOD8_CSADC1, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PB11
 
-	// Set pin direction to input
-	gpio_set_pin_direction(PMOD6, GPIO_DIRECTION_IN);
+	gpio_set_pin_level(PMOD6_CSADC2,
+	                   // <y> Initial level
+	                   // <id> pad_initial_level
+	                   // <false"> Low
+	                   // <true"> High
+	                   true);
 
-	gpio_set_pin_pull_mode(PMOD6,
-	                       // <y> Pull configuration
-	                       // <id> pad_pull_config
-	                       // <GPIO_PULL_OFF"> Off
-	                       // <GPIO_PULL_UP"> Pull-up
-	                       // <GPIO_PULL_DOWN"> Pull-down
-	                       GPIO_PULL_OFF);
+	// Set pin direction to output
+	gpio_set_pin_direction(PMOD6_CSADC2, GPIO_DIRECTION_OUT);
 
-	gpio_set_pin_function(PMOD6, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_function(PMOD6_CSADC2, GPIO_PIN_FUNCTION_OFF);
 
 	EXTERNAL_IRQ_0_init();
 
