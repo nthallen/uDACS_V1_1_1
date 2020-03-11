@@ -14,9 +14,9 @@
 // These parameters are common to all boards built with this code
 #define SUBBUS_BOARD_ID 9
 #define SUBBUS_BOARD_BOARD_TYPE "uDACS"
-#define SUBBUS_BOARD_BOARD_REV "Rev A"
-#define SUBBUS_BOARD_FIRMWARE_REV "V1.1"
-#define SUBBUS_BOARD_BUILD_NUM 5
+#define SUBBUS_BOARD_BOARD_REV "Rev B"
+#define SUBBUS_BOARD_FIRMWARE_REV "V1.2"
+#define SUBBUS_BOARD_BUILD_NUM 6
 
 /**
  * Build definitions

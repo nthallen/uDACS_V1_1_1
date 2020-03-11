@@ -19,6 +19,8 @@
 #define ADC_LSW_OFFSET(x) (5+2*(x))
 #define ADC_MSB_OFFSET(x) (6+2*(x))
 
+#define SPI_MATLAB_TEST_ADDR 0x40
+
 extern subbus_driver_t sb_spi;
 void spi_enable(bool value);
 

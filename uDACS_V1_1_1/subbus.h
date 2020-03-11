@@ -23,6 +23,8 @@
 
 #define SUBBUS_ADDR_CMDS 0x18
 
+#define SUBBUS_MATLAB_TEST_ADDR 0x30
+
 #if SUBBUS_INTERRUPTS
 extern volatile uint8_t subbus_intr_req;
 void init_interrupts(void);
@@ -66,6 +68,7 @@ bool subbus_add_driver(subbus_driver_t *driver);
 extern subbus_driver_t sb_base;
 extern subbus_driver_t sb_fail_sw;
 extern subbus_driver_t sb_board_desc;
+extern subbus_driver_t sb_matlab_test;
 
 bool subbus_cache_iswritten(subbus_driver_t *drv, uint16_t addr, uint16_t *value);
 bool subbus_cache_was_read(subbus_driver_t *drv, uint16_t addr);

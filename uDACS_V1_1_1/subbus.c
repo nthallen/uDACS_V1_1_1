@@ -30,9 +30,7 @@ void subbus_reset(void) {
 void subbus_poll(void) {
   int i;
   for (i = 0; i < n_drivers; ++i) {
-    if (drivers[i]->poll) {
-      (*drivers[i]->poll)();
-    }
+    if (drivers[i]->poll) { (*drivers[i]->poll)(); }
   }
 }
 
@@ -95,17 +93,53 @@ int intr_detach( uint16_t addr );
 void intr_service(void);
 #endif
 
+// ***************************************************************************************
+// Board Info Driver
+//
 static subbus_cache_word_t sb_base_cache[SUBBUS_INSTID_ADDR+1] = {
   { 0, 0, 0, 0, 0, 0, 0 }, // Reserved zero address
   { 0, 0, 0, 0, 0, 0, 0} , // INTA
-  { SUBBUS_BOARD_ID, 0, 1, 0, 0, 0, 0 },  // Board ID (SUBBUS_BDID_ADDR)
+  { SUBBUS_BOARD_ID, 0, 1, 0, 0, 0, 0 },        // Board ID (SUBBUS_BDID_ADDR)
   { SUBBUS_BOARD_BUILD_NUM, 0, 1, 0, 0, 0, 0 }, // Build number (SUBBUS_BLDNO_ADDR)
-  { SUBBUS_BOARD_SN, 0, 1, 0, 0, 0, 0 }, // Build number (SUBBUS_BDSN_ADDR)
+  { SUBBUS_BOARD_SN, 0, 1, 0, 0, 0, 0 },        // Build number (SUBBUS_BDSN_ADDR)
   { SUBBUS_BOARD_INSTRUMENT_ID, 0, 1, 0, 0, 0, 0 } // Build number (SUBBUS_BDSN_ADDR)
 };
 
-subbus_driver_t sb_base = { 0, SUBBUS_INSTID_ADDR, sb_base_cache, 0, 0, 0, false };
+subbus_driver_t sb_base = { 
+	0, SUBBUS_INSTID_ADDR, 
+	sb_base_cache, 
+	0, 0, 0, 
+	false
+};
 
+// ***************************************************************************************
+// Matlab Test subbus Driver
+//
+static subbus_cache_word_t sb_matlab_test_cache[1] = {
+	{ 0xaa55, 0x55aa, 1, 0, 1, 0, 0 }, 
+};
+
+static void sb_matlab_test_reset() {
+	sb_matlab_test_cache[0].cache = 0x12EF;
+}
+
+static void sb_matlab_test_poll() {
+	if (sb_matlab_test_cache[0].written) {
+		sb_matlab_test_cache[0].cache = ~sb_matlab_test_cache[0].wvalue;
+		sb_matlab_test_cache[0].written = false;
+	}
+}
+
+subbus_driver_t sb_matlab_test = { 
+	SUBBUS_MATLAB_TEST_ADDR, SUBBUS_MATLAB_TEST_ADDR,
+	sb_matlab_test_cache, 
+	sb_matlab_test_reset, sb_matlab_test_poll, 0, 
+	false 
+};
+
+// ***************************************************************************************
+// Fail Software (?) subbus Driver
+//
 static subbus_cache_word_t sb_fail_sw_cache[SUBBUS_SWITCHES_ADDR-SUBBUS_FAIL_ADDR+1] = {
   { 0, 0, 1, 0, 1, 0, 0 }, // Fail Register
   { 0, 0, 1, 0, 0, 0, 0 }  // Switches
@@ -122,11 +156,15 @@ static void sb_fail_sw_poll() {
   }
 }
 
-subbus_driver_t sb_fail_sw = { SUBBUS_FAIL_ADDR, SUBBUS_SWITCHES_ADDR,
-    sb_fail_sw_cache, sb_fail_sw_reset, sb_fail_sw_poll, 0, false };
-
-
-/**
+subbus_driver_t sb_fail_sw = { 
+	SUBBUS_FAIL_ADDR, SUBBUS_SWITCHES_ADDR,
+    sb_fail_sw_cache, 
+	sb_fail_sw_reset, sb_fail_sw_poll, 0, 
+	false 
+};
+		
+	
+/* ***********************************************************************
  * If a value has been written to the specified address since the
  * last call to this function, the new value is written at the
  * value address.
@@ -146,7 +184,7 @@ bool subbus_cache_iswritten(subbus_driver_t *drv, uint16_t addr, uint16_t *value
   return false;
 }
 
-/**
+/* ********************************************************************
  * This function differs from subbus_write() in that it directly
  * updates the cache value. subbus_write() is specifically for
  * write originating from the control port. subbus_cache_update() is
@@ -178,6 +216,9 @@ bool subbus_cache_was_read(subbus_driver_t *drv, uint16_t addr) {
   return false;
 }
 
+// *******************************************************************
+// Board Description subbus Driver
+//
 static subbus_cache_word_t board_desc_cache[2] = {
   { 0, 0, true, false, false, false, false },
   { 0, 0, true, false, false, false, true }
@@ -213,5 +254,7 @@ static void board_desc_action(uint16_t addr) {
 
 subbus_driver_t sb_board_desc = {
   SUBBUS_DESC_FIFO_SIZE_ADDR, SUBBUS_DESC_FIFO_ADDR,
-  board_desc_cache, board_desc_init, 0, board_desc_action,
-false };
+  board_desc_cache, 
+  board_desc_init, 0, board_desc_action, 
+  false 
+};

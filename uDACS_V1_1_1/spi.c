@@ -86,15 +86,16 @@ typedef struct {
 
 /************************************************************************/
 /* Initialization commands:                                             */
-/* Note that if the ADC is int sigma-delta readback mode, then the      */
-/* first byte could be part of the sigma-delta readback error header    */
+/* Note that if the ADC is int sigma-delta read-back mode, then the     */
+/* first byte could be part of the sigma-delta read-back error header   */
 /* rather than the response from the registers.                         */
 /************************************************************************/
-#define N_AD7770_INIT 8
+#define N_AD7770_INIT 9
 ad7770_init_word ad7770_init_codes[N_AD7770_INIT] = {
-  { { 0x13, 0x80 } }, // readback regs on SDO
+  { { 0x13, 0x80 } }, // read-back regs on SDO
   { { 0xDB, 0x00 } }, // R: GEN_ERR_REG_2 to clear reset detected
   { { 0x15, 0x40 } }, // Internal reference
+  { { 0x11, 0x34 } }, // Turn On Internal reference
   { { 0x60, 0x0F } }, // SRC N MSB
   { { 0x61, 0xA0 } }, // SRC N LSB
   { { 0x64, 0x01 } }, // SRC LOAD
@@ -397,7 +398,7 @@ void spi_action(uint16_t offset) {
 }
 
 subbus_driver_t sb_spi = {
-  SPI_BASE_ADDR, SPI_HIGH_ADDR, // address range
+  SPI_BASE_ADDR, SPI_HIGH_ADDR, 
   spi_cache,
   spi_reset,
   spi_poll,

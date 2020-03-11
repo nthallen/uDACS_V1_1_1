@@ -22,25 +22,17 @@ extern "C" {
 #include <hal_sleep.h>
 
 #include <hal_ext_irq.h>
-
 #include <hal_spi_m_async.h>
-
-#include <hal_spi_m_async.h>
-
 #include <hal_i2c_m_async.h>
-
-#include <hal_spi_m_async.h>
 #include <hal_usart_async.h>
 #include <hal_timer.h>
 
-extern struct spi_m_async_descriptor AD_SPI;
+extern struct spi_m_async_descriptor AD_SPI;     // For comms with on board A2D and D2A chips 
+extern struct spi_m_async_descriptor PS_SPI;     // For comms with Honeywell Pressure Sensors via PMOD conn
+extern struct spi_m_async_descriptor SD_SPI;     // For comms with on board SD-Slot 
+extern struct i2c_m_async_desc UC_I2C;           // For comms with TBD via J4 connector
+extern struct usart_async_descriptor USART_CTRL; // for comms with Host via J2 / USB Aux
 
-extern struct spi_m_async_descriptor PS_SPI;
-
-extern struct i2c_m_async_desc UC_I2C;
-
-extern struct spi_m_async_descriptor SD_SPI;
-extern struct usart_async_descriptor USART_CTRL;
 extern struct timer_descriptor       TIMER_0;
 
 void AD_SPI_PORT_init(void);
