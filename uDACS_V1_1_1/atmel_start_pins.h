@@ -10,15 +10,7 @@
 
 #include <hal_gpio.h>
 
-// SAMD21 has 8 pin functions  
-// ATSAMD21G18A-A    
-//				  AT - Atmel
-//              SMAD - General purpose MicroController 
-//                21 - 32-bit Cortex-M0+, 
-//                 G - 48 pin chip with   
-//                18 - 256K Flash 32K SRAM, 
-//                 A - Default Variant (vs. Floating point)
-//                 A - TQFP Package 
+// SAMD21 has 8 pin functions
 
 #define GPIO_PIN_FUNCTION_A 0
 #define GPIO_PIN_FUNCTION_B 1
@@ -29,40 +21,35 @@
 #define GPIO_PIN_FUNCTION_G 6
 #define GPIO_PIN_FUNCTION_H 7
 
-//      Signal			           Port Bit
-#define AD_MOSI		GPIO(GPIO_PORTA, 8)
-#define AD_MISO		GPIO(GPIO_PORTA, 10)
-#define AD_SCLK		GPIO(GPIO_PORTA, 9)
-#define ADC_CS		GPIO(GPIO_PORTA, 11)
-#define DAC_CS		GPIO(GPIO_PORTB, 9)
-#define ADC_ALERT	GPIO(GPIO_PORTA, 1)
-#define DRDY		GPIO(GPIO_PORTB, 3)
+#define AD_MOSI   GPIO(GPIO_PORTA, 8)
+#define AD_SCLK   GPIO(GPIO_PORTA, 9)
+#define AD_MISO   GPIO(GPIO_PORTA, 10)
+#define ADC_CS    GPIO(GPIO_PORTA, 11)
+#define DAC_CS    GPIO(GPIO_PORTB, 9)
+#define START     GPIO(GPIO_PORTB, 2)
+#define DRDY      GPIO(GPIO_PORTB, 3)
+#define ADC_Alert GPIO(GPIO_PORTA, 1)
 
-#define SD_MOSI		GPIO(GPIO_PORTA, 12)
-#define SD_MISO		GPIO(GPIO_PORTA, 15)
-#define SD_SCLK		GPIO(GPIO_PORTA, 13)
-#define SD_CS		GPIO(GPIO_PORTA, 14)
-#define SD			GPIO(GPIO_PORTA, 27)  // Monitors if card in Slot ??
+#define SD_MOSI   GPIO(GPIO_PORTA, 12)
+#define SD_MSCLK  GPIO(GPIO_PORTA, 13)
+#define SD_MISO   GPIO(GPIO_PORTA, 15)
+#define SD_CS     GPIO(GPIO_PORTA, 14)
+#define SD_Sns    GPIO(GPIO_PORTA, 27)
 
-#define PS_MOSI		GPIO(GPIO_PORTA, 19)  
-#define PS_MISO		GPIO(GPIO_PORTA, 16)  
-#define PS_SCLK		GPIO(GPIO_PORTA, 17)  
-#define CS_ADC1		GPIO(GPIO_PORTB, 10)
-#define CS_EEP1		GPIO(GPIO_PORTA, 28)
-#define CS_ADC2		GPIO(GPIO_PORTB, 11)
-#define CS_EEP2		GPIO(GPIO_PORTA, 21)
+#define PS_MOSI   GPIO(GPIO_PORTA, 19)
+#define PS_SCLK   GPIO(GPIO_PORTA, 17)
+#define PS_MISO   GPIO(GPIO_PORTA, 16)
+#define EEP1_CS   GPIO(GPIO_PORTA, 28)
+#define EEP2_CS   GPIO(GPIO_PORTA, 21)
+#define ADC1_CS   GPIO(GPIO_PORTB, 10)
+#define ADC2_CS   GPIO(GPIO_PORTB, 11)
 
-#define UC_SDA		GPIO(GPIO_PORTA, 22)
-#define UC_SCL		GPIO(GPIO_PORTA, 23)
+#define Pmp_CNTL_1 GPIO(GPIO_PORTB, 8)
+#define Pmp_CNTL_2 GPIO(GPIO_PORTA, 20)
+#define Pmp_STAT_1 GPIO(GPIO_PORTA, 22)
+#define Pmp_STAT_2 GPIO(GPIO_PORTA, 23)
 
-#define UART_TX		GPIO(GPIO_PORTB, 22)
-#define UART_RX		GPIO(GPIO_PORTB, 23)
-
-#define PMOD3		GPIO(GPIO_PORTA, 18)  // Spare on PMOD Conn
-#define START		GPIO(GPIO_PORTB, 2)   // Unused (?) input ADC
-#define SPR7		GPIO(GPIO_PORTB, 8)   // Spare on J7 pin 1
-#define SPR29		GPIO(GPIO_PORTA, 20)  // Spare on J8 pin 1
-
-// 27 of 38 definable PINS defined
+#define PB22 GPIO(GPIO_PORTB, 22)
+#define PB23 GPIO(GPIO_PORTB, 23)
 
 #endif // ATMEL_START_PINS_H_INCLUDED

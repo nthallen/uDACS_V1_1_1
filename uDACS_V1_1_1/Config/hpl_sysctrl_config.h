@@ -109,7 +109,7 @@
 // <i> Indicates whether configuration for OSC32K is enabled or not
 // <id> enable_osc32k
 #ifndef CONF_OSC32K_CONFIG
-#define CONF_OSC32K_CONFIG 1
+#define CONF_OSC32K_CONFIG 0
 #endif
 
 // <h> 32kHz Internal Oscillator (OSC32K) Control
@@ -117,7 +117,7 @@
 // <i> Indicates whether Internal 32K Oscillator is enabled or not
 // <id> osc32k_arch_enable
 #ifndef CONF_OSC32K_ENABLE
-#define CONF_OSC32K_ENABLE 1
+#define CONF_OSC32K_ENABLE 0
 #endif
 
 // <q> On Demand Control
@@ -126,7 +126,7 @@
 // <i> If this bit is 1, the oscillator will only be running when requested by a peripheral.
 // <id> osc32k_arch_ondemand
 #ifndef CONF_OSC32K_ONDEMAND
-#define CONF_OSC32K_ONDEMAND 0
+#define CONF_OSC32K_ONDEMAND 1
 #endif
 
 // <q> Run In Standby
@@ -142,7 +142,7 @@
 // <i> Enable 32 Khz Output
 // <id> osc32k_arch_en32k
 #ifndef CONF_OSC32K_EN32K
-#define CONF_OSC32K_EN32K 1
+#define CONF_OSC32K_EN32K 0
 #endif
 
 // <q> Enable 1K
@@ -214,7 +214,7 @@
 // <i> If this bit is 1: the oscillator will only be running when requested by a peripheral.
 // <id> xosc32k_arch_ondemand
 #ifndef CONF_XOSC32K_ONDEMAND
-#define CONF_XOSC32K_ONDEMAND 0
+#define CONF_XOSC32K_ONDEMAND 1
 #endif
 
 // <q> Run In Standby
@@ -237,7 +237,7 @@
 // <i> Enable 32 Khz Output
 // <id> xosc32k_arch_en32k
 #ifndef CONF_XOSC32K_EN32K
-#define CONF_XOSC32K_EN32K 1
+#define CONF_XOSC32K_EN32K 0
 #endif
 
 // <q> Enable XTAL
@@ -425,7 +425,7 @@
 // <i> Select the clock source.
 // <id> dfll48m_ref_clock
 #ifndef CONF_DFLL_GCLK
-#define CONF_DFLL_GCLK GCLK_CLKCTRL_GEN_GCLK1_Val
+#define CONF_DFLL_GCLK GCLK_CLKCTRL_GEN_GCLK3_Val
 #endif
 
 // <h> DFLL Control
@@ -461,7 +461,7 @@
 // <i> Chill Cycle Disable
 // <id> dfll48m_arch_ccdis
 #ifndef CONF_DFLL_CCDIS
-#define CONF_DFLL_CCDIS 1
+#define CONF_DFLL_CCDIS 0
 #endif
 
 // <q> On Demand
@@ -470,7 +470,7 @@
 // <i> If this bit is 1: the DFLL will only be running when requested by a peripheral.
 // <id> dfll48m_arch_ondemand
 #ifndef CONF_DFLL_ONDEMAND
-#define CONF_DFLL_ONDEMAND 0
+#define CONF_DFLL_ONDEMAND 1
 #endif
 
 // <q> Run In Standby
@@ -479,14 +479,14 @@
 // <i> If this bit is 1: The DFLL is not stopped in standby sleep mode.
 // <id> dfll48m_arch_runstdby
 #ifndef CONF_DFLL_RUNSTDBY
-#define CONF_DFLL_RUNSTDBY 1
+#define CONF_DFLL_RUNSTDBY 0
 #endif
 
 // <q> USB Clock Recovery Mode
 // <i> USB Clock Recovery Mode
 // <id> dfll48m_arch_usbcrm
 #ifndef CONF_DFLL_USBCRM
-#define CONF_DFLL_USBCRM 1
+#define CONF_DFLL_USBCRM 0
 #endif
 
 #if CONF_DFLL_USBCRM == 1
@@ -540,7 +540,7 @@
 //  <i> Default: 0
 //  <id> dfll48m_mul
 #ifndef CONF_DFLL_MUL
-#define CONF_DFLL_MUL 1
+#define CONF_DFLL_MUL 0
 #endif
 
 // <e> DFLL Calibration Overwrite
@@ -583,7 +583,7 @@
 // <i> Indicates whether configuration for DPLL is enabled or not
 // <id> enable_fdpll96m
 #ifndef CONF_DPLL_CONFIG
-#define CONF_DPLL_CONFIG 1
+#define CONF_DPLL_CONFIG 0
 #endif
 
 // <y> Reference Clock Source
@@ -600,7 +600,7 @@
 // <i> Select the clock source.
 // <id> fdpll96m_ref_clock
 #ifndef CONF_DPLL_GCLK
-#define CONF_DPLL_GCLK GCLK_CLKCTRL_GEN_GCLK1_Val
+#define CONF_DPLL_GCLK GCLK_CLKCTRL_GEN_GCLK3_Val
 #endif
 
 #if (CONF_DPLL_GCLK == GCLK_GENCTRL_SRC_XOSC32K)
@@ -618,7 +618,7 @@
 // <i> If this bit is 1: the DFLL will only be running when requested by a peripheral.
 // <id> fdpll96m_arch_ondemand
 #ifndef CONF_DPLL_ONDEMAND
-#define CONF_DPLL_ONDEMAND 0
+#define CONF_DPLL_ONDEMAND 1
 #endif
 
 // <q> Run In Standby
@@ -634,7 +634,7 @@
 // <i> Indicates whether DPLL is enabled or not
 // <id> fdpll96m_arch_enable
 #ifndef CONF_DPLL_ENABLE
-#define CONF_DPLL_ENABLE 1
+#define CONF_DPLL_ENABLE 0
 #endif
 
 // <q> Lock ByPass
@@ -655,14 +655,14 @@
 // <i> Set the  fractional part of the frequency multiplier.
 // <id> fdpll96m_ldrfrac
 #ifndef CONF_DPLL_LDRFRAC
-#define CONF_DPLL_LDRFRAC 0
+#define CONF_DPLL_LDRFRAC 13
 #endif
 
 // <o>DPLL LDR <0-4095>
 // <i> Set the  integer part of the frequency multiplier.
 // <id> fdpll96m_ldr
 #ifndef CONF_DPLL_LDR
-#define CONF_DPLL_LDR 224
+#define CONF_DPLL_LDR 1463
 #endif
 
 // </h>

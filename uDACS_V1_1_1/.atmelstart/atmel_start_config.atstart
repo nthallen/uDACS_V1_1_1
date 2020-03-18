@@ -1,17 +1,17 @@
 format_version: '2'
-name: uDACS_V1_1_1
+name: My Project
 versions:
   api: '1.0'
-  backend: 1.7.298
+  backend: 1.7.301
   commit: 1e07622763d149970fd8808a8f12ff3b1e84e0d7
   content: unknown
   content_pack_name: unknown
   format: '2'
-  frontend: 1.7.298
+  frontend: 1.7.301
   packs_version_avr8: 1.0.1408
   packs_version_qtouch: unknown
   packs_version_sam: 1.0.1373
-  version_backend: 1.7.298
+  version_backend: 1.7.301
   version_frontend: ''
 board:
   identifier: CustomBoard
@@ -35,7 +35,7 @@ drivers:
       eic_arch_enable_irq_setting14: false
       eic_arch_enable_irq_setting15: false
       eic_arch_enable_irq_setting2: false
-      eic_arch_enable_irq_setting3: true
+      eic_arch_enable_irq_setting3: false
       eic_arch_enable_irq_setting4: false
       eic_arch_enable_irq_setting5: false
       eic_arch_enable_irq_setting6: false
@@ -51,7 +51,7 @@ drivers:
       eic_arch_extinteo14: false
       eic_arch_extinteo15: false
       eic_arch_extinteo2: false
-      eic_arch_extinteo3: true
+      eic_arch_extinteo3: false
       eic_arch_extinteo4: false
       eic_arch_extinteo5: false
       eic_arch_extinteo6: false
@@ -85,7 +85,7 @@ drivers:
       eic_arch_sense14: No detection
       eic_arch_sense15: No detection
       eic_arch_sense2: No detection
-      eic_arch_sense3: Falling-edge detection
+      eic_arch_sense3: No detection
       eic_arch_sense4: No detection
       eic_arch_sense5: No detection
       eic_arch_sense6: No detection
@@ -133,12 +133,12 @@ drivers:
     api: HAL:HPL:GCLK
     configuration:
       enable_gclk_gen_0: true
-      enable_gclk_gen_0__externalclock: 1000000
-      enable_gclk_gen_1: true
+      enable_gclk_gen_0__externalclock: 8000000
+      enable_gclk_gen_1: false
       enable_gclk_gen_1__externalclock: 1000000
       enable_gclk_gen_2: false
       enable_gclk_gen_2__externalclock: 1000000
-      enable_gclk_gen_3: true
+      enable_gclk_gen_3: false
       enable_gclk_gen_3__externalclock: 1000000
       enable_gclk_gen_4: false
       enable_gclk_gen_4__externalclock: 1000000
@@ -154,9 +154,9 @@ drivers:
       gclk_arch_gen_0_oe: false
       gclk_arch_gen_0_oov: false
       gclk_arch_gen_1_RUNSTDBY: false
-      gclk_arch_gen_1_enable: true
+      gclk_arch_gen_1_enable: false
       gclk_arch_gen_1_idc: false
-      gclk_arch_gen_1_oe: true
+      gclk_arch_gen_1_oe: false
       gclk_arch_gen_1_oov: false
       gclk_arch_gen_2_RUNSTDBY: false
       gclk_arch_gen_2_enable: false
@@ -164,9 +164,9 @@ drivers:
       gclk_arch_gen_2_oe: false
       gclk_arch_gen_2_oov: false
       gclk_arch_gen_3_RUNSTDBY: false
-      gclk_arch_gen_3_enable: true
+      gclk_arch_gen_3_enable: false
       gclk_arch_gen_3_idc: false
-      gclk_arch_gen_3_oe: true
+      gclk_arch_gen_3_oe: false
       gclk_arch_gen_3_oov: false
       gclk_arch_gen_4_RUNSTDBY: false
       gclk_arch_gen_4_enable: false
@@ -193,13 +193,13 @@ drivers:
       gclk_gen_0_oscillator: 8MHz Internal Oscillator (OSC8M)
       gclk_gen_1_div: 1
       gclk_gen_1_div_sel: false
-      gclk_gen_1_oscillator: 32kHz High Accuracy Internal Oscillator (OSC32K)
+      gclk_gen_1_oscillator: External Crystal Oscillator 0.4-32MHz (XOSC)
       gclk_gen_2_div: 1
       gclk_gen_2_div_sel: false
-      gclk_gen_2_oscillator: Digital Frequency Locked Loop (DFLL48M)
+      gclk_gen_2_oscillator: External Crystal Oscillator 0.4-32MHz (XOSC)
       gclk_gen_3_div: 1
       gclk_gen_3_div_sel: false
-      gclk_gen_3_oscillator: Fractional Digital Phase Locked Loop (FDPLL96M)
+      gclk_gen_3_oscillator: External Crystal Oscillator 0.4-32MHz (XOSC)
       gclk_gen_4_div: 1
       gclk_gen_4_div_sel: false
       gclk_gen_4_oscillator: External Crystal Oscillator 0.4-32MHz (XOSC)
@@ -239,22 +239,22 @@ drivers:
           external: false
           external_frequency: 0
         configuration: {}
-  AD_SPI:
-    user_label: AD_SPI
+  SPI_AD_DA:
+    user_label: SPI_AD_DA
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM0::driver_config_definition::SPI.Master::HAL:Driver:SPI.Master.Async
     functionality: SPI
     api: HAL:Driver:SPI_Master_Async
     configuration:
       spi_master_advanced: true
-      spi_master_arch_cpha: Sample input on trailing edge
+      spi_master_arch_cpha: Sample input on leading edge
       spi_master_arch_cpol: SCK is low when idle
       spi_master_arch_dbgstop: Keep running
       spi_master_arch_dord: MSB first
       spi_master_arch_ibon: In data stream
       spi_master_arch_runstdby: false
-      spi_master_baud_rate: 1382400
+      spi_master_baud_rate: 1000000
       spi_master_character_size: 8 bits
-      spi_master_dummybyte: 511
+      spi_master_dummybyte: 255
       spi_master_rx_enable: true
     optional_signals: []
     variant:
@@ -283,13 +283,13 @@ drivers:
         configuration:
           core_gclk_selection: Generic clock generator 0
           slow_gclk_selection: Generic clock generator 3
-  PS_SPI:
-    user_label: PS_SPI
+  SPI_PR_SN:
+    user_label: SPI_PR_SN
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM1::driver_config_definition::SPI.Master::HAL:Driver:SPI.Master.Async
     functionality: SPI
     api: HAL:Driver:SPI_Master_Async
     configuration:
-      spi_master_advanced: false
+      spi_master_advanced: true
       spi_master_arch_cpha: Sample input on leading edge
       spi_master_arch_cpol: SCK is low when idle
       spi_master_arch_dbgstop: Keep running
@@ -298,7 +298,7 @@ drivers:
       spi_master_arch_runstdby: false
       spi_master_baud_rate: 1000000
       spi_master_character_size: 8 bits
-      spi_master_dummybyte: 511
+      spi_master_dummybyte: 255
       spi_master_rx_enable: true
     optional_signals: []
     variant:
@@ -327,62 +327,22 @@ drivers:
         configuration:
           core_gclk_selection: Generic clock generator 0
           slow_gclk_selection: Generic clock generator 3
-  UC_I2C:
-    user_label: UC_I2C
-    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM3::driver_config_definition::I2C.Master.Standard~2FFast-mode::HAL:Driver:I2C.Master.Async
-    functionality: I2C
-    api: HAL:Driver:I2C_Master_Async
-    configuration:
-      i2c_master_advanced: false
-      i2c_master_arch_dbgstop: Keep running
-      i2c_master_arch_inactout: Disabled
-      i2c_master_arch_lowtout: false
-      i2c_master_arch_mexttoen: false
-      i2c_master_arch_runstdby: false
-      i2c_master_arch_sdahold: 300-600ns hold time
-      i2c_master_arch_sexttoen: false
-      i2c_master_arch_trise: 215
-      i2c_master_baud_rate: 92160
-    optional_signals: []
-    variant:
-      specification: SDA=0, SCL=1
-      required_signals:
-      - name: SERCOM3/PAD/0
-        pad: PA22
-        label: SDA
-      - name: SERCOM3/PAD/1
-        pad: PA23
-        label: SCL
-    clocks:
-      domain_group:
-        nodes:
-        - name: Core
-          input: Generic clock generator 0
-          external: false
-          external_frequency: 0
-        - name: Slow
-          input: Generic clock generator 3
-          external: false
-          external_frequency: 0
-        configuration:
-          core_gclk_selection: Generic clock generator 0
-          slow_gclk_selection: Generic clock generator 3
-  SD_SPI:
-    user_label: SD_SPI
+  SPI_SD:
+    user_label: SPI_SD
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM4::driver_config_definition::SPI.Master::HAL:Driver:SPI.Master.Async
     functionality: SPI
     api: HAL:Driver:SPI_Master_Async
     configuration:
-      spi_master_advanced: false
+      spi_master_advanced: true
       spi_master_arch_cpha: Sample input on leading edge
       spi_master_arch_cpol: SCK is low when idle
       spi_master_arch_dbgstop: Keep running
       spi_master_arch_dord: MSB first
       spi_master_arch_ibon: In data stream
       spi_master_arch_runstdby: false
-      spi_master_baud_rate: 1382400
+      spi_master_baud_rate: 1000000
       spi_master_character_size: 8 bits
-      spi_master_dummybyte: 511
+      spi_master_dummybyte: 255
       spi_master_rx_enable: true
     optional_signals: []
     variant:
@@ -411,11 +371,11 @@ drivers:
         configuration:
           core_gclk_selection: Generic clock generator 0
           slow_gclk_selection: Generic clock generator 3
-  USART_CTRL:
-    user_label: USART_CTRL
-    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM5::driver_config_definition::UART::HAL:Driver:USART.Async
+  USART_0:
+    user_label: USART_0
+    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM5::driver_config_definition::UART::HAL:Driver:USART.Sync
     functionality: USART
-    api: HAL:Driver:USART_Async
+    api: HAL:Driver:USART_Sync
     configuration:
       usart_advanced: false
       usart_arch_clock_mode: USART with internal clock
@@ -430,7 +390,7 @@ drivers:
       usart_arch_sampa: 7-8-9 (3-4-5 8-bit over-sampling)
       usart_arch_sampr: 16x arithmetic
       usart_arch_sfde: false
-      usart_baud_rate: 57600
+      usart_baud_rate: 9600
       usart_character_size: 8 bits
       usart_parity: No parity
       usart_rx_enable: true
@@ -779,42 +739,42 @@ drivers:
     configuration:
       dfll48m_arch_bplckc: false
       dfll48m_arch_calibration: false
-      dfll48m_arch_ccdis: true
+      dfll48m_arch_ccdis: false
       dfll48m_arch_coarse: 31
       dfll48m_arch_enable: false
       dfll48m_arch_fine: 512
       dfll48m_arch_llaw: false
-      dfll48m_arch_ondemand: false
+      dfll48m_arch_ondemand: true
       dfll48m_arch_qldis: false
-      dfll48m_arch_runstdby: true
+      dfll48m_arch_runstdby: false
       dfll48m_arch_stable: false
-      dfll48m_arch_usbcrm: true
+      dfll48m_arch_usbcrm: false
       dfll48m_arch_waitlock: false
       dfll48m_mode: Open Loop Mode
-      dfll48m_mul: 1
-      dfll48m_ref_clock: Generic clock generator 1
+      dfll48m_mul: 0
+      dfll48m_ref_clock: Generic clock generator 3
       dfll_arch_cstep: 1
       dfll_arch_fstep: 1
       enable_dfll48m: false
-      enable_fdpll96m: true
-      enable_osc32k: true
+      enable_fdpll96m: false
+      enable_osc32k: false
       enable_osc8m: true
       enable_osculp32k: true
       enable_xosc: false
       enable_xosc32k: false
-      fdpll96m_arch_enable: true
+      fdpll96m_arch_enable: false
       fdpll96m_arch_lbypass: false
-      fdpll96m_arch_ondemand: false
+      fdpll96m_arch_ondemand: true
       fdpll96m_arch_runstdby: false
       fdpll96m_clock_div: 0
-      fdpll96m_ldr: 224
-      fdpll96m_ldrfrac: 0
-      fdpll96m_ref_clock: Generic clock generator 1
+      fdpll96m_ldr: 1463
+      fdpll96m_ldrfrac: 13
+      fdpll96m_ref_clock: Generic clock generator 3
       osc32k_arch_calib: 0
       osc32k_arch_en1k: false
-      osc32k_arch_en32k: true
-      osc32k_arch_enable: true
-      osc32k_arch_ondemand: false
+      osc32k_arch_en32k: false
+      osc32k_arch_enable: false
+      osc32k_arch_ondemand: true
       osc32k_arch_overwrite_calibration: false
       osc32k_arch_runstdby: false
       osc32k_arch_startup: 3 Clock Cycles (92us)
@@ -830,9 +790,9 @@ drivers:
       osculp32k_arch_wrtlock: false
       xosc32k_arch_aampen: false
       xosc32k_arch_en1k: false
-      xosc32k_arch_en32k: true
+      xosc32k_arch_en32k: false
       xosc32k_arch_enable: false
-      xosc32k_arch_ondemand: false
+      xosc32k_arch_ondemand: true
       xosc32k_arch_runstdby: false
       xosc32k_arch_startup: 122 us
       xosc32k_arch_wrtlock: false
@@ -850,17 +810,17 @@ drivers:
     clocks:
       domain_group: null
 pads:
-  ADC_ALERT:
+  ADC_Alert:
     name: PA01
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA01
     mode: Digital input
-    user_label: ADC_ALERT
+    user_label: ADC_Alert
     configuration: null
-  SPR7:
+  Pmp_CNTL_1:
     name: PB08
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB08
     mode: Digital output
-    user_label: SPR7
+    user_label: Pmp_CNTL_1
     configuration: null
   DAC_CS:
     name: PB09
@@ -894,18 +854,18 @@ pads:
     user_label: ADC_CS
     configuration:
       pad_initial_level: High
-  PMOD8_CSADC1:
+  ADC1_CS:
     name: PB10
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB10
     mode: Digital output
-    user_label: PMOD8_CSADC1
+    user_label: ADC1_CS
     configuration:
       pad_initial_level: High
-  PMOD6_CSADC2:
+  ADC2_CS:
     name: PB11
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB11
     mode: Digital output
-    user_label: PMOD6_CSADC2
+    user_label: ADC2_CS
     configuration:
       pad_initial_level: High
   SD_MOSI:
@@ -914,11 +874,11 @@ pads:
     mode: Digital output
     user_label: SD_MOSI
     configuration: null
-  SD_SCLK:
+  SD_MSCLK:
     name: PA13
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA13
     mode: Digital output
-    user_label: SD_SCLK
+    user_label: SD_MSCLK
     configuration: null
   SD_CS:
     name: PA14
@@ -933,78 +893,74 @@ pads:
     mode: Digital input
     user_label: SD_MISO
     configuration: null
-  PMOD7:
+  PS_MISO:
     name: PA16
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA16
     mode: Digital input
-    user_label: PMOD7
+    user_label: PS_MISO
     configuration: null
-  PMOD5:
+  PS_SCLK:
     name: PA17
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA17
     mode: Digital output
-    user_label: PMOD5
+    user_label: PS_SCLK
     configuration: null
-  PMOD3:
-    name: PA18
-    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA18
-    mode: Digital input
-    user_label: PMOD3
-    configuration: null
-  PMOD1:
+  PS_MOSI:
     name: PA19
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA19
     mode: Digital output
-    user_label: PMOD1
+    user_label: PS_MOSI
     configuration: null
-  SPR29:
+  Pmp_CNTL_:
     name: PA20
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA20
-    mode: Digital input
-    user_label: SPR29
+    mode: Digital output
+    user_label: Pmp_CNTL_
     configuration: null
-  PMOD2_CSEE2:
+  EEP2_CS:
     name: PA21
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA21
     mode: Digital output
-    user_label: PMOD2_CSEE2
+    user_label: EEP2_CS
     configuration:
       pad_initial_level: High
-  UC_SDA:
+  Pmp_STAT_1:
     name: PA22
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA22
-    mode: I2C
-    user_label: UC_SDA
-    configuration: null
-  UC_SCL:
+    mode: Digital input
+    user_label: Pmp_STAT_1
+    configuration:
+      pad_pull_config: Pull-up
+  Pmp_STAT_2:
     name: PA23
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA23
-    mode: I2C
-    user_label: UC_SCL
+    mode: Digital input
+    user_label: Pmp_STAT_2
     configuration: null
-  UART_TX:
+  PB22:
     name: PB22
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB22
     mode: Peripheral IO
-    user_label: UART_TX
+    user_label: PB22
     configuration: null
-  UART_RX:
+  PB23:
     name: PB23
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB23
     mode: Peripheral IO
-    user_label: UART_RX
+    user_label: PB23
     configuration: null
-  SD:
+  SD_Sns:
     name: PA27
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA27
     mode: Digital input
-    user_label: SD
-    configuration: null
-  PMOD4_CSEE1:
+    user_label: SD_Sns
+    configuration:
+      pad_pull_config: Pull-up
+  EEP1_CS:
     name: PA28
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA28
     mode: Digital output
-    user_label: PMOD4_CSEE1
+    user_label: EEP1_CS
     configuration:
       pad_initial_level: High
   START:

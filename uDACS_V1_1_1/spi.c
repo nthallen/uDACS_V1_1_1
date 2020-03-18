@@ -124,7 +124,7 @@ static bool poll_adc() {
   if (!stage.enabled) return true;
   switch (stage.state) {
     case ad7770_init:
-      while (stage.n_init >= N_AD7770_INIT) ;
+      while (stage.n_init >= N_AD7770_INIT) ;   // Ask Nort, Why is this here?
       start_spi_transfer(stage.cs_pin, (&ad7770_init_codes[stage.n_init].msg[0]), 2, SPI_MODE_3);
       stage.state = ad7770_init_tx;
       return false;
@@ -134,13 +134,11 @@ static bool poll_adc() {
         stage.status |= 0x200;
       }
       if (ad7770_init_codes[stage.n_init].msg[0] == 0x13) {
-        adc_mode = (ad7770_init_codes[stage.n_init].msg[1] & 0x10) ?
-          adc_sd_mode : adc_reg_mode;
+        adc_mode = (ad7770_init_codes[stage.n_init].msg[1] & 0x10) ? adc_sd_mode : adc_reg_mode;
       }
       // check the readback for basic formatting. Set bits in a status register
       stage.poll_count = 0;
-      stage.state =
-        (++stage.n_init >= N_AD7770_INIT) ? ad7770_read : ad7770_init;
+      stage.state = (++stage.n_init >= N_AD7770_INIT) ? ad7770_read : ad7770_init;
       return true;
     case ad7770_read:
       if (DRDY_observed == 0) {
@@ -166,7 +164,7 @@ static bool poll_adc() {
       for (int i = 0; i < 8; ++i) {
         int offset = 4*i;
         uint8_t hdr = spi_read_data[offset];
-        if ((hdr & 0x80) || ((hdr&0x70)>>4) != i) {
+        if ((hdr & 0x80) || ((hdr & 0x70)>>4) != i) {
           stage.status |= 1<<i;
         }
         stage.hdr[i] = hdr;

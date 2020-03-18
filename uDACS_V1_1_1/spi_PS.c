@@ -75,7 +75,7 @@ static uint8_t PS_xfr_Wbuf[MAX_SPI_XFR_LENGTH] = {
 	0x00, 0x00, 0x00, 0x00
 };
 
-static volatile bool PS_SPI_txfr_complete = true;      // async transfer complete?
+static volatile uint8_t PS_SPI_txfr_complete = true;   // async transfer complete?
 static bool PS_spi_enabled = PS_SPI_ENABLE_DEFAULT;    // PS SPI comms enabled?
 
 // Declare EEPROM structure - holds EEPROM Contents locally
@@ -112,6 +112,12 @@ static inline void PS_chip_deselect(uint8_t pin) {
 	gpio_set_pin_level(pin, true);
 }
 
+// SPI Hardware Done Interrupt callback function
+static void complete_cb_PS_SPI(const struct spi_m_async_descriptor *const io_descr) {
+	PS_SPI_txfr_complete = true;
+//	PS_chip_deselect(CS_EEP1);
+}
+
 // Kick off SPI Transfer, non-blocking
 static void PS_start_spi_transfer(uint8_t pin, uint8_t const *txbuf, int length, enum spi_transfer_mode mode) {
 	assert(length <= MAX_SPI_XFR_LENGTH,__FILE__,__LINE__);
@@ -123,13 +129,9 @@ static void PS_start_spi_transfer(uint8_t pin, uint8_t const *txbuf, int length,
 	}
 	PS_chip_select(pin);
 	PS_SPI_txfr_complete = false;
+	gpio_set_pin_level(J8P1, true);
+	gpio_set_pin_level(J8P1, false);
 	spi_m_async_transfer(&PS_SPI, txbuf, PS_xfr_Rbuf, length);
-}
-
-// SPI Hardware Done Interrupt callback function
-static void complete_cb_PS_SPI(const struct spi_m_async_descriptor *const io_descr) {
-	PS_SPI_txfr_complete = true;
-	PS_chip_deselect(CS_EEP1);
 }
 
 void PS_spi_enable(bool value) {
@@ -174,14 +176,16 @@ float bytes2float32(int addr) {
  *             each time main calls driver's poll function
  *
  */
-void PS_spi_poll(void){
-	if(PS_SPI_txfr_complete){
-		read8Block(CS_EEP1, 0, 8); // Get Pressure Sensor Manufacture Model #
-	} else {
-		gpio_set_pin_level(SPR29, true);
-		gpio_set_pin_level(SPR29, false);
+static void PS_spi_poll(void){
+	if(PS_SPI_txfr_complete == true){
+		read8Block(CS_EEP1, 0x00, 4); // Get Pressure Sensor Manufacture Model #
+	} 
+	else {
+		for(uint8_t ii=0; ii<8; ii++) {
+			gpio_set_pin_level(J7P1, true);
+		}
+		gpio_set_pin_level(J7P1, false);
 	}
-	return;   
 }
 
 static subbus_cache_word_t PS_spi_cache[PS_SPI_HIGH_ADDR-PS_SPI_BASE_ADDR+1] = {

@@ -160,11 +160,7 @@ static struct _spi_async_dev *_sercom0_dev = NULL;
 
 static struct _spi_async_dev *_sercom1_dev = NULL;
 
-static struct _i2c_m_async_device *_sercom3_dev = NULL;
-
 static struct _spi_async_dev *_sercom4_dev = NULL;
-
-static struct _usart_async_device *_sercom5_dev = NULL;
 
 static uint8_t _get_sercom_index(const void *const hw);
 static uint8_t _sercom_get_irq_num(const void *const hw);
@@ -560,40 +556,6 @@ void _usart_async_set_irq_state(struct _usart_async_device *const device, const 
 }
 
 /**
- * \internal Sercom interrupt handler
- *
- * \param[in] p The pointer to interrupt parameter
- */
-static void _sercom_usart_interrupt_handler(struct _usart_async_device *device)
-{
-	void *hw = device->hw;
-
-	if (hri_sercomusart_get_interrupt_DRE_bit(hw) && hri_sercomusart_get_INTEN_DRE_bit(hw)) {
-		hri_sercomusart_clear_INTEN_DRE_bit(hw);
-		device->usart_cb.tx_byte_sent(device);
-	} else if (hri_sercomusart_get_interrupt_TXC_bit(hw) && hri_sercomusart_get_INTEN_TXC_bit(hw)) {
-		hri_sercomusart_clear_INTEN_TXC_bit(hw);
-		device->usart_cb.tx_done_cb(device);
-	} else if (hri_sercomusart_get_interrupt_RXC_bit(hw)) {
-		if (hri_sercomusart_read_STATUS_reg(hw)
-		    & (SERCOM_USART_STATUS_PERR | SERCOM_USART_STATUS_FERR | SERCOM_USART_STATUS_BUFOVF
-		       | SERCOM_USART_STATUS_ISF | SERCOM_USART_STATUS_COLL)) {
-			hri_sercomusart_clear_STATUS_reg(hw, SERCOM_USART_STATUS_MASK);
-			return;
-		}
-
-		device->usart_cb.rx_done_cb(device, hri_sercomusart_read_DATA_reg(hw));
-	} else if (hri_sercomusart_get_interrupt_ERROR_bit(hw)) {
-		uint32_t status;
-
-		hri_sercomusart_clear_interrupt_ERROR_bit(hw);
-		device->usart_cb.error_cb(device);
-		status = hri_sercomusart_read_STATUS_reg(hw);
-		hri_sercomusart_clear_STATUS_reg(hw, status);
-	}
-}
-
-/**
  * \internal Retrieve ordinal number of the given sercom hardware instance
  *
  * \param[in] hw The pointer to hardware instance
@@ -629,16 +591,8 @@ static void _sercom_init_irq_param(const void *const hw, void *dev)
 		_sercom1_dev = (struct _spi_async_dev *)dev;
 	}
 
-	if (hw == SERCOM3) {
-		_sercom3_dev = (struct _i2c_m_async_device *)dev;
-	}
-
 	if (hw == SERCOM4) {
 		_sercom4_dev = (struct _spi_async_dev *)dev;
-	}
-
-	if (hw == SERCOM5) {
-		_sercom5_dev = (struct _usart_async_device *)dev;
 	}
 }
 
@@ -1082,47 +1036,6 @@ static inline int32_t _sercom_i2c_sync_analyse_flags(void *const hw, uint32_t fl
 	}
 
 	return I2C_OK;
-}
-
-/**
- * \internal Sercom i2c master interrupt handler
- *
- * \param[in] i2c_dev The pointer to i2c device
- */
-static void _sercom_i2c_m_irq_handler(struct _i2c_m_async_device *i2c_dev)
-{
-	void *   hw    = i2c_dev->hw;
-	uint32_t flags = hri_sercomi2cm_read_INTFLAG_reg(hw);
-	int32_t  ret   = I2C_OK;
-
-	ASSERT(i2c_dev);
-	ASSERT(i2c_dev->hw);
-
-	while (!(flags & ERROR_FLAG)) {
-		ret = _sercom_i2c_sync_analyse_flags(hw, flags, &i2c_dev->service.msg);
-
-		if (ret != 0) {
-			break;
-		}
-
-		/* app callback */
-		if ((flags & MB_FLAG) && i2c_dev->cb.tx_complete) {
-			i2c_dev->cb.tx_complete(i2c_dev);
-		} else if ((flags & SB_FLAG) && i2c_dev->cb.rx_complete) {
-			i2c_dev->cb.rx_complete(i2c_dev);
-		}
-
-		return;
-	}
-
-	i2c_dev->service.msg.flags &= ~I2C_M_BUSY;
-	if (i2c_dev->cb.error) {
-		if (ret != I2C_OK) {
-			i2c_dev->cb.error(i2c_dev, ret);
-		} else {
-			i2c_dev->cb.error(i2c_dev, I2C_ERR_BUS);
-		}
-	}
 }
 
 /**
@@ -2465,19 +2378,9 @@ void SERCOM1_Handler(void)
 	_spi_handler(_sercom1_dev);
 }
 
-void SERCOM3_Handler(void)
-{
-	_sercom_i2c_m_irq_handler(_sercom3_dev);
-}
-
 void SERCOM4_Handler(void)
 {
 	_spi_handler(_sercom4_dev);
-}
-
-void SERCOM5_Handler(void)
-{
-	_sercom_usart_interrupt_handler(_sercom5_dev);
 }
 
 int32_t _spi_m_sync_init(struct _spi_m_sync_dev *dev, void *const hw)

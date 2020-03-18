@@ -1,6 +1,7 @@
 /* subbus.c for Atmel Studio
  */
 #include <string.h>
+#include "atmel_start_pins.h"
 #include "subbus.h"
 
 static subbus_driver_t *drivers[SUBBUS_MAX_DRIVERS];
@@ -22,7 +23,7 @@ void subbus_reset(void) {
   int i;
   for (i = 0; i < n_drivers; ++i) {
     if (drivers[i]->reset) {
-      (*(drivers[i]->reset))();
+		(*(drivers[i]->reset))();
     }
   }
 }
@@ -30,7 +31,9 @@ void subbus_reset(void) {
 void subbus_poll(void) {
   int i;
   for (i = 0; i < n_drivers; ++i) {
-    if (drivers[i]->poll) { (*drivers[i]->poll)(); }
+    if (drivers[i]->poll) { 
+		(*(drivers[i]->poll))();            // ask Nort about the extra ()
+	}
   }
 }
 

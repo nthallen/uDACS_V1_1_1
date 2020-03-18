@@ -39,7 +39,7 @@
  *
  * \acme_license_stop
  *
- * Project: uDACS_V1_1_1
+ * Project: DPOPS_v1
  * Target:  ATSAMD21G18A 
  *
  **/

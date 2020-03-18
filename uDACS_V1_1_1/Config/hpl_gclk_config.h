@@ -84,7 +84,7 @@
 // <i> Indicates whether generic clock 1 configuration is enabled or not
 // <id> enable_gclk_gen_1
 #ifndef CONF_GCLK_GENERATOR_1_CONFIG
-#define CONF_GCLK_GENERATOR_1_CONFIG 1
+#define CONF_GCLK_GENERATOR_1_CONFIG 0
 #endif
 
 // <h> Generic Clock Generator Control
@@ -106,7 +106,7 @@
 // <i> Indicates whether Output Enable is enabled or not
 // <id> gclk_arch_gen_1_oe
 #ifndef CONF_GCLK_GEN_1_OE
-#define CONF_GCLK_GEN_1_OE 1
+#define CONF_GCLK_GEN_1_OE 0
 #endif
 
 // <q> Output Off Value
@@ -127,7 +127,7 @@
 // <i> Indicates whether Generic Clock Generator Enable is enabled or not
 // <id> gclk_arch_gen_1_enable
 #ifndef CONF_GCLK_GEN_1_GENEN
-#define CONF_GCLK_GEN_1_GENEN 1
+#define CONF_GCLK_GEN_1_GENEN 0
 #endif
 
 // <y> Generic clock generator 1 source
@@ -142,7 +142,7 @@
 // <i> This defines the clock source for generic clock generator 1
 // <id> gclk_gen_1_oscillator
 #ifndef CONF_GCLK_GEN_1_SRC
-#define CONF_GCLK_GEN_1_SRC GCLK_GENCTRL_SRC_OSC32K
+#define CONF_GCLK_GEN_1_SRC GCLK_GENCTRL_SRC_XOSC
 #endif
 // </h>
 
@@ -218,7 +218,7 @@
 // <i> This defines the clock source for generic clock generator 2
 // <id> gclk_gen_2_oscillator
 #ifndef CONF_GCLK_GEN_2_SRC
-#define CONF_GCLK_GEN_2_SRC GCLK_GENCTRL_SRC_DFLL48M
+#define CONF_GCLK_GEN_2_SRC GCLK_GENCTRL_SRC_XOSC
 #endif
 // </h>
 
@@ -235,7 +235,7 @@
 // <i> Indicates whether generic clock 3 configuration is enabled or not
 // <id> enable_gclk_gen_3
 #ifndef CONF_GCLK_GENERATOR_3_CONFIG
-#define CONF_GCLK_GENERATOR_3_CONFIG 1
+#define CONF_GCLK_GENERATOR_3_CONFIG 0
 #endif
 
 // <h> Generic Clock Generator Control
@@ -257,7 +257,7 @@
 // <i> Indicates whether Output Enable is enabled or not
 // <id> gclk_arch_gen_3_oe
 #ifndef CONF_GCLK_GEN_3_OE
-#define CONF_GCLK_GEN_3_OE 1
+#define CONF_GCLK_GEN_3_OE 0
 #endif
 
 // <q> Output Off Value
@@ -278,7 +278,7 @@
 // <i> Indicates whether Generic Clock Generator Enable is enabled or not
 // <id> gclk_arch_gen_3_enable
 #ifndef CONF_GCLK_GEN_3_GENEN
-#define CONF_GCLK_GEN_3_GENEN 1
+#define CONF_GCLK_GEN_3_GENEN 0
 #endif
 
 // <y> Generic clock generator 3 source
@@ -294,7 +294,7 @@
 // <i> This defines the clock source for generic clock generator 3
 // <id> gclk_gen_3_oscillator
 #ifndef CONF_GCLK_GEN_3_SRC
-#define CONF_GCLK_GEN_3_SRC GCLK_GENCTRL_SRC_DPLL96M
+#define CONF_GCLK_GEN_3_SRC GCLK_GENCTRL_SRC_XOSC
 #endif
 // </h>
 

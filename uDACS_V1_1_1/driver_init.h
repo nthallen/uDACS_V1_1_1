@@ -20,40 +20,33 @@ extern "C" {
 #include <hal_init.h>
 #include <hal_io.h>
 #include <hal_sleep.h>
-
 #include <hal_ext_irq.h>
 #include <hal_spi_m_async.h>
-#include <hal_i2c_m_async.h>
-#include <hal_usart_async.h>
+#include <hal_usart_sync.h>
 #include <hal_timer.h>
 
-extern struct spi_m_async_descriptor AD_SPI;     // For comms with on board A2D and D2A chips 
-extern struct spi_m_async_descriptor PS_SPI;     // For comms with Honeywell Pressure Sensors via PMOD conn
-extern struct spi_m_async_descriptor SD_SPI;     // For comms with on board SD-Slot 
-extern struct i2c_m_async_desc UC_I2C;           // For comms with TBD via J4 connector
-extern struct usart_async_descriptor USART_CTRL; // for comms with Host via J2 / USB Aux
+extern struct spi_m_async_descriptor SPI_AD_DA;
+extern struct spi_m_async_descriptor SPI_PR_SN;
+extern struct spi_m_async_descriptor SPI_SD;
 
-extern struct timer_descriptor       TIMER_0;
+extern struct usart_sync_descriptor USART_0;
+extern struct timer_descriptor      TIMER_0;
 
-void AD_SPI_PORT_init(void);
-void AD_SPI_CLOCK_init(void);
-void AD_SPI_init(void);
+void SPI_AD_DA_PORT_init(void);
+void SPI_AD_DA_CLOCK_init(void);
+void SPI_AD_DA_init(void);
 
-void PS_SPI_PORT_init(void);
-void PS_SPI_CLOCK_init(void);
-void PS_SPI_init(void);
+void SPI_PR_SN_PORT_init(void);
+void SPI_PR_SN_CLOCK_init(void);
+void SPI_PR_SN_init(void);
 
-void UC_I2C_PORT_init(void);
-void UC_I2C_CLOCK_init(void);
-void UC_I2C_init(void);
+void SPI_SD_PORT_init(void);
+void SPI_SD_CLOCK_init(void);
+void SPI_SD_init(void);
 
-void SD_SPI_PORT_init(void);
-void SD_SPI_CLOCK_init(void);
-void SD_SPI_init(void);
-
-void USART_CTRL_PORT_init(void);
-void USART_CTRL_CLOCK_init(void);
-void USART_CTRL_init(void);
+void USART_0_PORT_init(void);
+void USART_0_CLOCK_init(void);
+void USART_0_init(void);
 
 /**
  * \brief Perform system initialization, initialize pins and clocks for

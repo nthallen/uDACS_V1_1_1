@@ -152,14 +152,14 @@
 // <e> Interrupt 3 Settings
 // <id> eic_arch_enable_irq_setting3
 #ifndef CONF_EIC_ENABLE_IRQ_SETTING3
-#define CONF_EIC_ENABLE_IRQ_SETTING3 1
+#define CONF_EIC_ENABLE_IRQ_SETTING3 0
 #endif
 
 // <q> External Interrupt 3 Event Output Enable
 // <i> Indicates whether the external interrupt 3 event output is enabled or not
 // <id> eic_arch_extinteo3
 #ifndef CONF_EIC_EXTINTEO3
-#define CONF_EIC_EXTINTEO3 1
+#define CONF_EIC_EXTINTEO3 0
 #endif
 
 // <q> External Interrupt 3 Wake-up Enable
@@ -186,7 +186,7 @@
 // <i> This defines input sense trigger
 // <id> eic_arch_sense3
 #ifndef CONF_EIC_SENSE3
-#define CONF_EIC_SENSE3 EIC_NMICTRL_NMISENSE_FALL_Val
+#define CONF_EIC_SENSE3 EIC_NMICTRL_NMISENSE_NONE_Val
 #endif
 // </e>
 
