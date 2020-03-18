@@ -28,7 +28,7 @@ void EXTERNAL_IRQ_0_init(void) {
 	ext_irq_init();
 }
 
-void SPI_AD_DA_PORT_init(void){
+void spi_ad_da_port_init(void){
 	gpio_set_pin_level(AD_MOSI, false);
 	gpio_set_pin_direction(AD_MOSI, GPIO_DIRECTION_OUT);
 	gpio_set_pin_function(AD_MOSI, PINMUX_PA08C_SERCOM0_PAD0);
@@ -42,18 +42,18 @@ void SPI_AD_DA_PORT_init(void){
 	gpio_set_pin_function(AD_MISO, PINMUX_PA10C_SERCOM0_PAD2);
 }
 
-void SPI_AD_DA_CLOCK_init(void) {
+void spi_ad_da_clock_init(void) {
 	_pm_enable_bus_clock(PM_BUS_APBC, SERCOM0);
 	_gclk_enable_channel(SERCOM0_GCLK_ID_CORE, CONF_GCLK_SERCOM0_CORE_SRC);
 }
 
-void SPI_AD_DA_init(void) {
-	SPI_AD_DA_CLOCK_init();
+void spi_ad_da_init(void) {
+	spi_ad_da_clock_init();
 	spi_m_async_init(&SPI_AD_DA, SERCOM0);
-	SPI_AD_DA_PORT_init();
+	spi_ad_da_port_init();
 }
 
-void SPI_PR_SN_PORT_init(void) {
+void spi_pr_sn_port_init(void) {
 	gpio_set_pin_direction(PS_MISO, GPIO_DIRECTION_IN);
 	gpio_set_pin_pull_mode(PS_MISO, GPIO_PULL_OFF);
 	gpio_set_pin_function(PS_MISO, PINMUX_PA16C_SERCOM1_PAD0);
@@ -67,18 +67,18 @@ void SPI_PR_SN_PORT_init(void) {
 	gpio_set_pin_function(PS_MOSI, PINMUX_PA19C_SERCOM1_PAD3);
 }
 
-void SPI_PR_SN_CLOCK_init(void) {
+void spi_pr_sn_clock_init(void) {
 	_pm_enable_bus_clock(PM_BUS_APBC, SERCOM1);
 	_gclk_enable_channel(SERCOM1_GCLK_ID_CORE, CONF_GCLK_SERCOM1_CORE_SRC);
 }
 
-void SPI_PR_SN_init(void) {
-	SPI_PR_SN_CLOCK_init();
+void spi_pr_sn_init(void) {
+	spi_pr_sn_clock_init();
 	spi_m_async_init(&SPI_PR_SN, SERCOM1);
-	SPI_PR_SN_PORT_init();
+	spi_pr_sn_port_init();
 }
 
-void SPI_SD_PORT_init(void) {
+void spi_sd_port_init(void) {
 	gpio_set_pin_level(SD_MOSI, false);
 	gpio_set_pin_direction(SD_MOSI, GPIO_DIRECTION_OUT);
 	gpio_set_pin_function(SD_MOSI, PINMUX_PA12D_SERCOM4_PAD0);
@@ -92,31 +92,31 @@ void SPI_SD_PORT_init(void) {
 	gpio_set_pin_function(SD_MISO, PINMUX_PA15D_SERCOM4_PAD3);
 }
 
-void SPI_SD_CLOCK_init(void) {
+void spi_sd_clock_init(void) {
 	_pm_enable_bus_clock(PM_BUS_APBC, SERCOM4);
 	_gclk_enable_channel(SERCOM4_GCLK_ID_CORE, CONF_GCLK_SERCOM4_CORE_SRC);
 }
 
-void SPI_SD_init(void) {
-	SPI_SD_CLOCK_init();
+void spi_sd_init(void) {
+	spi_sd_clock_init();
 	spi_m_async_init(&SPI_SD, SERCOM4);
-	SPI_SD_PORT_init();
+	spi_sd_port_init();
 }
 
-void USART_0_PORT_init(void) {
+void usart_0_port_init(void) {
 	gpio_set_pin_function(PB22, PINMUX_PB22D_SERCOM5_PAD2);
 	gpio_set_pin_function(PB23, PINMUX_PB23D_SERCOM5_PAD3);
 }
 
-void USART_0_CLOCK_init(void) {
+void usart_0_clock_init(void) {
 	_pm_enable_bus_clock(PM_BUS_APBC, SERCOM5);
 	_gclk_enable_channel(SERCOM5_GCLK_ID_CORE, CONF_GCLK_SERCOM5_CORE_SRC);
 }
 
 void USART_0_init(void) {
-	USART_0_CLOCK_init();
+	usart_0_clock_init();
 	usart_sync_init(&USART_0, SERCOM5, (void *)NULL);
-	USART_0_PORT_init();
+	usart_0_port_init();
 }
 
 /**
@@ -149,9 +149,9 @@ void system_init(void) {
 	gpio_set_pin_function(SD_CS, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PA20
-	gpio_set_pin_level(Pmp_CNTL_2, false);
-	gpio_set_pin_direction(Pmp_CNTL_2, GPIO_DIRECTION_OUT);
-	gpio_set_pin_function(Pmp_CNTL_2, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_level(PMP_CNTL_2, false);
+	gpio_set_pin_direction(PMP_CNTL_2, GPIO_DIRECTION_OUT);
+	gpio_set_pin_function(PMP_CNTL_2, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PA21
 	gpio_set_pin_level(EEP2_CS, true);
@@ -159,14 +159,14 @@ void system_init(void) {
 	gpio_set_pin_function(EEP2_CS, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PA22
-	gpio_set_pin_direction(Pmp_STAT_1, GPIO_DIRECTION_IN);
-	gpio_set_pin_pull_mode(Pmp_STAT_1, GPIO_PULL_UP);
-	gpio_set_pin_function(Pmp_STAT_1, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_direction(PMP_STAT_1, GPIO_DIRECTION_IN);
+	gpio_set_pin_pull_mode(PMP_STAT_1, GPIO_PULL_UP);
+	gpio_set_pin_function(PMP_STAT_1, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PA23
-	gpio_set_pin_direction(Pmp_STAT_2, GPIO_DIRECTION_IN);
-	gpio_set_pin_pull_mode(Pmp_STAT_2, GPIO_PULL_OFF);
-	gpio_set_pin_function(Pmp_STAT_2, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_direction(PMP_STAT_2, GPIO_DIRECTION_IN);
+	gpio_set_pin_pull_mode(PMP_STAT_2, GPIO_PULL_OFF);
+	gpio_set_pin_function(PMP_STAT_2, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PA27
 	gpio_set_pin_direction(SD_Sns, GPIO_DIRECTION_IN);
@@ -184,9 +184,9 @@ void system_init(void) {
 	gpio_set_pin_function(START, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PB08
-	gpio_set_pin_level(Pmp_CNTL_1, false);
-	gpio_set_pin_direction(Pmp_CNTL_1, GPIO_DIRECTION_OUT);
-	gpio_set_pin_function(Pmp_CNTL_1, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_level(PMP_CNTL_1, false);
+	gpio_set_pin_direction(PMP_CNTL_1, GPIO_DIRECTION_OUT);
+	gpio_set_pin_function(PMP_CNTL_1, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PB09
 	gpio_set_pin_level(DAC_CS, true);
@@ -204,9 +204,9 @@ void system_init(void) {
 	gpio_set_pin_function(ADC2_CS, GPIO_PIN_FUNCTION_OFF);
 
 	EXTERNAL_IRQ_0_init();
-	SPI_AD_DA_init();
-	SPI_PR_SN_init();
-	SPI_SD_init();
+	spi_ad_da_init();
+	spi_pr_sn_init();
+	spi_sd_init();
 	USART_0_init();
 	TIMER_0_init();
 }

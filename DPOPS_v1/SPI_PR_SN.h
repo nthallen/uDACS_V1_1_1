@@ -53,8 +53,8 @@
 #define OFF_MKS                     -1393      // MKS Baratron offset in counts
 
 //extern subbus_driver_t sb_PS_spi;
-void PS_SPI_enable(bool value);
-void PS_SPI_poll(void);
-void PS_SPI_reset(void);
+void ps_spi_enable(bool value);
+void ps_spi_poll(void);
+void ps_spi_reset(void);
 
 #endif

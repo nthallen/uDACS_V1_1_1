@@ -3,11 +3,11 @@
 
 int main(void) {
 	atmel_start_init();
-	PS_SPI_reset();
+	ps_spi_reset();
 		
 	while (1) {
-		gpio_set_pin_level(Pmp_CNTL_1, true);           // pulse every state clock
-		gpio_set_pin_level(Pmp_CNTL_1, false);
-		PS_SPI_poll();
+		gpio_set_pin_level(PMP_CNTL_1, true);           // pulse every state clock
+		gpio_set_pin_level(PMP_CNTL_1, false);
+		ps_spi_poll();
 	}
 }

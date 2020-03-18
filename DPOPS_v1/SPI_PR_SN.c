@@ -74,7 +74,7 @@ static uint8_t PS_xfr_Wbuf[PS_SPI_MAX_XFR_LENGTH] = {
 };
 
 static volatile uint8_t PS_SPI_txfr_complete = true;   // async transfer complete?
-static bool PS_SPI_enabled = PS_SPI_ENABLE_DEFAULT;    // PS SPI comms enabled?
+static bool ps_spi_enabled = PS_SPI_ENABLE_DEFAULT;    // PS SPI comms enabled?
 
 // Declare EEPROM structure - holds EEPROM Contents locally
 typedef struct {
@@ -128,16 +128,16 @@ static void PS_start_spi_transfer(uint8_t pin, uint8_t const *txbuf, int length,
 	}
 	PS_chip_select(pin);
 	PS_SPI_txfr_complete = false;
-	gpio_set_pin_level(Pmp_CNTL_2, true);
-	gpio_set_pin_level(Pmp_CNTL_2, false);
+	gpio_set_pin_level(PMP_CNTL_2, true);
+	gpio_set_pin_level(PMP_CNTL_2, false);
 	spi_m_async_transfer(&SPI_PR_SN, PS_xfr_Wbuf, PS_xfr_Rbuf, length);
 }
 
 void PS_spi_enable(bool value) {
-	PS_SPI_enabled = value;
+	ps_spi_enabled = value;
 }
 
-void PS_SPI_reset(void) {
+void ps_spi_reset(void) {
 	spi_m_async_register_callback(&SPI_PR_SN, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_PS_SPI);
 	spi_m_async_enable(&SPI_PR_SN);
 }
@@ -168,8 +168,21 @@ float bytes2float32(int addr) {
 }
 
 // sort PS_xfr_Rbuf (SPI full duplex read buffer) into Local EEPROM Structure
- void sort_PS_EEPROM(uint8_t pin, EEPROM_t *prom) {
-	 PS_chip_deselect(pin);  // Done reading, De-select EEPROM
+ void sort_PS_EEPROM(EEPROM_t *prom) {
+	 uint8_t ii=0;						// member index
+	 int     jj=2;                      // buffer index 1st read from EEPROM is 2 writes delayed
+	 
+	 for(ii=0; ii<PART_NO_SIZE;   ii++) { PROM_1.PartNumber[ii]   = PS_xfr_Rbuf[jj++]; }
+	 for(ii=0; ii<SERIAL_NO_SIZE; ii++) { PROM_1.SerialNumber[ii] = PS_xfr_Rbuf[jj++]; }
+	 
+	 PROM_1.Pressure_Min = bytes2float32(jj);
+	 jj =jj+EEPROM_FLOAT_SIZE;
+	 
+	 PROM_1.Pressure_Range = bytes2float32(jj);
+	 jj =jj+EEPROM_FLOAT_SIZE;
+	 
+	 for(ii=0; ii<PRESSURE_UNIT_SIZE; ii++) { PROM_1.PressureUnit[ii] = PS_xfr_Rbuf[jj++]; }
+	 for(ii=0; ii<PRESSURE_REF_SIZE;  ii++) { PROM_1.PressureRef[ii]  = PS_xfr_Rbuf[jj++]; }
 }
 
 
@@ -180,44 +193,32 @@ float bytes2float32(int addr) {
  *             each time Main loop calls driver's poll function
  *
  */
-enum PS_sm_t {init_1, init_2, idle} PS_sm = init_1;
-void PS_SPI_poll(void) {
-	if (!PS_SPI_enabled || !PS_SPI_txfr_complete) return;
+enum PS_sm_t {init_1a, init_1b, init_2a, init_2b, idle} PS_sm = init_1a;
+void ps_spi_poll(void) {
+	if (!ps_spi_enabled || !PS_SPI_txfr_complete) return;
 	switch(PS_sm) {
-		case init_1:                    // Read Pressure Sensor 1's Manufacturers Info from EEPROM
+		case init_1a:                    // Read Pressure Sensor 1's Manufacturers Info from EEPROM
 			read8Block(EEP1_CS, PARTNUMBER_ADDR, RESERVED_ADDR-PARTNUMBER_ADDR+2);
-			PS_sm = init_2;
+			PS_sm = init_1b;
 			break;
 		
-		case init_2:                    // Get Data out of SPI read-buffer into local structure
-			sort_PS_EEPROM(EEP1_CS, &PROM_1);
-			PS_chip_deselect(EEP1_CS);  // Done reading, De-select EEPROM
-			uint8_t ii=0;
-			int     jj=2;               // 1st read from EEPROM is 2 writes delayed
+		case init_1b:                    // Get Data out of SPI read-buffer into local structure
+			PS_chip_deselect(EEP1_CS);   // Done reading, De-select EEPROM
+			sort_PS_EEPROM(&PROM_1);
+			PS_sm = init_2a;
 				
-			for(ii=0; ii<PART_NO_SIZE; ii++) {
-				PROM_1.PartNumber[ii] = PS_xfr_Rbuf[jj++];
-			}
-			for(ii=0; ii<SERIAL_NO_SIZE; ii++) {
-				PROM_1.SerialNumber[ii] = PS_xfr_Rbuf[jj++];
-			}
-				
-			PROM_1.Pressure_Min = bytes2float32(jj);
-			jj =jj+EEPROM_FLOAT_SIZE;
-				
-			PROM_1.Pressure_Range = bytes2float32(jj);
-			jj =jj+EEPROM_FLOAT_SIZE;
-			
-			for(ii=0; ii<PRESSURE_UNIT_SIZE; ii++) {
-				PROM_1.PressureUnit[ii] = PS_xfr_Rbuf[jj++];
-			}
-			for(ii=0; ii<PRESSURE_REF_SIZE; ii++) {
-				PROM_1.PressureRef[ii] = PS_xfr_Rbuf[jj++];
-			}
+		case init_2a:                    // Read Pressure Sensor 2's Manufacturers Info from EEPROM
+			read8Block(EEP2_CS, PARTNUMBER_ADDR, RESERVED_ADDR-PARTNUMBER_ADDR+2);
+			PS_sm = init_2b;
+			break;
+		
+		case init_2b:                    // Get Data out of SPI read-buffer into local structure
+			PS_chip_deselect(EEP2_CS);   // Done reading, De-select EEPROM
+			sort_PS_EEPROM(&PROM_2);
 			PS_sm = idle;
-				
+			
 		case idle:                        // do it again
-			PS_sm = init_1;
+			PS_sm = init_1a;
 			break;
 				
 		default:

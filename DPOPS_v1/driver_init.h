@@ -32,21 +32,21 @@ extern struct spi_m_async_descriptor SPI_SD;
 extern struct usart_sync_descriptor USART_0;
 extern struct timer_descriptor      TIMER_0;
 
-void SPI_AD_DA_PORT_init(void);
-void SPI_AD_DA_CLOCK_init(void);
-void SPI_AD_DA_init(void);
+void spi_ad_da_port_init(void);
+void spi_ad_da_clock_init(void);
+void spi_ad_da_init(void);
 
-void SPI_PR_SN_PORT_init(void);
-void SPI_PR_SN_CLOCK_init(void);
-void SPI_PR_SN_init(void);
+void spi_pr_sn_init(void);
+void spi_pr_sn_clock_init(void);
+void spi_pr_sn_init(void);
 
-void SPI_SD_PORT_init(void);
-void SPI_SD_CLOCK_init(void);
-void SPI_SD_init(void);
+void spi_sd_port_init(void);
+void spi_sd_clock_init(void);
+void spi_sd_init(void);
 
-void USART_0_PORT_init(void);
-void USART_0_CLOCK_init(void);
-void USART_0_init(void);
+void usart_0_port_init(void);
+void usart_0_clock_init(void);
+void usart_0_init(void);
 
 /**
  * \brief Perform system initialization, initialize pins and clocks for
