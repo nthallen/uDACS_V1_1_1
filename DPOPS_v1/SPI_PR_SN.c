@@ -91,7 +91,7 @@ typedef struct {
 	unsigned short int  CheckSum;
 } EEPROM_t; 
 
-static EEPROM_t PROM_1, PROM_2; 
+static EEPROM_t PROM_1, PROM_2, *prom; 
 
 // Pressure sensors require two SPI modes:
 //    MODE 0 when reading from EEPROM
@@ -143,16 +143,19 @@ void ps_spi_reset(void) {
 }
 
 /* **************************************************************************
- * Pressure Sensor driver functions
+ * Pressure Sensor "poll" State Machine functions
  *
  */
+
 // EEPROM spans a 9 Bit address space, upper bit is embedded in Read cmd
+//
 static inline void EEPROM_read(uint16_t addr) {
 	PS_xfr_Wbuf[0] = (addr <= 0xFF ? 0x03 : 0x0B);
 	PS_xfr_Wbuf[1] = (uint8_t)addr;
 }
 
 // read uint8_t block of length m from EEPROM
+//
 void read8Block(uint8_t pin, int addr, uint8_t numBytes) {
 	EEPROM_read(addr);
 	PS_start_spi_transfer(pin, PS_xfr_Wbuf, numBytes, SPI_MODE_0);
@@ -160,6 +163,7 @@ void read8Block(uint8_t pin, int addr, uint8_t numBytes) {
 
 
 // read EEPROM 4 bytes convert to floats
+//
 float bytes2float32(int addr) {
 	unsigned long dat32 = (PS_xfr_Rbuf[addr+3] << 24) + (PS_xfr_Rbuf[addr+2] << 16)
 	                    + (PS_xfr_Rbuf[addr+1] <<  8) + (PS_xfr_Rbuf[addr]);
@@ -167,25 +171,60 @@ float bytes2float32(int addr) {
 	return(val);
 }
 
-// sort PS_xfr_Rbuf (SPI full duplex read buffer) into Local EEPROM Structure
+// sort PS_xfr_Rbuf Manufacturer ID info into Local EEPROM Structure
+//
  void sort_PS_EEPROM(EEPROM_t *prom) {
 	 uint8_t ii=0;						// member index
 	 int     jj=2;                      // buffer index 1st read from EEPROM is 2 writes delayed
 	 
-	 for(ii=0; ii<PART_NO_SIZE;   ii++) { PROM_1.PartNumber[ii]   = PS_xfr_Rbuf[jj++]; }
-	 for(ii=0; ii<SERIAL_NO_SIZE; ii++) { PROM_1.SerialNumber[ii] = PS_xfr_Rbuf[jj++]; }
+	 for(ii=0; ii<PART_NO_SIZE;   ii++) { prom->PartNumber[ii]   = PS_xfr_Rbuf[jj++]; }
+	 for(ii=0; ii<SERIAL_NO_SIZE; ii++) { prom->SerialNumber[ii] = PS_xfr_Rbuf[jj++]; }
 	 
-	 PROM_1.Pressure_Min = bytes2float32(jj);
+	 prom->Pressure_Min = bytes2float32(jj);
 	 jj =jj+EEPROM_FLOAT_SIZE;
 	 
-	 PROM_1.Pressure_Range = bytes2float32(jj);
+	 prom->Pressure_Range = bytes2float32(jj);
 	 jj =jj+EEPROM_FLOAT_SIZE;
 	 
-	 for(ii=0; ii<PRESSURE_UNIT_SIZE; ii++) { PROM_1.PressureUnit[ii] = PS_xfr_Rbuf[jj++]; }
-	 for(ii=0; ii<PRESSURE_REF_SIZE;  ii++) { PROM_1.PressureRef[ii]  = PS_xfr_Rbuf[jj++]; }
+	 for(ii=0; ii<PRESSURE_UNIT_SIZE; ii++) { prom->PressureUnit[ii] = PS_xfr_Rbuf[jj++]; }
+	 for(ii=0; ii<PRESSURE_REF_SIZE;  ii++) { prom->PressureRef[ii]  = PS_xfr_Rbuf[jj++]; }
 }
 
+// sort PS_xfr_Rbuf Polynomial coefficients into Local EEPROM Structure
+//
+void sort_PS_EEPROM_coeffs(uint8_t coeff_typ, EEPROM_t *prom) {
+	uint8_t jj = 2;						// index into PS_xfr_Rbuf, 1st 2 writes return junk per Vendor spec.
+	float temp[DEGREE_POLYNOMIAL];		// temporarily hold the coefficients
+	for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) {
+		temp[ii] = bytes2float32(jj); 
+		jj = jj+EEPROM_FLOAT_SIZE;
+	}
+	switch(coeff_typ) {
+		case 1:
+			for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) { prom->Off_Coeff[ii] = temp[ii]; }
+			break;
+		case 2:
+			for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) { prom->Spn_Coeff[ii] = temp[ii]; }
+			break;	 
+		case 3:
+			for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) { prom->Shp_Coeff[ii] = temp[ii]; }
+			break;
+	}
+}
 
+void get_coef(uint8_t coeff_typ, uint8_t pin) {
+	switch(coeff_typ) {
+		case 1:
+			read8Block(pin, OFF_COEFF_ADDR, (EEPROM_FLOAT_SIZE*DEGREE_POLYNOMIAL)+2);
+			break;
+		case 2:
+			read8Block(pin, SPAN_COEFF_ADDR, (EEPROM_FLOAT_SIZE*DEGREE_POLYNOMIAL)+2);
+			break;
+		case 3:
+			read8Block(pin, SHAPE_COEFF_ADDR, (EEPROM_FLOAT_SIZE*DEGREE_POLYNOMIAL)+2);
+			break;
+	}
+}
 
 /* *****************************************************************************
  * Honeywell RSC series Pressure Sensor Driver State machine - Poll Function.  
@@ -193,36 +232,67 @@ float bytes2float32(int addr) {
  *             each time Main loop calls driver's poll function
  *
  */
-enum PS_sm_t {init_1a, init_1b, init_2a, init_2b, idle} PS_sm = init_1a;
+
+// Define state variables and test counters for ps_sm
+//
+enum ps_sm_t { read_ascii_info, sort_ascii_info, read_coeffs, sort_coeffs, config_AD, idle } 
+
+ps_sm             = read_ascii_info;		// initial state
+uint8_t coeff_typ = 1;						// 1 = offset,  2 = span, 3 = shape (coefficients)
+uint8_t prom_num  = 1;                      // 1 = EEPROM1, 2 = EEPROM2
+uint8_t pin_cs    = EEP1_CS;                // 1 of 4 Sensor Chip Selects, start with EEPROM1
+
 void ps_spi_poll(void) {
 	if (!ps_spi_enabled || !PS_SPI_txfr_complete) return;
-	switch(PS_sm) {
-		case init_1a:                    // Read Pressure Sensor 1's Manufacturers Info from EEPROM
-			read8Block(EEP1_CS, PARTNUMBER_ADDR, RESERVED_ADDR-PARTNUMBER_ADDR+2);
-			PS_sm = init_1b;
+	switch(ps_sm) {
+		case read_ascii_info:                    // Read Sensor's ASCII Manufacturer's Info
+		    prom   = (prom_num == 1) ? &PROM_1 : &PROM_2;
+			pin_cs = (prom_num == 1) ? EEP1_CS : EEP2_CS;
+			read8Block(pin_cs, PARTNUMBER_ADDR, RESERVED_ADDR-PARTNUMBER_ADDR+2);
+			ps_sm = sort_ascii_info;
 			break;
 		
-		case init_1b:                    // Get Data out of SPI read-buffer into local structure
-			PS_chip_deselect(EEP1_CS);   // Done reading, De-select EEPROM
-			sort_PS_EEPROM(&PROM_1);
-			PS_sm = init_2a;
+		case sort_ascii_info:                    // Sort SPI read-buffer into local structure
+			PS_chip_deselect(pin_cs);   
+			sort_PS_EEPROM(prom);
+			coeff_typ = 1;
+			ps_sm = read_coeffs;
+			break;
 				
-		case init_2a:                    // Read Pressure Sensor 2's Manufacturers Info from EEPROM
-			read8Block(EEP2_CS, PARTNUMBER_ADDR, RESERVED_ADDR-PARTNUMBER_ADDR+2);
-			PS_sm = init_2b;
+		case read_coeffs:                       // Read current type Polynomial coefficients from EEPROM
+			get_coef(coeff_typ, pin_cs);
+			ps_sm = sort_coeffs;
 			break;
-		
-		case init_2b:                    // Get Data out of SPI read-buffer into local structure
-			PS_chip_deselect(EEP2_CS);   // Done reading, De-select EEPROM
-			sort_PS_EEPROM(&PROM_2);
-			PS_sm = idle;
-			
-		case idle:                        // do it again
-			PS_sm = init_1a;
+
+		case sort_coeffs:                       // Sort SPI read-buffer into local structure
+			PS_chip_deselect(pin_cs);   
+			sort_PS_EEPROM_coeffs(coeff_typ, prom);
+			coeff_typ++;
+			if (coeff_typ < 4) {						// all coefficients for this EEPROM?
+				ps_sm = read_coeffs;					//    no, get next coefficient
+				break;
+			} else if (prom_num < 2) {					// all EEPROMs read?
+				coeff_typ = 1;							//     no read next EEPROM
+				prom_num++;
+				ps_sm = read_ascii_info;        
+				break;
+			} else {                 
+				coeff_typ = 1;
+				prom_num  = 1;
+				ps_sm     = config_AD;
+				break;
+			}
+				
+		case config_AD:							// Configure the sensors A2D converter
+			ps_sm = idle;
+			break;
+
+		case idle:								// do it again
+			ps_sm = read_ascii_info;
 			break;
 				
 		default:
-			PS_sm = idle;
+			ps_sm = idle;
 			break;
 	}
 }
