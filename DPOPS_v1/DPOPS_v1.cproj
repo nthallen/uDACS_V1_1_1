@@ -753,10 +753,10 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="SPI_PR_SN.c">
+    <Compile Include="spi_pr_sn.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="SPI_PR_SN.h">
+    <Compile Include="spi_pr_sn.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

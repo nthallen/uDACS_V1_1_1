@@ -10,14 +10,13 @@
 //#include "subbus.h"
 
 #define PS_SPI_MAX_XFR_LENGTH      44   
-#define PS_SPI_ENABLE_DEFAULT      true
+#define PS_SPI_ENABLE_DEFAULT      false
 
 // Subbus Address Space
 #define PS_PSI_BASE_ADDR           0x32
 #define PS_SPI_HIGH_ADDR           0x3E
 
 #define DEGREE_POLYNOMIAL            4   // 4 coefficients for a 3rd deg polynomial
-#define ADC_CONFIG_SIZE              4   // Number of ADC Config. Registers
 
 // PS EEPROM address Map
 #define PARTNUMBER_ADDR              0
@@ -40,8 +39,17 @@
 #define PRESSURE_UNIT_SIZE           (PRESSUREREF_ADDR - PRESSUREUNITS_ADDR)
 #define PRESSURE_REF_SIZE            (RESERVED_ADDR - PRESSUREREF_ADDR)
 #define MAX_EEPROM_SIZE              (EEPROM_END_ADDR + 1)
+#define ADC_CONFIG_SIZE              8 // Number of ADC Config. Registers bytes
 #define EEPROM_FLOAT_SIZE            4 // Size of any Floats stored in EEPROM
 
+#define RESET_AD					 6 // Reset ADC command
+#define WR_REG_ALL                  67 // Write ADC Reg cmd = 0b 0100 0011, all four reg's
+									   // To program a configuration register, the host sends a
+									   // WREG command [0100 RRNN], where
+									   //            RR is the Register Number
+									   //            NN is the (#bytes write)-1 (auto increments)
+									   //   67 = 0x43 = All 4 registers starting at Reg 0
+									   
 // Various Unit Conversions and Gain, offset corrections
 #define T_Gain                       0.03125   // Honeywell Deg C / AD count
 #define TORR_PER_INH2O               1.8683204 // Unit Conversion
@@ -53,7 +61,6 @@
 #define OFF_MKS                     -1393      // MKS Baratron offset in counts
 
 //extern subbus_driver_t sb_PS_spi;
-void ps_spi_enable(bool value);
 void ps_spi_poll(void);
 void ps_spi_reset(void);
 

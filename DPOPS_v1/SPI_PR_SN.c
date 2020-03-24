@@ -10,10 +10,8 @@
 //#include "subbus.h"
 
 /* *************************************************************************
-// CCTIT Checksum and Checksum Table with 0x1021 seed
-//
-unsigned short int CRC16_Computed;   // computed CRC on selected EEPROM
-
+ * CCTIT Checksum and Checksum Table with 0x1021 seed
+*/
 static const unsigned short int gu16Crc16Table[256] = {
 	0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7,
 	0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF,
@@ -48,8 +46,6 @@ static const unsigned short int gu16Crc16Table[256] = {
 	0xEF1F, 0xFF3E, 0xCF5D, 0xDF7C, 0xAF9B, 0xBFBA, 0x8FD9, 0x9FF8,
 	0x6E17, 0x7E36, 0x4E55, 0x5E74, 0x2E93, 0x3EB2, 0x0ED1, 0x1EF0
 };
- *
- */
 
 // Pressure sensors can operate both full or half duplex
 // Predefine buffers that hold "to-write" bytes
@@ -90,8 +86,7 @@ typedef struct {
 	float               Shp_Coeff[DEGREE_POLYNOMIAL];
 	unsigned short int  CheckSum;
 } EEPROM_t; 
-
-static EEPROM_t PROM_1, PROM_2, *prom; 
+static EEPROM_t prom_1, prom_2, *prom_p; 
 
 // Pressure sensors require two SPI modes:
 //    MODE 0 when reading from EEPROM
@@ -128,23 +123,18 @@ static void PS_start_spi_transfer(uint8_t pin, uint8_t const *txbuf, int length,
 	}
 	PS_chip_select(pin);
 	PS_SPI_txfr_complete = false;
-	gpio_set_pin_level(PMP_CNTL_2, true);
-	gpio_set_pin_level(PMP_CNTL_2, false);
 	spi_m_async_transfer(&SPI_PR_SN, PS_xfr_Wbuf, PS_xfr_Rbuf, length);
 }
 
-void PS_spi_enable(bool value) {
-	ps_spi_enabled = value;
-}
-
+// Reset = register ISR and enable SPI Hardware resource for Pressure Sensors
 void ps_spi_reset(void) {
 	spi_m_async_register_callback(&SPI_PR_SN, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_PS_SPI);
 	spi_m_async_enable(&SPI_PR_SN);
+	ps_spi_enabled = true;
 }
 
 /* **************************************************************************
- * Pressure Sensor "poll" State Machine functions
- *
+ * Pressure Sensor "poll" State Machine supporting functions
  */
 
 // EEPROM spans a 9 Bit address space, upper bit is embedded in Read cmd
@@ -162,7 +152,7 @@ void read8Block(uint8_t pin, int addr, uint8_t numBytes) {
 }
 
 
-// read EEPROM 4 bytes convert to floats
+// 4 EEPROM bytes convert to float
 //
 float bytes2float32(int addr) {
 	unsigned long dat32 = (PS_xfr_Rbuf[addr+3] << 24) + (PS_xfr_Rbuf[addr+2] << 16)
@@ -173,47 +163,47 @@ float bytes2float32(int addr) {
 
 // sort PS_xfr_Rbuf Manufacturer ID info into Local EEPROM Structure
 //
- void sort_PS_EEPROM(EEPROM_t *prom) {
+ void sort_PS_EEPROM_info(EEPROM_t *prom_p) {
 	 uint8_t ii=0;						// member index
 	 int     jj=2;                      // buffer index 1st read from EEPROM is 2 writes delayed
 	 
-	 for(ii=0; ii<PART_NO_SIZE;   ii++) { prom->PartNumber[ii]   = PS_xfr_Rbuf[jj++]; }
-	 for(ii=0; ii<SERIAL_NO_SIZE; ii++) { prom->SerialNumber[ii] = PS_xfr_Rbuf[jj++]; }
+	 for(ii=0; ii<PART_NO_SIZE;   ii++) { prom_p->PartNumber[ii]   = PS_xfr_Rbuf[jj++]; }
+	 for(ii=0; ii<SERIAL_NO_SIZE; ii++) { prom_p->SerialNumber[ii] = PS_xfr_Rbuf[jj++]; }
 	 
-	 prom->Pressure_Min = bytes2float32(jj);
+	 prom_p->Pressure_Min = bytes2float32(jj);
 	 jj =jj+EEPROM_FLOAT_SIZE;
 	 
-	 prom->Pressure_Range = bytes2float32(jj);
+	 prom_p->Pressure_Range = bytes2float32(jj);
 	 jj =jj+EEPROM_FLOAT_SIZE;
 	 
-	 for(ii=0; ii<PRESSURE_UNIT_SIZE; ii++) { prom->PressureUnit[ii] = PS_xfr_Rbuf[jj++]; }
-	 for(ii=0; ii<PRESSURE_REF_SIZE;  ii++) { prom->PressureRef[ii]  = PS_xfr_Rbuf[jj++]; }
+	 for(ii=0; ii<PRESSURE_UNIT_SIZE; ii++) { prom_p->PressureUnit[ii] = PS_xfr_Rbuf[jj++]; }
+	 for(ii=0; ii<PRESSURE_REF_SIZE;  ii++) { prom_p->PressureRef[ii]  = PS_xfr_Rbuf[jj++]; }
 }
 
 // sort PS_xfr_Rbuf Polynomial coefficients into Local EEPROM Structure
 //
-void sort_PS_EEPROM_coeffs(uint8_t coeff_typ, EEPROM_t *prom) {
+void sort_PS_EEPROM_coeffs(uint8_t poly, EEPROM_t *prom_p) {
 	uint8_t jj = 2;						// index into PS_xfr_Rbuf, 1st 2 writes return junk per Vendor spec.
 	float temp[DEGREE_POLYNOMIAL];		// temporarily hold the coefficients
 	for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) {
 		temp[ii] = bytes2float32(jj); 
 		jj = jj+EEPROM_FLOAT_SIZE;
 	}
-	switch(coeff_typ) {
+	switch(poly) {
 		case 1:
-			for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) { prom->Off_Coeff[ii] = temp[ii]; }
+			for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) { prom_p->Off_Coeff[ii] = temp[ii]; }
 			break;
 		case 2:
-			for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) { prom->Spn_Coeff[ii] = temp[ii]; }
+			for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) { prom_p->Spn_Coeff[ii] = temp[ii]; }
 			break;	 
 		case 3:
-			for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) { prom->Shp_Coeff[ii] = temp[ii]; }
+			for(uint8_t ii=0; ii<DEGREE_POLYNOMIAL; ii++) { prom_p->Shp_Coeff[ii] = temp[ii]; }
 			break;
 	}
 }
 
-void get_coef(uint8_t coeff_typ, uint8_t pin) {
-	switch(coeff_typ) {
+void get_coef(uint8_t poly, uint8_t pin) {
+	switch(poly) {
 		case 1:
 			read8Block(pin, OFF_COEFF_ADDR, (EEPROM_FLOAT_SIZE*DEGREE_POLYNOMIAL)+2);
 			break;
@@ -233,66 +223,109 @@ void get_coef(uint8_t coeff_typ, uint8_t pin) {
  *
  */
 
-// Define state variables and test counters for ps_sm
+// Define states and state variables for ps_sm
 //
-enum ps_sm_t { read_ascii_info, sort_ascii_info, read_coeffs, sort_coeffs, config_AD, idle } 
+enum ps_sm_t { read_part_info,     sort_part_info, 
+			   read_poly_coeffs,   sort_coeffs, 
+			   read_config_AD,     sort_config_AD, 
+			   read_checksum,      sort_checksum, 
+			   calc_checksum_read, calc_checksum_calc,
+			   bad_checksum,
+			   init_ADs } 
+ps_sm = read_part_info;								// initial state
 
-ps_sm             = read_ascii_info;		// initial state
-uint8_t coeff_typ = 1;						// 1 = offset,  2 = span, 3 = shape (coefficients)
-uint8_t prom_num  = 1;                      // 1 = EEPROM1, 2 = EEPROM2
-uint8_t pin_cs    = EEP1_CS;                // 1 of 4 Sensor Chip Selects, start with EEPROM1
+uint8_t  prom_num       = 1;						// 1 = EEPROM1, 2 = EEPROM2
+uint8_t  pin_cs         = EEP1_CS;					// 1 of 4 Sensor Chip Selects, start with EEPROM1
+uint8_t  poly_type      = 1;						// which polynomial 1 = off, 2 = span, 3 = shape
+uint16_t check_count    = 0;						// bytes read from EEPROM for CRC calculation
+uint16_t CRC16_Computed = 0xFFFF;					// computed checksum on EEPROM - initial value
 
 void ps_spi_poll(void) {
-	if (!ps_spi_enabled || !PS_SPI_txfr_complete) return;
+	if ( !ps_spi_enabled || !PS_SPI_txfr_complete ) { return; }
 	switch(ps_sm) {
-		case read_ascii_info:                    // Read Sensor's ASCII Manufacturer's Info
-		    prom   = (prom_num == 1) ? &PROM_1 : &PROM_2;
+		case read_part_info:						// Read Sensor's ASCII Manufacturer's Info
+		    prom_p = (prom_num == 1) ? &prom_1 : &prom_2;
 			pin_cs = (prom_num == 1) ? EEP1_CS : EEP2_CS;
 			read8Block(pin_cs, PARTNUMBER_ADDR, RESERVED_ADDR-PARTNUMBER_ADDR+2);
-			ps_sm = sort_ascii_info;
+			ps_sm = sort_part_info;
 			break;
 		
-		case sort_ascii_info:                    // Sort SPI read-buffer into local structure
+		case sort_part_info:						// Sort SPI read-buffer into local structure
 			PS_chip_deselect(pin_cs);   
-			sort_PS_EEPROM(prom);
-			coeff_typ = 1;
-			ps_sm = read_coeffs;
+			sort_PS_EEPROM_info(prom_p);
+			poly_type = 1;
+			ps_sm = read_poly_coeffs;
 			break;
 				
-		case read_coeffs:                       // Read current type Polynomial coefficients from EEPROM
-			get_coef(coeff_typ, pin_cs);
+		case read_poly_coeffs:                      // Read current type Polynomial coefficients from EEPROM
+			get_coef(poly_type, pin_cs);
 			ps_sm = sort_coeffs;
 			break;
 
-		case sort_coeffs:                       // Sort SPI read-buffer into local structure
+		case sort_coeffs:							// Sort SPI read-buffer into local structure
 			PS_chip_deselect(pin_cs);   
-			sort_PS_EEPROM_coeffs(coeff_typ, prom);
-			coeff_typ++;
-			if (coeff_typ < 4) {						// all coefficients for this EEPROM?
-				ps_sm = read_coeffs;					//    no, get next coefficient
-				break;
-			} else if (prom_num < 2) {					// all EEPROMs read?
-				coeff_typ = 1;							//     no read next EEPROM
+			sort_PS_EEPROM_coeffs(poly_type, prom_p);
+			poly_type++;
+			ps_sm = (poly_type < 4) ? read_poly_coeffs : read_config_AD;
+			break;
+				
+		case read_config_AD:						// Read EEPROM's ADC default Config
+			read8Block(pin_cs, ADCCONFIG_ADDR, ADC_CONFIG_SIZE+2);
+			ps_sm = sort_config_AD;
+			break;
+			
+		case sort_config_AD:						// Sort SPI read-buffer into local structure
+			PS_chip_deselect(pin_cs);
+			for(uint8_t ii=0; ii<4; ii++) {	prom_p->ADC_Config[ii] = PS_xfr_Rbuf[ii*2+2]; } // 4 Registers
+			ps_sm = read_checksum;
+			break;
+			
+		case read_checksum:							// Read stored EEPROM Checksum value
+			read8Block(pin_cs, CHECKSUM_ADDR, 2+2);
+			ps_sm = sort_checksum;
+			break;
+			
+		case sort_checksum:							// Sort SPI read-buffer into local structure
+			PS_chip_deselect(pin_cs);
+			prom_p->CheckSum = (PS_xfr_Rbuf[3] << 8) + PS_xfr_Rbuf[2];
+			check_count = 0;						// bytes read from EEPROM for CRC calculation
+			CRC16_Computed = 0xFFFF;				// computed checksum on EEPROM - initial value
+			ps_sm = calc_checksum_read;
+			break;
+			 
+		case calc_checksum_read:					// Read 1 byte at time from  EEPROM, all EEPROM
+			read8Block(pin_cs, check_count, 1+2);
+			ps_sm = calc_checksum_calc;
+			break;
+			
+		case calc_checksum_calc:					// Generate running CRC calculation
+			PS_chip_deselect(pin_cs);
+			uint16_t itable = PS_xfr_Rbuf[2] ^ (CRC16_Computed >> 8);           // Get CRC table index
+			CRC16_Computed = gu16Crc16Table[itable] ^ (CRC16_Computed << 8);    // Calculate the new CRC value
+			check_count++;
+			if (check_count < MAX_EEPROM_SIZE-2) {			// last address (excluding last 2) in EEPROM?
+				ps_sm = calc_checksum_read;						// no, get next address
+			} else if (CRC16_Computed != prom_p->CheckSum) {  // checksum matches?
+				ps_sm = bad_checksum;							// no, fail
+			} else if (prom_num < 2) {						// last EEPROM tested?
+				check_count = 0;								// no, test next EEPROM
 				prom_num++;
-				ps_sm = read_ascii_info;        
-				break;
-			} else {                 
-				coeff_typ = 1;
-				prom_num  = 1;
-				ps_sm     = config_AD;
-				break;
+				ps_sm = read_part_info;
+			} else {										// Done and passed start with AD's
+				ps_sm = init_ADs;
 			}
-				
-		case config_AD:							// Configure the sensors A2D converter
-			ps_sm = idle;
 			break;
-
-		case idle:								// do it again
-			ps_sm = read_ascii_info;
+			
+		case bad_checksum:
+			ps_sm = bad_checksum;
 			break;
-				
+			
+		case init_ADs:
+			ps_sm = read_part_info;
+			break;
+			
 		default:
-			ps_sm = idle;
+			ps_sm = read_part_info;
 			break;
 	}
 }
