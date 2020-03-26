@@ -85,6 +85,10 @@ typedef struct {
 	float               Spn_Coeff[DEGREE_POLYNOMIAL];
 	float               Shp_Coeff[DEGREE_POLYNOMIAL];
 	unsigned short int  CheckSum;
+	signed short int    temperature_raw;
+	float				temperature;
+	int32_t				pressure_raw;
+	float               pressure;
 } EEPROM_t; 
 static EEPROM_t prom_1, prom_2, *prom_p; 
 
@@ -93,8 +97,6 @@ static EEPROM_t prom_1, prom_2, *prom_p;
 //    MODE 3 when reading Pressure or Temperature values
 //
 static enum spi_transfer_mode PS_spi_current_transfer_mode = SPI_MODE_0;
-
-signed short int t_raw;                 // raw temperature reading
 
 /* **************************************************************************
  * Base Functions for PS_SPI transfers
@@ -139,15 +141,15 @@ void ps_spi_reset(void) {
 
 // EEPROM spans a 9 Bit address space, upper bit is embedded in Read cmd
 //
-static inline void EEPROM_read(uint16_t addr) {
+static inline void prom_cmd_addr(uint16_t addr) {
 	PS_xfr_Wbuf[0] = (addr <= 0xFF ? 0x03 : 0x0B);
 	PS_xfr_Wbuf[1] = (uint8_t)addr;
 }
 
-// read uint8_t block of length m from EEPROM
+// transfer uint8_t block of length m to/from EEPROM
 //
-void read8Block(uint8_t pin, int addr, uint8_t numBytes) {
-	EEPROM_read(addr);
+void txfr_block(uint8_t pin, int addr, uint8_t numBytes) {
+	prom_cmd_addr(addr);
 	PS_start_spi_transfer(pin, PS_xfr_Wbuf, numBytes, SPI_MODE_0);
 }
 
@@ -170,10 +172,10 @@ float bytes2float32(int addr) {
 	 for(ii=0; ii<PART_NO_SIZE;   ii++) { prom_p->PartNumber[ii]   = PS_xfr_Rbuf[jj++]; }
 	 for(ii=0; ii<SERIAL_NO_SIZE; ii++) { prom_p->SerialNumber[ii] = PS_xfr_Rbuf[jj++]; }
 	 
-	 prom_p->Pressure_Min = bytes2float32(jj);
+	 prom_p->Pressure_Range = bytes2float32(jj);
 	 jj =jj+EEPROM_FLOAT_SIZE;
 	 
-	 prom_p->Pressure_Range = bytes2float32(jj);
+	 prom_p->Pressure_Min = bytes2float32(jj);
 	 jj =jj+EEPROM_FLOAT_SIZE;
 	 
 	 for(ii=0; ii<PRESSURE_UNIT_SIZE; ii++) { prom_p->PressureUnit[ii] = PS_xfr_Rbuf[jj++]; }
@@ -202,18 +204,47 @@ void sort_PS_EEPROM_coeffs(uint8_t poly, EEPROM_t *prom_p) {
 	}
 }
 
+// Select which coefficients are being retrieved from EEPROM
+//
 void get_coef(uint8_t poly, uint8_t pin) {
 	switch(poly) {
 		case 1:
-			read8Block(pin, OFF_COEFF_ADDR, (EEPROM_FLOAT_SIZE*DEGREE_POLYNOMIAL)+2);
+			txfr_block(pin, OFF_COEFF_ADDR, (EEPROM_FLOAT_SIZE*DEGREE_POLYNOMIAL)+2);
 			break;
 		case 2:
-			read8Block(pin, SPAN_COEFF_ADDR, (EEPROM_FLOAT_SIZE*DEGREE_POLYNOMIAL)+2);
+			txfr_block(pin, SPAN_COEFF_ADDR, (EEPROM_FLOAT_SIZE*DEGREE_POLYNOMIAL)+2);
 			break;
 		case 3:
-			read8Block(pin, SHAPE_COEFF_ADDR, (EEPROM_FLOAT_SIZE*DEGREE_POLYNOMIAL)+2);
+			txfr_block(pin, SHAPE_COEFF_ADDR, (EEPROM_FLOAT_SIZE*DEGREE_POLYNOMIAL)+2);
 			break;
 	}
+}
+
+// calculate compensated pressure, using temperature data and PROM coefficients
+//
+void use_coef(EEPROM_t *sensor) {
+	float t1 =(float)sensor->temperature_raw;
+	float t2 = t1*t1;
+	float t3 = t2*t1;
+	// first correct for offset using 3rd order poly and raw temperature data
+	float x = sensor->Off_Coeff[3] * t3;
+	float y = sensor->Off_Coeff[2] * t2;
+	float z = sensor->Off_Coeff[1] * t1;
+	sensor->pressure = sensor->pressure_raw - (x + y + z + sensor->Off_Coeff[0]);
+
+	// then correct for Gain using 3rd order poly and raw temperature data
+	x = sensor->Spn_Coeff[3] * t3;
+	y = sensor->Spn_Coeff[2] * t2;
+	z = sensor->Spn_Coeff[1] * t1;
+	sensor->pressure = sensor->pressure / (x + y + z + sensor->Spn_Coeff[0]);
+
+	// then correct for nonlinearity using 3rd order poly shape coefficients
+	x = (sensor->Shp_Coeff[3] * sensor->pressure * sensor->pressure * sensor->pressure);
+	y = (sensor->Shp_Coeff[2] * sensor->pressure * sensor->pressure);
+	z = (sensor->Shp_Coeff[1] * sensor->pressure);
+	sensor->pressure = x + y + z + sensor->Shp_Coeff[0];
+
+	sensor->pressure = (sensor->pressure * sensor->Pressure_Range) + sensor->Pressure_Min;
 }
 
 /* *****************************************************************************
@@ -223,30 +254,38 @@ void get_coef(uint8_t poly, uint8_t pin) {
  *
  */
 
-// Define states and state variables for ps_sm
+// Define states and state variable for Pressure Sensor State Machine (ps_sm)
 //
-enum ps_sm_t { read_part_info,     sort_part_info, 
-			   read_poly_coeffs,   sort_coeffs, 
-			   read_config_AD,     sort_config_AD, 
-			   read_checksum,      sort_checksum, 
-			   calc_checksum_read, calc_checksum_calc,
+enum ps_sm_t { read_part_info,		sort_part_info, 
+			   read_poly_coeffs,	sort_coeffs, 
+			   read_config_AD,		sort_config_AD, 
+			   read_checksum,		sort_checksum, 
+			   calc_checksum_read,	calc_checksum_calc,
 			   bad_checksum,
-			   init_ADs } 
+			   reset_ADs,			delay_AD_reset,		
+			   wr_AD_config,		wait_AD_config,
+			   rd_t_set_p,			sort_t,				wait_pressure,
+			   rd_p_set_t,			sort_p,				wait_temperature } 
+			   
 ps_sm = read_part_info;								// initial state
 
-uint8_t  prom_num       = 1;						// 1 = EEPROM1, 2 = EEPROM2
+uint8_t  prom_num       = 1;						// 1 = Sensor/EEPROM-1, 2 = Sensor/EEPROM-2
 uint8_t  pin_cs         = EEP1_CS;					// 1 of 4 Sensor Chip Selects, start with EEPROM1
-uint8_t  poly_type      = 1;						// which polynomial 1 = off, 2 = span, 3 = shape
-uint16_t check_count    = 0;						// bytes read from EEPROM for CRC calculation
-uint16_t CRC16_Computed = 0xFFFF;					// computed checksum on EEPROM - initial value
+uint8_t  poly_type      = 1;						// which polynomial 1 = offset, 2 = span, 3 = shape
+uint16_t check_count    = 0;						// track # bytes read from EEPROM for CRC calculation
+uint16_t CRC16_Computed = 0xFFFF;					// computed checksum on EEPROM - initialized to prescribed start
+uint8_t  AD_reset_count = 0;						// track # of state clocks to allow AD_RESET command completed
+uint16_t wait_cnvt_cnt  = 0;						// track # of state clocks to insure AD conversion is completed
 
 void ps_spi_poll(void) {
-	if ( !ps_spi_enabled || !PS_SPI_txfr_complete ) { return; }
+	if ( !ps_spi_enabled || !PS_SPI_txfr_complete ) { 
+		return;
+	}
 	switch(ps_sm) {
 		case read_part_info:						// Read Sensor's ASCII Manufacturer's Info
 		    prom_p = (prom_num == 1) ? &prom_1 : &prom_2;
 			pin_cs = (prom_num == 1) ? EEP1_CS : EEP2_CS;
-			read8Block(pin_cs, PARTNUMBER_ADDR, RESERVED_ADDR-PARTNUMBER_ADDR+2);
+			txfr_block(pin_cs, PARTNUMBER_ADDR, RESERVED_ADDR-PARTNUMBER_ADDR+2);
 			ps_sm = sort_part_info;
 			break;
 		
@@ -266,11 +305,11 @@ void ps_spi_poll(void) {
 			PS_chip_deselect(pin_cs);   
 			sort_PS_EEPROM_coeffs(poly_type, prom_p);
 			poly_type++;
-			ps_sm = (poly_type < 4) ? read_poly_coeffs : read_config_AD;
+			ps_sm = (poly_type < 4) ? read_poly_coeffs : read_config_AD;  // all poly types read in?
 			break;
 				
 		case read_config_AD:						// Read EEPROM's ADC default Config
-			read8Block(pin_cs, ADCCONFIG_ADDR, ADC_CONFIG_SIZE+2);
+			txfr_block(pin_cs, ADCCONFIG_ADDR, ADC_CONFIG_SIZE+2);
 			ps_sm = sort_config_AD;
 			break;
 			
@@ -281,7 +320,7 @@ void ps_spi_poll(void) {
 			break;
 			
 		case read_checksum:							// Read stored EEPROM Checksum value
-			read8Block(pin_cs, CHECKSUM_ADDR, 2+2);
+			txfr_block(pin_cs, CHECKSUM_ADDR, 2+2);
 			ps_sm = sort_checksum;
 			break;
 			
@@ -293,8 +332,8 @@ void ps_spi_poll(void) {
 			ps_sm = calc_checksum_read;
 			break;
 			 
-		case calc_checksum_read:					// Read 1 byte at time from  EEPROM, all EEPROM
-			read8Block(pin_cs, check_count, 1+2);
+		case calc_checksum_read:					// Read 1 byte at a time from  EEPROM, all of EEPROM
+			txfr_block(pin_cs, check_count, 1+2);   
 			ps_sm = calc_checksum_calc;
 			break;
 			
@@ -303,27 +342,123 @@ void ps_spi_poll(void) {
 			uint16_t itable = PS_xfr_Rbuf[2] ^ (CRC16_Computed >> 8);           // Get CRC table index
 			CRC16_Computed = gu16Crc16Table[itable] ^ (CRC16_Computed << 8);    // Calculate the new CRC value
 			check_count++;
-			if (check_count < MAX_EEPROM_SIZE-2) {			// last address (excluding last 2) in EEPROM?
-				ps_sm = calc_checksum_read;						// no, get next address
-			} else if (CRC16_Computed != prom_p->CheckSum) {  // checksum matches?
-				ps_sm = bad_checksum;							// no, fail
-			} else if (prom_num < 2) {						// last EEPROM tested?
-				check_count = 0;								// no, test next EEPROM
+			if (check_count < MAX_EEPROM_SIZE-2) {				// last address (excluding last 2) in EEPROM?
+				ps_sm = calc_checksum_read;								// no, get next address
+			} else if (CRC16_Computed != prom_p->CheckSum) {	// checksum matches?
+				ps_sm = bad_checksum;									// no, fail
+			} else if (prom_num < 2) {							// last EEPROM tested?
+				check_count = 0;										// no, do it all on next EEPROM
 				prom_num++;
 				ps_sm = read_part_info;
-			} else {										// Done and passed start with AD's
-				ps_sm = init_ADs;
+			} else {											// EEPROMS done and passed! On to AD's
+				spi_m_async_disable(&SPI_PR_SN);						// AD's work in MODE_1
+				spi_m_async_set_mode(&SPI_PR_SN, SPI_MODE_1);
+				PS_spi_current_transfer_mode = SPI_MODE_1;
+				spi_m_async_enable(&SPI_PR_SN);
+				prom_num = 1;
+				ps_sm = reset_ADs;
 			}
 			break;
 			
 		case bad_checksum:
-			ps_sm = bad_checksum;
+			ps_sm = bad_checksum;								// what to do ???????
 			break;
 			
-		case init_ADs:
-			ps_sm = read_part_info;
+		case reset_ADs:
+			prom_p = (prom_num == 1) ? &prom_1 : &prom_2;
+			pin_cs = (prom_num == 1) ? ADC1_CS : ADC2_CS;
+			PS_xfr_Wbuf[0] = RESET_AD;
+			PS_start_spi_transfer(pin_cs, PS_xfr_Wbuf, 1, SPI_MODE_1);
+			AD_reset_count = 0;
+			ps_sm = delay_AD_reset;
 			break;
 			
+		case delay_AD_reset:
+			PS_chip_deselect(pin_cs);
+			AD_reset_count++;
+			ps_sm = (AD_reset_count < AD_RESET_DELAY) ? delay_AD_reset : wr_AD_config;
+			break;
+		
+		case wr_AD_config:
+			PS_xfr_Wbuf[0] = WR_AD_REG_ALL;				// write_all_ADC_configuration_registers command
+			PS_xfr_Wbuf[1] = prom_p->ADC_Config[0];		// must write EEPROM stored value to reg 0
+			PS_xfr_Wbuf[2] = PS_AD_MODE_T;				// write mode reg to 330 Hz, Normal mode, convert Temperature
+			PS_xfr_Wbuf[3] = prom_p->ADC_Config[2];	    // must write EEPROM stored value to reg 2
+			PS_xfr_Wbuf[4] = prom_p->ADC_Config[3];		// must write EEPROM stored value to reg 3
+			PS_start_spi_transfer(pin_cs, PS_xfr_Wbuf, 5, SPI_MODE_1);    // 5 bytes to transfer
+			ps_sm = wait_AD_config;
+			break;
+			
+		case wait_AD_config:
+			PS_chip_deselect(pin_cs);
+			if (prom_num < 2) {
+				prom_num++;
+				ps_sm = reset_ADs;
+			} else {
+				prom_num = 1;
+				PS_xfr_Wbuf[0] = WR_AD_REG_MODE;            // Write AD Mode register command
+				PS_xfr_Wbuf[1] = PS_AD_MODE_P;              // Mode payload - convert Pressure
+				PS_xfr_Wbuf[2] = PS_START_CNV;				// Start Convert Command
+				ps_sm = rd_t_set_p;
+			}
+			break;
+			
+		case rd_t_set_p:
+			prom_p = (prom_num == 1) ? &prom_1 : &prom_2;	// select which sensor
+			pin_cs = (prom_num == 1) ? ADC1_CS : ADC2_CS;
+			PS_xfr_Wbuf[1] = PS_AD_MODE_P;								// Mode payload - convert Pressure
+			PS_start_spi_transfer(pin_cs, PS_xfr_Wbuf, 3, SPI_MODE_1);  // send the 3 bytes, read previous conversion.
+			ps_sm = sort_t;
+			break;
+			
+		case sort_t:
+			PS_chip_deselect(pin_cs);
+			prom_p->temperature_raw = ((PS_xfr_Rbuf[0] << 8) + PS_xfr_Rbuf[1])/4;	// /4 after shift to preserve sign
+			prom_p->temperature = T_Gain * (float)prom_p->temperature_raw;
+			ps_sm = wait_pressure;
+					gpio_set_pin_level(PMP_CNTL_2, true);           // pulse every state clock
+					for(uint8_t ii=0; ii<5; ii++) {gpio_set_pin_level(PMP_CNTL_2, true);}
+					gpio_set_pin_level(PMP_CNTL_2, false);
+			break;
+			
+		case wait_pressure:
+			if(wait_cnvt_cnt < WAIT_CONVERSION) {
+				wait_cnvt_cnt++;
+				ps_sm = wait_pressure;
+			} else {
+				wait_cnvt_cnt = 0;
+				ps_sm = rd_p_set_t;
+			}
+			break;
+		
+		case rd_p_set_t:
+			PS_xfr_Wbuf[1] = PS_AD_MODE_T;									// Mode payload - convert temperature
+			PS_start_spi_transfer(pin_cs, PS_xfr_Wbuf, 3, SPI_MODE_1);		// send the 3 bytes, read previous conversion.
+			ps_sm = sort_p;
+			break;
+			
+		case sort_p:
+			PS_chip_deselect(pin_cs);
+			prom_p->pressure_raw = ((PS_xfr_Rbuf[0] << 16) + (PS_xfr_Rbuf[1] << 8) + PS_xfr_Rbuf[2]);
+			prom_p->pressure_raw = (prom_p->pressure_raw << 8)/256;			// shift and /256 to preserve sign
+			use_coef(prom_p);												// calculate float pressure using PROM coef.
+			ps_sm = wait_temperature;
+					gpio_set_pin_level(PMP_CNTL_2, true);           // pulse every state clock
+					for(uint8_t ii=0; ii<10; ii++) {gpio_set_pin_level(PMP_CNTL_2, true);}
+					gpio_set_pin_level(PMP_CNTL_2, false);
+			break;
+		
+		case wait_temperature:
+			if(wait_cnvt_cnt < WAIT_CONVERSION) {
+				wait_cnvt_cnt++;
+				ps_sm = wait_temperature;
+			} else {
+				prom_num = (prom_num == 2) ? 1 : 2;							// toggle active sensor
+				wait_cnvt_cnt = 0;
+				ps_sm = rd_t_set_p;
+			}
+			break;
+	
 		default:
 			ps_sm = read_part_info;
 			break;

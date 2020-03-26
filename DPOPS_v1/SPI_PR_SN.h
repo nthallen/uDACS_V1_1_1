@@ -43,12 +43,19 @@
 #define EEPROM_FLOAT_SIZE            4 // Size of any Floats stored in EEPROM
 
 #define RESET_AD					 6 // Reset ADC command
-#define WR_REG_ALL                  67 // Write ADC Reg cmd = 0b 0100 0011, all four reg's
+#define AD_RESET_DELAY				20 // # state clocks needed to insure Reset CMD took
+#define WR_AD_REG_ALL               67 // Write ADC Reg cmd = 0b 0100 0011, all four reg's
 									   // To program a configuration register, the host sends a
 									   // WREG command [0100 RRNN], where
 									   //            RR is the Register Number
 									   //            NN is the (#bytes write)-1 (auto increments)
 									   //   67 = 0x43 = All 4 registers starting at Reg 0
+#define WR_AD_REG_MODE				68 //   68 = 0x44 =     1 Register  starting at Reg 1
+#define PS_AD_MODE_T			   134 // 0b 100 (330 Hz) 00 (normal) 1 (fixed) 1 (temperature) 0 (fixed)
+#define PS_AD_MODE_P			   132 // 0b 100 (330 Hz) 00 (normal) 1 (fixed) 0 (pressure   ) 0 (fixed)
+#define PS_START_CNV				 8 // Start Conversion Command	
+#define WAIT_CONVERSION			   340 // # state clocks needed to insure Conversion is ready at 330 Samples/sec
+                       
 									   
 // Various Unit Conversions and Gain, offset corrections
 #define T_Gain                       0.03125   // Honeywell Deg C / AD count
