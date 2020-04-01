@@ -25,12 +25,11 @@ extern "C" {
 #include <hal_usart_sync.h>
 #include <hal_timer.h>
 
-extern struct spi_m_async_descriptor SPI_AD_DA;
-extern struct spi_m_async_descriptor SPI_PR_SN;
-extern struct spi_m_async_descriptor SPI_SD;
-
-extern struct usart_sync_descriptor USART_0;
-extern struct timer_descriptor      TIMER_0;
+extern struct spi_m_async_descriptor   SPI_AD_DA;
+extern struct spi_m_async_descriptor   SPI_PR_SN;
+extern struct spi_m_async_descriptor   SPI_SD;
+extern struct usart_sync_descriptor    USART_0;
+extern struct timer_descriptor         TIMER_0;
 
 void spi_ad_da_port_init(void);
 void spi_ad_da_clock_init(void);

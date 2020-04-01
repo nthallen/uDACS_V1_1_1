@@ -1,6 +1,4 @@
-/************************************************************************/
-/* \file spi.c                                                          */
-/************************************************************************/
+
 #include <hal_spi_m_async.h>
 #include <hal_gpio.h>
 #include <hpl_pm_base.h>
@@ -115,25 +113,19 @@ static void complete_cb_PS_SPI(const struct spi_m_async_descriptor *const io_des
 }
 
 // Kick off SPI Transfer, non-blocking
-static void PS_start_spi_transfer(uint8_t pin, uint8_t const *txbuf, int length, enum spi_transfer_mode mode) {
-	assert(length <= PS_SPI_MAX_XFR_LENGTH,__FILE__,__LINE__);
-	if (PS_spi_current_transfer_mode != mode) {
-		spi_m_async_disable(&SPI_PR_SN);
-		spi_m_async_set_mode(&SPI_PR_SN, mode);
-		PS_spi_current_transfer_mode = mode;
-		spi_m_async_enable(&SPI_PR_SN);
-	}
+static void PS_start_spi_transfer(uint8_t pin, int length) {
 	PS_chip_select(pin);
 	PS_SPI_txfr_complete = false;
 	spi_m_async_transfer(&SPI_PR_SN, PS_xfr_Wbuf, PS_xfr_Rbuf, length);
 }
 
-// Reset = register ISR and enable SPI Hardware resource for Pressure Sensors
+// Reset => register ISR and enable SPI Hardware resource for Pressure Sensors
 void ps_spi_reset(void) {
 	spi_m_async_register_callback(&SPI_PR_SN, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_PS_SPI);
 	spi_m_async_enable(&SPI_PR_SN);
 	ps_spi_enabled = true;
 }
+
 
 /* **************************************************************************
  * Pressure Sensor "poll" State Machine supporting functions
@@ -150,7 +142,7 @@ static inline void prom_cmd_addr(uint16_t addr) {
 //
 void txfr_block(uint8_t pin, int addr, uint8_t numBytes) {
 	prom_cmd_addr(addr);
-	PS_start_spi_transfer(pin, PS_xfr_Wbuf, numBytes, SPI_MODE_0);
+	PS_start_spi_transfer(pin, numBytes);
 }
 
 
@@ -368,7 +360,7 @@ void ps_spi_poll(void) {
 			prom_p = (prom_num == 1) ? &prom_1 : &prom_2;
 			pin_cs = (prom_num == 1) ? ADC1_CS : ADC2_CS;
 			PS_xfr_Wbuf[0] = RESET_AD;
-			PS_start_spi_transfer(pin_cs, PS_xfr_Wbuf, 1, SPI_MODE_1);
+			PS_start_spi_transfer(pin_cs, 1);
 			AD_reset_count = 0;
 			ps_sm = delay_AD_reset;
 			break;
@@ -385,7 +377,7 @@ void ps_spi_poll(void) {
 			PS_xfr_Wbuf[2] = PS_AD_MODE_T;				// write mode reg to 330 Hz, Normal mode, convert Temperature
 			PS_xfr_Wbuf[3] = prom_p->ADC_Config[2];	    // must write EEPROM stored value to reg 2
 			PS_xfr_Wbuf[4] = prom_p->ADC_Config[3];		// must write EEPROM stored value to reg 3
-			PS_start_spi_transfer(pin_cs, PS_xfr_Wbuf, 5, SPI_MODE_1);    // 5 bytes to transfer
+			PS_start_spi_transfer(pin_cs, 5);			// 5 bytes to transfer
 			ps_sm = wait_AD_config;
 			break;
 			
@@ -396,9 +388,8 @@ void ps_spi_poll(void) {
 				ps_sm = reset_ADs;
 			} else {
 				prom_num = 1;
-				PS_xfr_Wbuf[0] = WR_AD_REG_MODE;            // Write AD Mode register command
-				PS_xfr_Wbuf[1] = PS_AD_MODE_P;              // Mode payload - convert Pressure
-				PS_xfr_Wbuf[2] = PS_START_CNV;				// Start Convert Command
+				PS_xfr_Wbuf[0] = WR_AD_REG_MODE;            // Command = Write_AD_Mode_Register 
+				PS_xfr_Wbuf[2] = PS_START_CNV;				// Command = Start_Convert 
 				ps_sm = rd_t_set_p;
 			}
 			break;
@@ -406,8 +397,8 @@ void ps_spi_poll(void) {
 		case rd_t_set_p:
 			prom_p = (prom_num == 1) ? &prom_1 : &prom_2;	// select which sensor
 			pin_cs = (prom_num == 1) ? ADC1_CS : ADC2_CS;
-			PS_xfr_Wbuf[1] = PS_AD_MODE_P;								// Mode payload - convert Pressure
-			PS_start_spi_transfer(pin_cs, PS_xfr_Wbuf, 3, SPI_MODE_1);  // send the 3 bytes, read previous conversion.
+			PS_xfr_Wbuf[1] = PS_AD_MODE_P;					// Mode -> convert Pressure
+			PS_start_spi_transfer(pin_cs, 3);				// send the 3 bytes, read previous conversion.
 			ps_sm = sort_t;
 			break;
 			
@@ -433,7 +424,7 @@ void ps_spi_poll(void) {
 		
 		case rd_p_set_t:
 			PS_xfr_Wbuf[1] = PS_AD_MODE_T;									// Mode payload - convert temperature
-			PS_start_spi_transfer(pin_cs, PS_xfr_Wbuf, 3, SPI_MODE_1);		// send the 3 bytes, read previous conversion.
+			PS_start_spi_transfer(pin_cs, 3);								// send the 3 bytes, read previous conversion.
 			ps_sm = sort_p;
 			break;
 			

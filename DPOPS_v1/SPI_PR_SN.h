@@ -54,7 +54,7 @@
 #define PS_AD_MODE_T			   134 // 0b 100 (330 Hz) 00 (normal) 1 (fixed) 1 (temperature) 0 (fixed)
 #define PS_AD_MODE_P			   132 // 0b 100 (330 Hz) 00 (normal) 1 (fixed) 0 (pressure   ) 0 (fixed)
 #define PS_START_CNV				 8 // Start Conversion Command	
-#define WAIT_CONVERSION			   340 // # state clocks needed to insure Conversion is ready at 330 Samples/sec
+#define WAIT_CONVERSION			   328 // # state clocks needed to insure Conversion is ready at 330 Samples/sec
                        
 									   
 // Various Unit Conversions and Gain, offset corrections
