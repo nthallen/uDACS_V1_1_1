@@ -48,7 +48,7 @@ void usart_0_clock_init(void);
 void usart_0_init(void);
 
 /**
- * \brief Perform system initialization, initialize pins and clocks for
+ * Perform system initialization, initialize pins and clocks for
  * peripherals
  */
 void system_init(void);

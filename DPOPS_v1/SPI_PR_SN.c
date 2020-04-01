@@ -405,7 +405,7 @@ void ps_spi_poll(void) {
 		case sort_t:
 			PS_chip_deselect(pin_cs);
 			prom_p->temperature_raw = ((PS_xfr_Rbuf[0] << 8) + PS_xfr_Rbuf[1])/4;	// /4 after shift to preserve sign
-			prom_p->temperature = T_Gain * (float)prom_p->temperature_raw;
+			prom_p->temperature = T_GAIN * (float)prom_p->temperature_raw;
 			ps_sm = wait_pressure;
 					gpio_set_pin_level(PMP_CNTL_2, true);           // pulse every state clock
 					for(uint8_t ii=0; ii<5; ii++) {gpio_set_pin_level(PMP_CNTL_2, true);}

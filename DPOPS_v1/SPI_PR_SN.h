@@ -58,7 +58,7 @@
                        
 									   
 // Various Unit Conversions and Gain, offset corrections
-#define T_Gain                       0.03125   // Honeywell Deg C / AD count
+#define T_GAIN                       0.03125   // Honeywell Deg C / AD count
 #define TORR_PER_INH2O               1.8683204 // Unit Conversion
 #define TORR_PER_PSI                68.9475728 // Unit Conversion
 #define MBAR_PER_INH2O               2.4908891 // Unit Conversion
