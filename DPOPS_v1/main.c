@@ -23,7 +23,7 @@ int main(void) {
 	ps_spi_reset();
 	TIMER_0_go();
 	while (1) {
-		gpio_set_pin_level(PMP_CNTL_1, true);           // pulse every state clock
+		gpio_set_pin_level(PMP_CNTL_1, true);           // Scope Debug - pulse every state clock
 		for(uint8_t ii=0; ii<3; ii++) {gpio_set_pin_level(PMP_CNTL_1, true);}
 		gpio_set_pin_level(PMP_CNTL_1, false);
 		ps_spi_poll();

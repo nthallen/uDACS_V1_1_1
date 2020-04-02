@@ -5,6 +5,7 @@
 #include <hpl_gclk_base.h>
 #include "atmel_start_pins.h"
 #include "SPI_PR_SN.h"
+#include "Timer_Setup.h"
 //#include "subbus.h"
 
 /* *************************************************************************
@@ -145,7 +146,6 @@ void txfr_block(uint8_t pin, int addr, uint8_t numBytes) {
 	PS_start_spi_transfer(pin, numBytes);
 }
 
-
 // 4 EEPROM bytes convert to float
 //
 float bytes2float32(int addr) {
@@ -236,6 +236,7 @@ void use_coef(EEPROM_t *sensor) {
 	z = (sensor->Shp_Coeff[1] * sensor->pressure);
 	sensor->pressure = x + y + z + sensor->Shp_Coeff[0];
 
+	// Finally normalize to full scale range (max and min from EEPROM)
 	sensor->pressure = (sensor->pressure * sensor->Pressure_Range) + sensor->Pressure_Min;
 }
 
@@ -246,7 +247,7 @@ void use_coef(EEPROM_t *sensor) {
  *
  */
 
-// Define states and state variable for Pressure Sensor State Machine (ps_sm)
+// Define states and conditional variables for Pressure Sensor State Machine (ps_sm)
 //
 enum ps_sm_t { read_part_info,		sort_part_info, 
 			   read_poly_coeffs,	sort_coeffs, 
@@ -263,11 +264,14 @@ ps_sm = read_part_info;								// initial state
 
 uint8_t  prom_num       = 1;						// 1 = Sensor/EEPROM-1, 2 = Sensor/EEPROM-2
 uint8_t  pin_cs         = EEP1_CS;					// 1 of 4 Sensor Chip Selects, start with EEPROM1
-uint8_t  poly_type      = 1;						// which polynomial 1 = offset, 2 = span, 3 = shape
+uint8_t  poly_type      = 1;						// which polynomial, 1 = offset, 2 = span, 3 = shape
 uint16_t check_count    = 0;						// track # bytes read from EEPROM for CRC calculation
 uint16_t CRC16_Computed = 0xFFFF;					// computed checksum on EEPROM - initialized to prescribed start
-uint8_t  AD_reset_count = 0;						// track # of state clocks to allow AD_RESET command completed
-uint16_t wait_cnvt_cnt  = 0;						// track # of state clocks to insure AD conversion is completed
+
+// for absolute delay time tracking
+uint32_t timer_ps_sm    = 0;						// hold time read from real time counter_1msec variable 
+uint32_t AD_reset_count = 0;						// elapsed time tracking to assure AD_RESET command completed
+uint32_t wait_cnvt_cnt  = 0;						// elapsed time tracking to assure AD conversion is completed
 
 void ps_spi_poll(void) {
 	if ( !ps_spi_enabled || !PS_SPI_txfr_complete ) { 
@@ -361,13 +365,13 @@ void ps_spi_poll(void) {
 			pin_cs = (prom_num == 1) ? ADC1_CS : ADC2_CS;
 			PS_xfr_Wbuf[0] = RESET_AD;
 			PS_start_spi_transfer(pin_cs, 1);
-			AD_reset_count = 0;
+			timer_ps_sm = count_1msec;
 			ps_sm = delay_AD_reset;
 			break;
 			
 		case delay_AD_reset:
 			PS_chip_deselect(pin_cs);
-			AD_reset_count++;
+			AD_reset_count = count_1msec - timer_ps_sm;
 			ps_sm = (AD_reset_count < AD_RESET_DELAY) ? delay_AD_reset : wr_AD_config;
 			break;
 		
@@ -399,6 +403,7 @@ void ps_spi_poll(void) {
 			pin_cs = (prom_num == 1) ? ADC1_CS : ADC2_CS;
 			PS_xfr_Wbuf[1] = PS_AD_MODE_P;					// Mode -> convert Pressure
 			PS_start_spi_transfer(pin_cs, 3);				// send the 3 bytes, read previous conversion.
+			timer_ps_sm = count_1msec;						// get time of start convert command (1ms resolution)
 			ps_sm = sort_t;
 			break;
 			
@@ -413,18 +418,14 @@ void ps_spi_poll(void) {
 			break;
 			
 		case wait_pressure:
-			if(wait_cnvt_cnt < WAIT_CONVERSION) {
-				wait_cnvt_cnt++;
-				ps_sm = wait_pressure;
-			} else {
-				wait_cnvt_cnt = 0;
-				ps_sm = rd_p_set_t;
-			}
+			wait_cnvt_cnt = count_1msec - timer_ps_sm;
+			ps_sm = ( wait_cnvt_cnt < WAIT_CONVERSION ) ? wait_pressure : rd_p_set_t;
 			break;
 		
 		case rd_p_set_t:
 			PS_xfr_Wbuf[1] = PS_AD_MODE_T;									// Mode payload - convert temperature
 			PS_start_spi_transfer(pin_cs, 3);								// send the 3 bytes, read previous conversion.
+			timer_ps_sm = count_1msec;										// get time of start convert command issued in transfer
 			ps_sm = sort_p;
 			break;
 			
@@ -440,13 +441,12 @@ void ps_spi_poll(void) {
 			break;
 		
 		case wait_temperature:
-			if(wait_cnvt_cnt < WAIT_CONVERSION) {
-				wait_cnvt_cnt++;
+			wait_cnvt_cnt = count_1msec - timer_ps_sm;
+			if ( wait_cnvt_cnt < WAIT_CONVERSION ) {
 				ps_sm = wait_temperature;
 			} else {
-				prom_num = (prom_num == 2) ? 1 : 2;							// toggle active sensor
-				wait_cnvt_cnt = 0;
 				ps_sm = rd_t_set_p;
+				prom_num = (prom_num == 1) ? 2 : 1;
 			}
 			break;
 	

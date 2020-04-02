@@ -9,6 +9,7 @@
 #ifndef TIMER_SETUP_H_
 #define TIMER_SETUP_H_
 
+extern volatile uint32_t count_1msec;
 void TIMER_0_go(void);
 
 #endif /* TIMER_SETUP_H_ */
