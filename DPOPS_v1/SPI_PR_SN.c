@@ -233,6 +233,35 @@ void use_coef(EEPROM_t *sensor) {
 	sensor->pressure = (sensor->pressure * sensor->Pressure_Range) + sensor->Pressure_Min;
 }
 
+// Define read / writeable Host Cache Interface
+static subbus_cache_word_t ps_spi_cache[PS_SPI_HIGH_ADDR - PS_SPI_BASE_ADDR+1] = {
+	{ 0, 0, true,  false,  true,  false, false },	// W,   Raw, Temperature,	Pressure Sensor 1
+	{ 0, 0, true,  false,  true,  false, false },	// LSW, Raw, Pressure,		Pressure Sensor 1
+	{ 0, 0, true,  false,  true,  false, false },	// MSW, Raw, Pressure,		Pressure Sensor 1
+	{ 0, 0, true,  false,  true,  false, false },	// W,   Raw, Temperature,	Pressure Sensor 2
+	{ 0, 0, true,  false,  true,  false, false },	// LSW, Raw, Pressure,		Pressure Sensor 2
+	{ 0, 0, true,  false,  true,  false, false },	// MSW, Raw, Pressure,		Pressure Sensor 2
+};
+//  0,		0,        true,       false,     true,      false,     false,
+// .cache   .wvalue   .readable   .was_read  .writable  .written   .dynamic
+
+void ps_cache_update(EEPROM_t *sensor, uint8_t which_prom){
+	uint8_t indx = (which_prom-1)*PS_NUM_WORDS_RAW;
+	ps_spi_cache[0+indx].cache = (uint16_t) prom_p->temperature_raw;
+	ps_spi_cache[1+indx].cache = (uint16_t) prom_p->pressure_raw >> 16;
+	ps_spi_cache[2+indx].cache = (uint16_t) prom_p->pressure_raw;
+	
+	union float2uint16 { float f; uint16_t w[2]; } f2b ;
+	
+	f2b.f = prom_p->temperature;
+	ps_spi_cache[3+indx].cache = f2b.w[0];
+	ps_spi_cache[4+indx].cache = f2b.w[1];
+	
+	f2b.f = prom_p->pressure;
+	ps_spi_cache[5+indx].cache = f2b.w[0];
+	ps_spi_cache[6+indx].cache = f2b.w[1];
+}
+
 /* *****************************************************************************
  * Honeywell RSC series Pressure Sensor Driver State machine - Poll Function.  
  * Main loop = state clock, i.e. evaluate inputs, act, decide next state
@@ -426,7 +455,8 @@ void ps_spi_poll(void) {
 			PS_chip_deselect(pin_cs);
 			prom_p->pressure_raw = ((PS_xfr_Rbuf[0] << 16) + (PS_xfr_Rbuf[1] << 8) + PS_xfr_Rbuf[2]);
 			prom_p->pressure_raw = (prom_p->pressure_raw << 8)/256;			// shift and /256 to preserve sign
-			use_coef(prom_p);												// calculate float pressure using PROM coef.
+			use_coef(prom_p);
+			ps_cache_update(prom_p, prom_num);
 			ps_sm = wait_temperature;
 					gpio_set_pin_level(PMP_CNTL_2, true);           // pulse every state clock
 					for(uint8_t ii=0; ii<10; ii++) {gpio_set_pin_level(PMP_CNTL_2, true);}
@@ -461,11 +491,7 @@ void ps_spi_reset(void) {
 	ps_spi_enabled = true;
 }
 
-static subbus_cache_word_t ps_spi_cache[PS_SPI_HIGH_ADDR - PS_SPI_BASE_ADDR+1] = {
-	{ 0, 0, true,  false,  true,  false, false },
-	{ 0, 0, true,  false,  true,  false, false },	 
-};
-
+  
 subbus_driver_t sb_ps_spi = {
 	PS_SPI_BASE_ADDR, PS_SPI_HIGH_ADDR,
 	ps_spi_cache,

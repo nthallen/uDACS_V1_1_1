@@ -67,6 +67,7 @@
 #define MBAR_PER_TORR                1.3332237 // Unit Conversion
 #define GAIN_MKS                     0.3150201 // MKS Baratron torr / count
 #define OFF_MKS                     -1393      // MKS Baratron offset in counts
+#define PS_NUM_WORDS_RAW			 7         // Number of 16 bits values to store Raw ADC readings
 
 //extern subbus_driver_t sb_PS_spi;
 void ps_spi_poll(void);
