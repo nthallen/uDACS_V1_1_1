@@ -8,6 +8,8 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_SN1|ARM = Debug_SN1|ARM
+		Debug_SN1A|ARM = Debug_SN1A|ARM
+		Debug_SN1B|ARM = Debug_SN1B|ARM
 		Debug_SN2|ARM = Debug_SN2|ARM
 		Debug|ARM = Debug|ARM
 		Release|ARM = Release|ARM
@@ -15,6 +17,10 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN1|ARM.ActiveCfg = Debug_SN1|ARM
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN1|ARM.Build.0 = Debug_SN1|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN1A|ARM.ActiveCfg = Debug_SN1A|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN1A|ARM.Build.0 = Debug_SN1A|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN1B|ARM.ActiveCfg = Debug_SN1B|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN1B|ARM.Build.0 = Debug_SN1B|ARM
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN2|ARM.ActiveCfg = Debug_SN2|ARM
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN2|ARM.Build.0 = Debug_SN2|ARM
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug|ARM.ActiveCfg = Debug|ARM

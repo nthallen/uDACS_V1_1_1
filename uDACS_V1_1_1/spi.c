@@ -90,10 +90,11 @@ typedef struct {
 /* first byte could be part of the sigma-delta readback error header    */
 /* rather than the response from the registers.                         */
 /************************************************************************/
-#define N_AD7770_INIT 8
+#define N_AD7770_INIT 9
 ad7770_init_word ad7770_init_codes[N_AD7770_INIT] = {
   { { 0x13, 0x80 } }, // readback regs on SDO
   { { 0xDB, 0x00 } }, // R: GEN_ERR_REG_2 to clear reset detected
+  { { 0x11, 0x34 } }, // GENERAL_USER_CONFIG_1: Power up internal reference output
   { { 0x15, 0x40 } }, // Internal reference
   { { 0x60, 0x0F } }, // SRC N MSB
   { { 0x61, 0xA0 } }, // SRC N LSB

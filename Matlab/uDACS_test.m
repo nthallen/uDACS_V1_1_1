@@ -51,3 +51,5 @@ end
 %%
 [value,ack] = read_subbus(s,39); % General read register
 fprintf(1,'ack=%d value=%04X\n', ack,value);
+%%
+write_subbus(s, 17, 0);
