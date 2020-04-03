@@ -4,6 +4,7 @@
 #include <hpl_pm_base.h>
 #include <hpl_gclk_base.h>
 #include "atmel_start_pins.h"
+#include "subbus.h"
 #include "SPI_PR_SN.h"
 #include "Timer_Setup.h"
 //#include "subbus.h"
@@ -119,14 +120,6 @@ static void PS_start_spi_transfer(uint8_t pin, int length) {
 	PS_SPI_txfr_complete = false;
 	spi_m_async_transfer(&SPI_PR_SN, PS_xfr_Wbuf, PS_xfr_Rbuf, length);
 }
-
-// Reset => register ISR and enable SPI Hardware resource for Pressure Sensors
-void ps_spi_reset(void) {
-	spi_m_async_register_callback(&SPI_PR_SN, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_PS_SPI);
-	spi_m_async_enable(&SPI_PR_SN);
-	ps_spi_enabled = true;
-}
-
 
 /* **************************************************************************
  * Pressure Sensor "poll" State Machine supporting functions
@@ -457,29 +450,29 @@ void ps_spi_poll(void) {
 }
 
 /* ********************************************************************************
- * Nort Arch. Features
+ * Norton Arch. Features
  *
-static void PS_spi_reset(void) {
-	if (!sb_PS_spi.initialized) {
-		spi_m_async_register_callback(&SPI_PR_SN, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_PS_SPI);
-		spi_m_async_enable(&SPI_PR_SN);
-		sb_PS_spi.initialized = true;
-	}
+ */
+
+// Reset Function - Register ISR and enable SPI Hardware resource for Pressure Sensors
+void ps_spi_reset(void) {
+	spi_m_async_register_callback(&SPI_PR_SN, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_PS_SPI);
+	spi_m_async_enable(&SPI_PR_SN);
+	ps_spi_enabled = true;
 }
 
-static subbus_cache_word_t PS_spi_cache[PS_SPI_HIGH_ADDR-PS_SPI_BASE_ADDR+1] = {
+static subbus_cache_word_t ps_spi_cache[PS_SPI_HIGH_ADDR - PS_SPI_BASE_ADDR+1] = {
 	{ 0, 0, true,  false,  true,  false, false },
 	{ 0, 0, true,  false,  true,  false, false },	 
 };
 
-subbus_driver_t sb_PS_spi = {
+subbus_driver_t sb_ps_spi = {
 	PS_SPI_BASE_ADDR, PS_SPI_HIGH_ADDR,
-	PS_spi_cache,
-	PS_spi_reset,
-	PS_spi_poll,
-	0,
+	ps_spi_cache,
+	ps_spi_reset,
+	ps_spi_poll,       // driver state machine
+	0,                 // no action function
 	false
 };
- *
- */
+
 

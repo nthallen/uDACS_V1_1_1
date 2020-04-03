@@ -9,10 +9,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_SN1|ARM = Debug_SN1|ARM
+		Debug_SN3|ARM = Debug_SN3|ARM
 		Debug|ARM = Debug|ARM
 		Release|ARM = Release|ARM
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN1|ARM.ActiveCfg = Debug_SN3|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN1|ARM.Build.0 = Debug_SN3|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN3|ARM.ActiveCfg = Debug_SN3|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug_SN3|ARM.Build.0 = Debug_SN3|ARM
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug|ARM.ActiveCfg = Debug|ARM
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug|ARM.Build.0 = Debug|ARM
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Release|ARM.ActiveCfg = Release|ARM

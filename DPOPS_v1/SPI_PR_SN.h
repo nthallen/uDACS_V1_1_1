@@ -7,13 +7,13 @@
 #ifndef SPI_PR_SN_H_
 #define SPI_PR_SN_H_
 #include "driver_init.h"
-//#include "subbus.h"
+#include "subbus.h"
 
 #define PS_SPI_MAX_XFR_LENGTH      44   
 #define PS_SPI_ENABLE_DEFAULT      false
 
 // Subbus Address Space
-#define PS_PSI_BASE_ADDR           0x32
+#define PS_SPI_BASE_ADDR           0x32
 #define PS_SPI_HIGH_ADDR           0x3E
 
 #define DEGREE_POLYNOMIAL            4   // 4 coefficients for a 3rd deg polynomial
