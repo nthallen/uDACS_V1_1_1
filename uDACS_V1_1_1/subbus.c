@@ -3,35 +3,46 @@
 #include <string.h>
 #include "subbus.h"
 
-static subbus_driver_t *drivers[SUBBUS_MAX_DRIVERS];
-static int n_drivers = 0;
+static subbus_driver_t *drivers;
 
 /** @return true on error.
  * Possible errors include too many drivers or drivers not in ascending order.
  */
 bool subbus_add_driver(subbus_driver_t *driver) {
-  if ((n_drivers >= SUBBUS_MAX_DRIVERS) ||
-      ((n_drivers > 0) && (drivers[n_drivers-1]->high > driver->low)) ||
-      driver->high < driver->low )
-    return true;
-  drivers[n_drivers++] = driver;
+  subbus_driver_t **dpp = &drivers;
+  driver->next = 0;
+  while (*dpp) {
+    subbus_driver_t *prev = *dpp;
+    // make sure driver does not overlap *dpp
+    if (driver->high < prev->low) {
+      driver->next = prev;
+      *dpp = driver;
+      return false;
+    } else if (driver->low > prev->high) {
+      dpp = &prev->next;
+    } else {
+      // Overlap condition
+      return true;
+    }
+  }
+  *dpp = driver;
   return false;
 }
 
 void subbus_reset(void) {
-  int i;
-  for (i = 0; i < n_drivers; ++i) {
-    if (drivers[i]->reset) {
-      (*(drivers[i]->reset))();
+  subbus_driver_t *drv = drivers;
+  for (drv = drivers; drv; drv = drv->next) {
+    if (drv->reset) {
+      drv->reset();
     }
   }
 }
 
 void subbus_poll(void) {
-  int i;
-  for (i = 0; i < n_drivers; ++i) {
-    if (drivers[i]->poll) {
-      (*drivers[i]->poll)();
+  subbus_driver_t *drv = drivers;
+  for (drv = drivers; drv; drv = drv->next) {
+    if (drv->poll) {
+      drv->poll();
     }
   }
 }
@@ -40,17 +51,17 @@ void subbus_poll(void) {
  * @return non-zero on success (acknowledge)
  */
 int subbus_read( uint16_t addr, uint16_t *rv ) {
-  int i;
-  for (i = 0; i < n_drivers; ++i) {
-    if (addr < drivers[i]->low) return 0;
-    if (addr <= drivers[i]->high) {
-      uint16_t offset = addr-drivers[i]->low;
-      subbus_cache_word_t *cache = &drivers[i]->cache[offset];
+  subbus_driver_t *drv = drivers;
+  for (drv = drivers; drv; drv = drv->next) {
+    if (addr < drv->low) return 0;
+    if (addr <= drv->high) {
+      uint16_t offset = addr-drv->low;
+      subbus_cache_word_t *cache = &drv->cache[offset];
       if (cache->readable) {
         *rv = cache->cache;
         cache->was_read = true;
-        if (cache->dynamic && drivers[i]->sb_action)
-          drivers[i]->sb_action(offset);
+        if (cache->dynamic && drv->sb_action)
+          drv->sb_action(offset);
         return 1;
       }
     }
@@ -63,17 +74,17 @@ int subbus_read( uint16_t addr, uint16_t *rv ) {
  * @return non-zero on success (acknowledge)
  */
 int subbus_write( uint16_t addr, uint16_t data) {
-  int i;
-  for (i = 0; i < n_drivers; ++i) {
-    if (addr < drivers[i]->low) return 0;
-    if (addr <= drivers[i]->high) {
-      uint16_t offset = addr-drivers[i]->low;
-      subbus_cache_word_t *cache = &drivers[i]->cache[offset];
+  subbus_driver_t *drv = drivers;
+  for (drv = drivers; drv; drv = drv->next) {
+    if (addr < drv->low) return 0;
+    if (addr <= drv->high) {
+      uint16_t offset = addr-drv->low;
+      subbus_cache_word_t *cache = &drv->cache[offset];
       if (cache->writable) {
         cache->wvalue = data;
         cache->written = true;
-        if (cache->dynamic && drivers[i]->sb_action)
-          drivers[i]->sb_action(offset);
+        if (cache->dynamic && drv->sb_action)
+          drv->sb_action(offset);
         return 1;
       }
     }

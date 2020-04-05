@@ -18,7 +18,6 @@
 #define SUBBUS_SWITCHES_ADDR        0x0007
 #define SUBBUS_DESC_FIFO_SIZE_ADDR  0x0008
 #define SUBBUS_DESC_FIFO_ADDR       0x0009
-#define SUBBUS_MAX_DRIVERS          6
 #define SUBBUS_INTERRUPTS           0
 
 #define SUBBUS_ADDR_CMDS 0x18
@@ -60,7 +59,7 @@ typedef struct subbus_driver_s {
   void (*poll)(void);
   void (*sb_action)(uint16_t offset); // called if dynamic
   bool initialized;
-  // struct subbus_driver_s *next;
+  struct subbus_driver_s *next;
 } subbus_driver_t;
 
 bool subbus_add_driver(subbus_driver_t *driver);
