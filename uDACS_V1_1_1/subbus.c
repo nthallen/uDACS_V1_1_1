@@ -136,15 +136,21 @@ subbus_driver_t sb_fail_sw = { SUBBUS_FAIL_ADDR, SUBBUS_SWITCHES_ADDR,
  */
 bool subbus_cache_iswritten(subbus_driver_t *drv, uint16_t addr, uint16_t *value) {
   if (addr >= drv->low && addr <= drv->high) {
-    subbus_cache_word_t *word = &drv->cache[addr-drv->low];
-    if (word->writable && word->written) {
-      *value = word->wvalue;
-      word->written = false;
-      return true;
-    }
+    return sb_cache_iswritten(drv->cache, addr-drv->low, value);
   }
   return false;
 }
+
+bool sb_cache_iswritten(subbus_cache_word_t *cache, uint16_t offset, uint16_t *value) {
+  subbus_cache_word_t *word = &cache[offset];
+  if (word->writable && word->written) {
+    *value = word->wvalue;
+    word->written = false;
+    return true;
+  }
+  return false;
+}
+
 
 /**
  * This function differs from subbus_write() in that it directly
@@ -160,24 +166,35 @@ bool subbus_cache_iswritten(subbus_driver_t *drv, uint16_t addr, uint16_t *value
  */
 bool subbus_cache_update(subbus_driver_t *drv, uint16_t addr, uint16_t data) {
   if (addr >= drv->low && addr <= drv->high) {
-    subbus_cache_word_t *word = &drv->cache[addr-drv->low];
-    if (word->readable) {
-      word->cache = data;
-      word->was_read = false;
-      return true;
-    }
+    return sb_cache_update(drv->cache, addr-drv->low, data);
+  }
+  return false;
+}
+
+bool sb_cache_update(subbus_cache_word_t *cache, uint16_t offset, uint16_t data) {
+  subbus_cache_word_t *word = &cache[offset];
+  if (word->readable) {
+    word->cache = data;
+    word->was_read = false;
+    return true;
   }
   return false;
 }
 
 bool subbus_cache_was_read(subbus_driver_t *drv, uint16_t addr) {
   if (addr >= drv->low && addr <= drv->high) {
-    subbus_cache_word_t *word = &drv->cache[addr-drv->low];
-    return word->was_read;
+    return sb_cache_was_read(drv->cache, addr-drv->low);
   }
   return false;
 }
 
+bool sb_cache_was_read(subbus_cache_word_t *cache, uint16_t offset) {
+  return cache[offset].was_read;
+}
+
+/***************************************************/
+/* Board Description Driver                        */
+/***************************************************/
 static subbus_cache_word_t board_desc_cache[2] = {
   { 0, 0, true, false, false, false, false },
   { 0, 0, true, false, false, false, true }
