@@ -69,3 +69,9 @@ end
 fprintf(1,'ack=%d value=%04X\n', ack,value);
 %%
 write_subbus(s, 17, 0);
+%%
+rm_obj = read_multi_prep([64,1,67]);
+%%
+
+  [vals,ack] = read_multi(s,rm_obj);
+

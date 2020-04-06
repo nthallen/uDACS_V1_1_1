@@ -1,0 +1,85 @@
+/* rtc_timer.c */
+#include "driver_init.h"
+// #include "hri_rtc_d21.h"
+#include "rtc_timer.h"
+
+uint32_t rtc_current_count;
+static bool rtc_current_count_set;
+
+/**
+ * \brief Start timer
+ * This is a rewrite of timer_start() that does not enable interrupts and
+ * disables the compare function that resets the counter automatically.
+ */
+int32_t uDACS_timer_start(struct timer_descriptor *const descr)
+{
+  struct _timer_device *dev;
+  uint16_t register_value;
+	ASSERT(descr);
+  dev = &descr->device;
+	if (_timer_is_started(&descr->device)) {
+		return ERR_DENIED;
+	}
+  // Fix settings that timer_init() applied
+  // Clear CTRL.MATCHLR bit
+  // Disable the CMP0 interrupt
+
+  register_value = hri_rtcmode0_read_CTRL_reg(dev->hw);
+  register_value &= ~RTC_MODE0_CTRL_MATCHCLR;
+  hri_rtcmode0_write_CTRL_reg(dev->hw, register_value);
+  hri_rtcmode0_clear_INTEN_CMP0_bit(dev->hw);
+
+
+	// _timer_start(&descr->device); copied here and modified to leave IRQ disabled:
+	ASSERT(dev && dev->hw);
+
+	// NVIC_EnableIRQ(RTC_IRQn);
+	hri_rtcmode0_write_COUNT_COUNT_bf(dev->hw, 0);
+	hri_rtcmode0_wait_for_sync(dev->hw);
+	hri_rtcmode0_set_CTRL_ENABLE_bit(dev->hw);
+
+	return ERR_NONE;
+}
+
+static subbus_cache_word_t rtc_cache[RTC_HIGH_ADDR-RTC_BASE_ADDR+1] = {
+  { 0, 0, true, false, false, false, false },
+  { 0, 0, true, false, false, false, false },
+  { 0, 0, true, false, false, false, false },
+  { 0, 0, true, false, false, false, false }
+};
+
+static void rtc_reset() {
+  uDACS_timer_start(&TIMER_0);
+}
+
+/**
+ * Reads the RTC counter and saves it to offset 0 and 1 and also saves
+ * it in rtc_current_count;
+ * Calculates the elapsed time since the previous poll and stores the
+ * difference in offset 2.
+ * Checks to see if this is a new maximum, and if so, stores it in offset 3.
+ */
+static void rtc_poll() {
+  uint32_t cur_time = hri_rtcmode0_read_COUNT_reg(RTC);
+  sb_cache_update32(rtc_cache,RTC_ELAPSED_OFFSET,cur_time);
+  if (rtc_current_count_set) {
+    uint16_t dt = cur_time - rtc_current_count;
+    sb_cache_update(rtc_cache,RTC_CUR_STATE_DURATION_OFFSET,dt);
+    if (dt > rtc_cache[RTC_MAX_STATE_DURATION_OFFSET].cache)
+      sb_cache_update(rtc_cache,RTC_MAX_STATE_DURATION_OFFSET,dt);
+  } else {
+    rtc_current_count_set = true;
+  }
+  rtc_current_count = cur_time;
+}
+
+#define rtc_action 0
+
+subbus_driver_t sb_rtc = {
+  RTC_BASE_ADDR, RTC_HIGH_ADDR, // address range
+  rtc_cache,
+  rtc_reset,
+  rtc_poll,
+  rtc_action,
+  false
+};

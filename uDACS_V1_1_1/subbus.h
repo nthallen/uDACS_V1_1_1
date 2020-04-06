@@ -115,6 +115,21 @@ bool subbus_cache_update(subbus_driver_t *drv, uint16_t addr, uint16_t data);
  * @return true on success
  */
 bool sb_cache_update(subbus_cache_word_t *cache, uint16_t offset, uint16_t data);
+/**
+ * This function differs from subbus_write() in that it directly
+ * updates the cache value.
+ * This function differes from subbus_cache_update() in that it
+ * directly addresses the local cache without checking the range.
+ * On success, returns true and clears the was_read flag.
+ * This function differs from both in that it updates two successive
+ * addresses, placing the low-order 16 bits in the lower register
+ * and the high-order 16 bits in the following register.
+ * @param cache pointer to the local cache
+ * @param offset of the register in the local cache
+ * @param data The value to be written
+ * @return true on success
+ */
+bool sb_cache_update32(subbus_cache_word_t *cache, uint16_t offset, uint32_t data);
 
 #endif // USE_SUBBUS
 

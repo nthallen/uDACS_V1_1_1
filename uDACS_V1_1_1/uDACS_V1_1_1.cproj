@@ -1184,6 +1184,12 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="rtc_timer.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="rtc_timer.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="serial_num.h">
       <SubType>compile</SubType>
     </Compile>

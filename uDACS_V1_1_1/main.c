@@ -3,6 +3,7 @@
 #include "subbus.h"
 #include "control.h"
 #include "spi.h"
+#include "rtc_timer.h"
 
 int main(void)
 {
@@ -11,7 +12,8 @@ int main(void)
   if (subbus_add_driver(&sb_base) ||
       subbus_add_driver(&sb_fail_sw) ||
       subbus_add_driver(&sb_board_desc) ||
-      subbus_add_driver(&sb_spi)) {
+      subbus_add_driver(&sb_spi) ||
+      subbus_add_driver(&sb_rtc)) {
     while (true) ; // some driver is misconfigured.
   }
   subbus_reset();

@@ -292,7 +292,6 @@ void USART_CTRL_init(void)
 }
 #endif
 
-#if 0
 /**
  * \brief Timer initialization function
  *
@@ -304,7 +303,6 @@ static void TIMER_0_init(void)
 	_gclk_enable_channel(RTC_GCLK_ID, CONF_GCLK_RTC_SRC);
 	timer_init(&TIMER_0, RTC, _rtc_get_timer());
 }
-#endif
 
 void system_init(void)
 {
@@ -507,7 +505,7 @@ void system_init(void)
 
 	SD_SPI_init();
 	USART_CTRL_init();
+#endif
 
 	TIMER_0_init();
-#endif
 }
