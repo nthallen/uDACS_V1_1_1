@@ -134,13 +134,13 @@ drivers:
     configuration:
       enable_gclk_gen_0: true
       enable_gclk_gen_0__externalclock: 1000000
-      enable_gclk_gen_1: false
+      enable_gclk_gen_1: true
       enable_gclk_gen_1__externalclock: 1000000
       enable_gclk_gen_2: true
       enable_gclk_gen_2__externalclock: 1000000
       enable_gclk_gen_3: true
       enable_gclk_gen_3__externalclock: 1000000
-      enable_gclk_gen_4: false
+      enable_gclk_gen_4: true
       enable_gclk_gen_4__externalclock: 1000000
       enable_gclk_gen_5: false
       enable_gclk_gen_5__externalclock: 1000000
@@ -154,7 +154,7 @@ drivers:
       gclk_arch_gen_0_oe: false
       gclk_arch_gen_0_oov: false
       gclk_arch_gen_1_RUNSTDBY: false
-      gclk_arch_gen_1_enable: false
+      gclk_arch_gen_1_enable: true
       gclk_arch_gen_1_idc: false
       gclk_arch_gen_1_oe: true
       gclk_arch_gen_1_oov: false
@@ -169,9 +169,9 @@ drivers:
       gclk_arch_gen_3_oe: true
       gclk_arch_gen_3_oov: false
       gclk_arch_gen_4_RUNSTDBY: false
-      gclk_arch_gen_4_enable: false
+      gclk_arch_gen_4_enable: true
       gclk_arch_gen_4_idc: false
-      gclk_arch_gen_4_oe: false
+      gclk_arch_gen_4_oe: true
       gclk_arch_gen_4_oov: false
       gclk_arch_gen_5_RUNSTDBY: false
       gclk_arch_gen_5_enable: false
@@ -191,18 +191,18 @@ drivers:
       gclk_gen_0_div: 1
       gclk_gen_0_div_sel: false
       gclk_gen_0_oscillator: 8MHz Internal Oscillator (OSC8M)
-      gclk_gen_1_div: 1
+      gclk_gen_1_div: 8
       gclk_gen_1_div_sel: false
-      gclk_gen_1_oscillator: 32kHz High Accuracy Internal Oscillator (OSC32K)
+      gclk_gen_1_oscillator: 8MHz Internal Oscillator (OSC8M)
       gclk_gen_2_div: 1
       gclk_gen_2_div_sel: false
       gclk_gen_2_oscillator: 32kHz High Accuracy Internal Oscillator (OSC32K)
       gclk_gen_3_div: 1
       gclk_gen_3_div_sel: false
       gclk_gen_3_oscillator: Fractional Digital Phase Locked Loop (FDPLL96M)
-      gclk_gen_4_div: 1
+      gclk_gen_4_div: 10
       gclk_gen_4_div_sel: false
-      gclk_gen_4_oscillator: External Crystal Oscillator 0.4-32MHz (XOSC)
+      gclk_gen_4_oscillator: Generic clock generator 1
       gclk_gen_5_div: 1
       gclk_gen_5_div_sel: false
       gclk_gen_5_oscillator: External Crystal Oscillator 0.4-32MHz (XOSC)
@@ -486,11 +486,11 @@ drivers:
       domain_group:
         nodes:
         - name: RTC
-          input: Generic clock generator 0
+          input: Generic clock generator 4
           external: false
           external_frequency: 0
         configuration:
-          rtc_clk_selection: Generic clock generator 0
+          rtc_clk_selection: Generic clock generator 4
   DMAC:
     user_label: DMAC
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::DMAC::driver_config_definition::DMAC::HAL:HPL:DMAC
