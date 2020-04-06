@@ -193,7 +193,7 @@ bool sb_cache_update(subbus_cache_word_t *cache, uint16_t offset, uint16_t data)
 }
 
 bool sb_cache_update32(subbus_cache_word_t *cache, uint16_t offset, uint32_t data) {
-  return sb_cache_update(cache, offset, (uint16_t)(data & 0xFFFF)) ||
+  return sb_cache_update(cache, offset, (uint16_t)(data & 0xFFFF)) &&
         sb_cache_update(cache, offset+1, (uint16_t)((data>>16) & 0xFFFF));
 }
 

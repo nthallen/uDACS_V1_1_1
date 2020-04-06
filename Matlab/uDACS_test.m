@@ -20,7 +20,7 @@ Build = read_subbus(s,3);
 if subfunc == 9
   Rev = 'A';
 else
-  Rev == 'B';
+  Rev = 'B';
 end
 if BoardID == 1
   BdCfg = 'uDACS A';
