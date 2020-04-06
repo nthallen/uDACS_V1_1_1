@@ -15,8 +15,8 @@
 #define SERIAL_NUM_H_INCLUDED
 
 // These parameters are common to all boards built with this code
-#define SUBBUS_BOARD_FIRMWARE_REV "V1.2"
-#define SUBBUS_BOARD_BUILD_NUM 7
+#define SUBBUS_BOARD_FIRMWARE_REV "V1.3"
+#define SUBBUS_BOARD_BUILD_NUM 8
 
 /**
  * Build definitions
