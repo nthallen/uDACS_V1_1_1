@@ -1122,6 +1122,7 @@ static void _sercom_i2c_m_irq_handler(struct _i2c_m_async_device *i2c_dev)
 		} else {
 			i2c_dev->cb.error(i2c_dev, I2C_ERR_BUS);
 		}
+		hri_sercomi2cm_clear_INTFLAG_reg(hw, SERCOM_I2CM_INTFLAG_ERROR);
 	}
 }
 
@@ -1770,6 +1771,12 @@ static struct i2cs_configuration _i2css[] = {
 #endif
 #if CONF_SERCOM_5_I2CS_ENABLE == 1
     I2CS_CONFIGURATION(5),
+#endif
+#if CONF_SERCOM_6_I2CS_ENABLE == 1
+    I2CS_CONFIGURATION(6),
+#endif
+#if CONF_SERCOM_7_I2CS_ENABLE == 1
+    I2CS_CONFIGURATION(7),
 #endif
 };
 #endif

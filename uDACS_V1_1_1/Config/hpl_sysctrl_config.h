@@ -600,7 +600,7 @@
 // <i> Select the clock source.
 // <id> fdpll96m_ref_clock
 #ifndef CONF_DPLL_GCLK
-#define CONF_DPLL_GCLK GCLK_CLKCTRL_GEN_GCLK1_Val
+#define CONF_DPLL_GCLK GCLK_CLKCTRL_GEN_GCLK2_Val
 #endif
 
 #if (CONF_DPLL_GCLK == GCLK_GENCTRL_SRC_XOSC32K)

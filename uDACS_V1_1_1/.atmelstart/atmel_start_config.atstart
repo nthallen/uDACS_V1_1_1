@@ -2,16 +2,16 @@ format_version: '2'
 name: uDACS_V1_1_1
 versions:
   api: '1.0'
-  backend: 1.7.298
+  backend: 1.7.303
   commit: 1e07622763d149970fd8808a8f12ff3b1e84e0d7
   content: unknown
   content_pack_name: unknown
   format: '2'
-  frontend: 1.7.298
-  packs_version_avr8: 1.0.1408
+  frontend: 1.7.303
+  packs_version_avr8: 1.0.1410
   packs_version_qtouch: unknown
-  packs_version_sam: 1.0.1373
-  version_backend: 1.7.298
+  packs_version_sam: 1.0.1554
+  version_backend: 1.7.303
   version_frontend: ''
 board:
   identifier: CustomBoard
@@ -134,9 +134,9 @@ drivers:
     configuration:
       enable_gclk_gen_0: true
       enable_gclk_gen_0__externalclock: 1000000
-      enable_gclk_gen_1: true
+      enable_gclk_gen_1: false
       enable_gclk_gen_1__externalclock: 1000000
-      enable_gclk_gen_2: false
+      enable_gclk_gen_2: true
       enable_gclk_gen_2__externalclock: 1000000
       enable_gclk_gen_3: true
       enable_gclk_gen_3__externalclock: 1000000
@@ -154,14 +154,14 @@ drivers:
       gclk_arch_gen_0_oe: false
       gclk_arch_gen_0_oov: false
       gclk_arch_gen_1_RUNSTDBY: false
-      gclk_arch_gen_1_enable: true
+      gclk_arch_gen_1_enable: false
       gclk_arch_gen_1_idc: false
       gclk_arch_gen_1_oe: true
       gclk_arch_gen_1_oov: false
       gclk_arch_gen_2_RUNSTDBY: false
-      gclk_arch_gen_2_enable: false
+      gclk_arch_gen_2_enable: true
       gclk_arch_gen_2_idc: false
-      gclk_arch_gen_2_oe: false
+      gclk_arch_gen_2_oe: true
       gclk_arch_gen_2_oov: false
       gclk_arch_gen_3_RUNSTDBY: false
       gclk_arch_gen_3_enable: true
@@ -196,7 +196,7 @@ drivers:
       gclk_gen_1_oscillator: 32kHz High Accuracy Internal Oscillator (OSC32K)
       gclk_gen_2_div: 1
       gclk_gen_2_div_sel: false
-      gclk_gen_2_oscillator: Digital Frequency Locked Loop (DFLL48M)
+      gclk_gen_2_oscillator: 32kHz High Accuracy Internal Oscillator (OSC32K)
       gclk_gen_3_div: 1
       gclk_gen_3_div_sel: false
       gclk_gen_3_oscillator: Fractional Digital Phase Locked Loop (FDPLL96M)
@@ -809,7 +809,7 @@ drivers:
       fdpll96m_clock_div: 0
       fdpll96m_ldr: 224
       fdpll96m_ldrfrac: 0
-      fdpll96m_ref_clock: Generic clock generator 1
+      fdpll96m_ref_clock: Generic clock generator 2
       osc32k_arch_calib: 0
       osc32k_arch_en1k: false
       osc32k_arch_en32k: true
