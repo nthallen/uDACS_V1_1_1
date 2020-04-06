@@ -70,20 +70,18 @@ fprintf(1,'ack=%d value=%04X\n', ack,value);
 %%
 write_subbus(s, 17, 0);
 %%
-rm_obj = read_multi_prep([64,1,67]);
-%%
+rm_obj = read_multi_prep([64,1,68]);
+%
 T0 = -1;
 while true
   [vals,ack] = read_multi(s,rm_obj);
   T1 = vals(1) + vals(2)*65536;
   if T0 > 0
     dT = T1-T0;
-    fprintf(1, 'Elapsed: %.5f sec\n', dT*1e-5);
+    fprintf(1, 'Elapsed/Loop/Max/State: %.5f %.3f %.3f %.0f\n', dT*1e-5, vals(3)*1e-2, vals(4)*1e-2, vals(5));
   end
-  fprintf(1, 'Current Loop Time: %.3f msec\n', vals(3)*1e-2);
-  fprintf(1, 'Maximum Loop Time: %.3f msec\n', vals(4)*1e-2);
   T0 = T1;
-  pause(1);
+  pause(.1);
 end
 %%
 N = 1000;
@@ -93,6 +91,6 @@ for i=1:N
   curlooptime(i) = val*1e-2;
   pause(.1);
 end
-%%
+%
 figure; plot(curlooptime,'.');
 ylabel('msec');

@@ -9,6 +9,7 @@
 #include "atmel_start_pins.h"
 #include "spi.h"
 #include "subbus.h"
+#include "rtc_timer.h"
 
 static volatile bool AD_SPI_txfr_complete = true;
 static bool spi_enabled = SPI_ENABLE_DEFAULT;
@@ -181,6 +182,8 @@ static bool poll_adc() {
       } else {
         stage.regs_state = adc_regs_diverted;
       }
+      stage.state = ad7770_check_sb;
+      return true;
     case ad7770_check_sb: // Check here for subbus reads or writes
       if (subbus_cache_was_read(&sb_spi, GEN_ERRS_ADDR)) {
         stage.state = ad7770_read_errs;
@@ -294,6 +297,9 @@ void spi_poll(void) {
         if (poll_adc()) {
           spi_state = spi_dac;
         }
+        #ifdef RTC_USE_MAX_DURATION_REFERENCE
+        // rtc_max_state_duration_ref_value = stage.state;
+        #endif
         break;
       case spi_dac:
         if (poll_dac()) {
