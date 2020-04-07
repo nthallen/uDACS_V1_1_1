@@ -282,7 +282,8 @@ static void parse_command(uint8_t *cmd) {
 #endif
       SendCodeVal('D', arg1);
       break;
-    case 'T': // Tick: Currently NOOP
+    case 'T': // Tick:
+      sb_fail_tick();
       break;
     case 'A': // Disarm 2-second reboot: NOOP
       SendMsg("A");

@@ -2,6 +2,9 @@
  */
 #include <string.h>
 #include "subbus.h"
+#ifdef HAVE_RTC
+#include "rtc_timer.h"
+#endif
 
 static subbus_driver_t *drivers;
 
@@ -122,14 +125,66 @@ static subbus_cache_word_t sb_fail_sw_cache[SUBBUS_SWITCHES_ADDR-SUBBUS_FAIL_ADD
   { 0, 0, 1, 0, 0, 0, 0 }  // Switches
 };
 
+#ifdef HAVE_RTC
+static uint32_t sb_fail_last_tick;
+static bool sb_fail_last_tick_set;
+static bool sb_fail_timed_out;
+#endif
+
 static void sb_fail_sw_reset() {
   sb_fail_sw_cache[0].cache = 0;
+  sb_fail_last_tick_set = false;
+  sb_fail_timed_out = false;
+}
+
+static void sb_fail_set() {
+  #ifdef SB_FAIL_PIN
+    bool failbar = !(sb_fail_sw_cache[0].cache & 0x1);
+    gpio_set_pin_level(SB_FAIL_PIN, failbar);
+    #ifdef SB_FAIL_PIN2
+      gpio_set_pin_level(SB_FAIL_PIN2, failbar);
+    #endif
+  #endif
+}
+
+void sb_fail_tick() {
+  #ifdef HAVE_RTC
+    sb_fail_last_tick = rtc_current_count;
+    if (sb_fail_timed_out) {
+      sb_fail_timed_out = false;
+      sb_cache_update(sb_fail_sw_cache,0, sb_fail_sw_cache[0].wvalue);
+      sb_fail_set();
+    }
+  #endif
 }
 
 static void sb_fail_sw_poll() {
-  if (sb_fail_sw_cache[0].written) {
-    sb_fail_sw_cache[0].cache = sb_fail_sw_cache[0].wvalue;
-    sb_fail_sw_cache[0].written = false;
+  uint16_t wfail;
+  #ifdef HAVE_RTC
+    if (!sb_fail_timed_out) {
+      if (sb_fail_last_tick_set) {
+        uint32_t elapsed = rtc_current_count - sb_fail_last_tick;
+        if (elapsed > SB_FAIL_TIMEOUT_SECS * RTC_COUNTS_PER_SECOND) {
+          sb_fail_timed_out = true;
+          sb_cache_update(sb_fail_sw_cache,0,
+            sb_fail_sw_cache[0].cache | 0x1);
+          sb_fail_set();
+        }
+      } else {
+        sb_fail_last_tick_set = true;
+        sb_fail_last_tick = rtc_current_count;
+        sb_fail_set();
+      }
+    }
+  #endif
+  if (sb_cache_iswritten(sb_fail_sw_cache,0,&wfail)) {
+    #ifdef HAVE_RTC
+      if (sb_fail_timed_out) {
+        wfail |= 0x1;
+      }
+    #endif
+    sb_cache_update(sb_fail_sw_cache,0,wfail);
+    sb_fail_set();
   }
 }
 

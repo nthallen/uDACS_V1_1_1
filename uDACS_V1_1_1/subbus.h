@@ -131,6 +131,16 @@ bool sb_cache_update(subbus_cache_word_t *cache, uint16_t offset, uint16_t data)
  */
 bool sb_cache_update32(subbus_cache_word_t *cache, uint16_t offset, uint32_t data);
 
+/**
+ * Indicates that the host computer is actively taking data.
+ * Resets the fail timeout clock if present.
+ **/
+void sb_fail_tick();
+
+#ifndef SB_FAIL_TIMEOUT_SECS
+#define SB_FAIL_TIMEOUT_SECS 120
+#endif
+
 #endif // USE_SUBBUS
 
 #endif

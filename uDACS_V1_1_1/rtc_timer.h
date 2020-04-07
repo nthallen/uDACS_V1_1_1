@@ -23,6 +23,7 @@ extern uint16_t rtc_max_state_duration_ref_value;
 
 #endif
 
+#define RTC_COUNTS_PER_SECOND 100000
 extern subbus_driver_t sb_rtc;
 extern uint32_t rtc_current_count;
 
