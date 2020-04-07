@@ -368,16 +368,15 @@ void system_init(void)
 
 	// GPIO on PA20
 
-	// Set pin direction to input
-	gpio_set_pin_direction(SPR29, GPIO_DIRECTION_IN);
+	gpio_set_pin_level(SPR29,
+	                   // <y> Initial level
+	                   // <id> pad_initial_level
+	                   // <false"> Low
+	                   // <true"> High
+	                   false);
 
-	gpio_set_pin_pull_mode(SPR29,
-	                       // <y> Pull configuration
-	                       // <id> pad_pull_config
-	                       // <GPIO_PULL_OFF"> Off
-	                       // <GPIO_PULL_UP"> Pull-up
-	                       // <GPIO_PULL_DOWN"> Pull-down
-	                       GPIO_PULL_OFF);
+	// Set pin direction to output
+	gpio_set_pin_direction(SPR29, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_function(SPR29, GPIO_PIN_FUNCTION_OFF);
 

@@ -960,7 +960,7 @@ pads:
   SPR29:
     name: PA20
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA20
-    mode: Digital input
+    mode: Digital output
     user_label: SPR29
     configuration: null
   PMOD2_CSEE2:
