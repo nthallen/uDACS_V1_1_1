@@ -312,7 +312,8 @@ static void parse_command(uint8_t *cmd) {
 
 #define RECV_BUF_SIZE USART_CTRL_RX_BUFFER_SIZE
 static uint8_t cmd[RECV_BUF_SIZE];							// Current Command
-static int cmd_byte_num = 0;
+static int cmd_nc = 0;
+static int cmd_cp = 0;
 #ifdef CMD_RCV_TIMEOUT
   static int cmd_rcv_timer = 0;
 #endif
@@ -326,30 +327,39 @@ static int cmd_byte_num = 0;
 *******************************************************************************/
 void poll_control(void) {
     int nr, i;
-    nr = uart_recv(&cmd[cmd_byte_num], RECV_BUF_SIZE-cmd_byte_num-1);
+    nr = uart_recv(&cmd[cmd_nc], RECV_BUF_SIZE-cmd_nc-1);
     if (nr > 0) {
 #ifdef CMD_RCV_TIMEOUT
-      if (cmd_byte_num == 0) cmd_rcv_timer = 0;
+      if (cmd_nc == 0) cmd_rcv_timer = 0;
 #endif
-      for (i = 0; i < nr && cmd_byte_num < RECV_BUF_SIZE; ++i) {
-        if (cmd[cmd_byte_num] == '\n' || cmd[cmd_byte_num] == '\r') {
-          cmd[++cmd_byte_num] = '\0';
-          parse_command(cmd);
-          cmd_byte_num = 0;
+      cmd_nc += nr;
+      for (i = cmd_cp; i < cmd_nc; ++i) {
+        if (cmd[i] == '\n' || cmd[i] == '\r') {
+          cmd[++i] = '\0';
+          parse_command(&cmd[cmd_cp]);
+          cmd_cp = i;
+          if (cmd_cp >= cmd_nc) {
+            cmd_nc = 0;
+            cmd_cp = 0;
+          } else {
+            for (int j = 0; cmd_cp+j < cmd_nc; ++j) {
+              cmd[j] = cmd[cmd_cp+j];
+            }
+            cmd_nc -= cmd_cp;
+            cmd_cp = 0;
+          }
           break;
-        } else {
-          ++cmd_byte_num;
         }
       }
-      if (cmd_byte_num >= RECV_BUF_SIZE-1) {
+      if (cmd_nc >= RECV_BUF_SIZE-1) {
         SendErrorMsg("8"); // Error code 8: Too many bytes before NL
         uart_flush_input();
-        cmd_byte_num = 0;
+        cmd_nc = 0;
       }
 #ifdef CMD_RCV_TIMEOUT
-    } else if (cmd_byte_num > 0 && ++cmd_rcv_timer > CMD_RCV_TIMEOUT) {
+    } else if (cmd_nc > 0 && ++cmd_rcv_timer > CMD_RCV_TIMEOUT) {
       SendErrorMsg("2"); // Code 2: Rcv Timeout
-      cmd_byte_num = 0;
+      cmd_nc = 0;
 #endif
     }
 }
