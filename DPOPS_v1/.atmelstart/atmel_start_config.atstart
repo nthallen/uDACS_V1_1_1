@@ -239,8 +239,8 @@ drivers:
           external: false
           external_frequency: 0
         configuration: {}
-  SPI_AD_DA:
-    user_label: SPI_AD_DA
+  AD_SPI:
+    user_label: AD_SPI
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM0::driver_config_definition::SPI.Master::HAL:Driver:SPI.Master.Async
     functionality: SPI
     api: HAL:Driver:SPI_Master_Async
@@ -283,8 +283,8 @@ drivers:
         configuration:
           core_gclk_selection: Generic clock generator 0
           slow_gclk_selection: Generic clock generator 3
-  SPI_PR_SN:
-    user_label: SPI_PR_SN
+  PS_SPI:
+    user_label: PS_SPI
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM1::driver_config_definition::SPI.Master::HAL:Driver:SPI.Master.Async
     functionality: SPI
     api: HAL:Driver:SPI_Master_Async
@@ -327,8 +327,8 @@ drivers:
         configuration:
           core_gclk_selection: Generic clock generator 0
           slow_gclk_selection: Generic clock generator 3
-  SPI_SD:
-    user_label: SPI_SD
+  SD_SPI:
+    user_label: SD_SPI
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM4::driver_config_definition::SPI.Master::HAL:Driver:SPI.Master.Async
     functionality: SPI
     api: HAL:Driver:SPI_Master_Async
@@ -371,11 +371,11 @@ drivers:
         configuration:
           core_gclk_selection: Generic clock generator 0
           slow_gclk_selection: Generic clock generator 3
-  USART_0:
-    user_label: USART_0
-    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM5::driver_config_definition::UART::HAL:Driver:USART.Sync
+  USART_CTRL:
+    user_label: USART_CTRL
+    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM5::driver_config_definition::UART::HAL:Driver:USART.Async
     functionality: USART
-    api: HAL:Driver:USART_Sync
+    api: HAL:Driver:USART_Async
     configuration:
       usart_advanced: false
       usart_arch_clock_mode: USART with internal clock
@@ -390,7 +390,7 @@ drivers:
       usart_arch_sampa: 7-8-9 (3-4-5 8-bit over-sampling)
       usart_arch_sampr: 16x arithmetic
       usart_arch_sfde: false
-      usart_baud_rate: 9600
+      usart_baud_rate: 115200
       usart_character_size: 8 bits
       usart_parity: No parity
       usart_rx_enable: true
@@ -816,6 +816,12 @@ pads:
     mode: Digital input
     user_label: ADC_Alert
     configuration: null
+  VCC_MON:
+    name: PA03
+    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA03
+    mode: Analog
+    user_label: VCC_MON
+    configuration: null
   Pmp_CNTL_1:
     name: PB08
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB08
@@ -829,6 +835,30 @@ pads:
     user_label: DAC_CS
     configuration:
       pad_initial_level: High
+  DAC0_MON:
+    name: PA04
+    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA04
+    mode: Advanced
+    user_label: DAC0_MON
+    configuration: null
+  DAC1_MON:
+    name: PA05
+    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA05
+    mode: Analog
+    user_label: DAC1_MON
+    configuration: null
+  DAC2_MON:
+    name: PA06
+    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA06
+    mode: Analog
+    user_label: DAC2_MON
+    configuration: null
+  DAC3_MON:
+    name: PA07
+    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA07
+    mode: Analog
+    user_label: DAC3_MON
+    configuration: null
   AD_MOSI:
     name: PA08
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA08
@@ -911,11 +941,11 @@ pads:
     mode: Digital output
     user_label: PS_MOSI
     configuration: null
-  Pmp_CNTL_:
+  Pmp_CNTL_2:
     name: PA20
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA20
     mode: Digital output
-    user_label: Pmp_CNTL_
+    user_label: Pmp_CNTL_2
     configuration: null
   EEP2_CS:
     name: PA21
@@ -937,17 +967,17 @@ pads:
     mode: Digital input
     user_label: Pmp_STAT_2
     configuration: null
-  PB22:
+  USART_TX:
     name: PB22
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB22
     mode: Peripheral IO
-    user_label: PB22
+    user_label: USART_TX
     configuration: null
-  PB23:
+  USART_RX:
     name: PB23
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB23
     mode: Peripheral IO
-    user_label: PB23
+    user_label: USART_RX
     configuration: null
   SD_Sns:
     name: PA27

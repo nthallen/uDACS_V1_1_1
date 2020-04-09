@@ -14,13 +14,13 @@ extern "C" {
 
 void EXTERNAL_IRQ_0_example(void);
 
-void SPI_AD_DA_example(void);
+void AD_SPI_example(void);
 
-void SPI_PR_SN_example(void);
+void PS_SPI_example(void);
 
-void SPI_SD_example(void);
+void SD_SPI_example(void);
 
-void USART_0_example(void);
+void USART_CTRL_example(void);
 
 void TIMER_0_example(void);
 

@@ -14,41 +14,44 @@
 extern "C" {
 #endif
 
+// Atmel Start Baseline (added even with no drivers selected in Start)
 #include <hal_atomic.h>
 #include <hal_delay.h>
 #include <hal_gpio.h>
 #include <hal_init.h>
 #include <hal_io.h>
 #include <hal_sleep.h>
+
+// Atmel Start User Specific (depending on drivers selected / configured)
 #include <hal_ext_irq.h>
 #include <hal_spi_m_async.h>
-#include <hal_usart_sync.h>
+#include <hal_usart_async.h>
 #include <hal_timer.h>
 
-extern struct spi_m_async_descriptor   SPI_AD_DA;
-extern struct spi_m_async_descriptor   SPI_PR_SN;
-extern struct spi_m_async_descriptor   SPI_SD;
-extern struct usart_sync_descriptor    USART_0;
-extern struct timer_descriptor         TIMER_0;
+extern struct spi_m_async_descriptor AD_SPI;
+extern struct spi_m_async_descriptor PS_SPI;
+extern struct spi_m_async_descriptor SD_SPI;
+extern struct usart_async_descriptor USART_CTRL;
+extern struct timer_descriptor       TIMER_0;
 
-void spi_ad_da_port_init(void);
-void spi_ad_da_clock_init(void);
-void spi_ad_da_init(void);
+void AD_SPI_PORT_init(void);
+void AD_SPI_CLOCK_init(void);
+void AD_SPI_init(void);
 
-void spi_pr_sn_init(void);
-void spi_pr_sn_clock_init(void);
-void spi_pr_sn_init(void);
+void PS_SPI_PORT_init(void);
+void PS_SPI_CLOCK_init(void);
+void PS_SPI_init(void);
 
-void spi_sd_port_init(void);
-void spi_sd_clock_init(void);
-void spi_sd_init(void);
+void SD_SPI_PORT_init(void);
+void SD_SPI_CLOCK_init(void);
+void SD_SPI_init(void);
 
-void usart_0_port_init(void);
-void usart_0_clock_init(void);
-void usart_0_init(void);
+void USART_CTRL_PORT_init(void);
+void USART_CTRL_CLOCK_init(void);
+void USART_CTRL_init(void);
 
 /**
- * Perform system initialization, initialize pins and clocks for
+ * \brief Perform system initialization, initialize pins and clocks for
  * peripherals
  */
 void system_init(void);

@@ -10,20 +10,25 @@
 #if USE_SUBBUS
 #define SUBBUS_FAIL_RESERVED        0xF000
 #define SUBBUS_INTA_ADDR            0x0001
-#define SUBBUS_BDID_ADDR            0x0002
-#define SUBBUS_BLDNO_ADDR           0x0003
-#define SUBBUS_BDSN_ADDR            0x0004
-#define SUBBUS_INSTID_ADDR          0x0005
-#define SUBBUS_FAIL_ADDR            0x0006
-#define SUBBUS_SWITCHES_ADDR        0x0007
-#define SUBBUS_DESC_FIFO_SIZE_ADDR  0x0008
-#define SUBBUS_DESC_FIFO_ADDR       0x0009
+#define SUBBUS_BDID_ADDR            0x0002  // Board ID ..			What's this ????
+#define SUBBUS_BLDNO_ADDR           0x0003  // Firmware Build Number
+#define SUBBUS_BDSN_ADDR            0x0004  // Board Serial Number
+#define SUBBUS_INSTID_ADDR          0x0005  // Board Instance ID ..	What's this ????	
+#define SUBBUS_FAIL_ADDR            0x0006  // What's this ????
+#define SUBBUS_SWITCHES_ADDR        0x0007  // What's this ????
+#define SUBBUS_DESC_FIFO_SIZE_ADDR  0x0008  // What's this ????
+#define SUBBUS_DESC_FIFO_ADDR       0x0009  // What's this ????
+#define SUBBUS_ADDR_CMDS			0x18    // Query Address?		What's this ????
+
 #define SUBBUS_MAX_DRIVERS          7
 #define SUBBUS_INTERRUPTS           0
 
-#define SUBBUS_ADDR_CMDS 0x18
+// Adds by Litch for DPOPS implementation
+#define SUBBUS_MATLAB_TEST_ADDR     0x30
+#define PS_SPI_BASE_ADDR            0x32
+#define PS_SPI_HIGH_ADDR            0x45
+// #define CMD_RCV_TIMEOUT             0
 
-#define SUBBUS_MATLAB_TEST_ADDR 0x30
 
 #if SUBBUS_INTERRUPTS
 extern volatile uint8_t subbus_intr_req;

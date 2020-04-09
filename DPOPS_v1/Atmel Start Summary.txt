@@ -1,0 +1,115 @@
+Light Sensor (Timer) Example for ATSAMD12J18A
+
+******* driver_init.h includes
+
+#include "atmel_start_pins.h"
+
+#include <hal_atomic.h>
+#include <hal_delay.h>
+#include <hal_gpio.h>
+#include <hal_init.h>
+#include <hal_io.h>
+#include <hal_sleep.h>
+
+#include <hal_adc_async.h>
+#include <hal_usart_async.h>
+#include <hal_timer.h>
+#include <hpl_tc_base.h>
+
+	extern struct adc_async_descriptor   IO1_LIGHT_SENS;
+	extern struct usart_async_descriptor EDBG_COM;
+	extern struct timer_descriptor       TIMER_0;
+
+*************************************************************************
+******* atmel_start_pins.h includes
+
+#include <hal_gpio.h>     also in drivers_init.h
+
+*************************************************************************
+******* atmel_start.h includes
+
+#include "driver_init.h"
+
+*************************************************************************
+******* main.c includes
+
+#include "atmel_start.h"
+#include "light_sensor_config.h"
+		this files contains no #include statements and only defines 
+		some ADC stuff, nothing to do with TIMER
+
+
+************************************************************************
+Create Project in START - selected device = ATSAMD21G18A
+
+  Dashboard - Timer_0 via TC3
+
+  Timer_0	Driver / HAL:Driver:Timer
+			 Instance TC3
+			 Clock Generic ClK Gen 0 (1MHz)
+			 Prescalar Div by 8
+			 1 Tick in uS = 1000
+			 WO/0 PA18
+
+  SYSCNTRL      Driver / HAL:HPL:SYSCTRL
+                         8MHz Internal Osc Enabled
+                         8MHz Internal Osc Control 
+				Enabled, 
+				On Demand
+				Prescaler = 8         
+				=> in peripheral_clk_config.h CPU_CLK_FREQ = 1MHz
+			32KHz UltraLow Power Enabled
+
+  GCLK		Driver / HAL:HPL:GCLK
+			Generic ClK Gen 0 Config Enabled
+			Generic CLK Gen 0 Enabled
+			Generic CLK Gen 0 Soure 8MHz Osc
+			External Pad Freq 1MHz
+			Generic CLK Gen 0 Div by 1
+
+
+****************************************************************************
+main.c for Basic Timer
+
+static struct timer_task TIMER_0_task1;
+
+static void TIMER_0_task1_cb(const struct timer_task *const timer_task) {
+	gpio_toggle_pin_level(J8P1);
+}
+
+void TIMER_0_doit(void) {
+	TIMER_0_task1.interval = 1;                  // Number of Timer Interrupts prior to calling callback task
+	TIMER_0_task1.cb       = TIMER_0_task1_cb;   // the task to call on task.interval-th interrupt
+	TIMER_0_task1.mode     = TIMER_TASK_REPEAT;  // Re-queue or do it only once
+
+	timer_add_task(&TIMER_0, &TIMER_0_task1);
+	timer_start(&TIMER_0);
+}
+
+
+int main(void) {
+	uint32_t cycles;
+	atmel_start_init();
+	TIMER_0_doit();
+	while (1) {	
+		uint32_t clock_cycles = 996;                               // # of Timer Clocks (effected by Prescaler)
+		timer_set_clock_cycles_per_tick(&TIMER_0, clock_cycles);   // between each interrupt.
+		timer_get_clock_cycles_in_tick(&TIMER_0, &cycles);
+	}
+}
+
+
+*******************************************************************************************
+subbus cache functions
+
+subbus_cache_update(&sb_spi, POLL_COUNT_ADDR, stage.poll_count);  // For ad updates
+
+subbus_cache_update(&sb_spi, dac_u13.addr[dac_u13.current], 	value);
+
+if (subbus_cache_iswritten(&sb_spi, dac_u13.addr[dac_u13.current], &value))
+
+if (subbus_cache_was_read(&sb_spi, GEN_ERRS_ADDR))
+
+subbus_cache_update(&sb_spi, GEN_ERRS_ADDR, errs);
+
+subbus_cache_update(&sb_spi, REG_QUERY_ADDR, value);

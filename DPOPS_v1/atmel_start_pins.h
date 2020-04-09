@@ -21,6 +21,9 @@
 #define GPIO_PIN_FUNCTION_G 6
 #define GPIO_PIN_FUNCTION_H 7
 
+/* ************************************************************
+ * Pins dedicated to On-board hardware components
+ */
 #define AD_MOSI   GPIO(GPIO_PORTA, 8)
 #define AD_SCLK   GPIO(GPIO_PORTA, 9)
 #define AD_MISO   GPIO(GPIO_PORTA, 10)
@@ -30,12 +33,26 @@
 #define DRDY      GPIO(GPIO_PORTB, 3)
 #define ADC_Alert GPIO(GPIO_PORTA, 1)
 
+#define USART_TX  GPIO(GPIO_PORTB, 22)
+#define USART_RX  GPIO(GPIO_PORTB, 23)
+
 #define SD_MOSI   GPIO(GPIO_PORTA, 12)
 #define SD_MSCLK  GPIO(GPIO_PORTA, 13)
 #define SD_MISO   GPIO(GPIO_PORTA, 15)
 #define SD_CS     GPIO(GPIO_PORTA, 14)
-#define SD_Sns    GPIO(GPIO_PORTA, 27)
+#define SD_SNS    GPIO(GPIO_PORTA, 27)
 
+#define PA18	   GPIO(GPIO_PORTA, 18)
+
+#define VCC_MON	  GPIO(GPIO_PORTA, 3)
+#define DAC0_MON  GPIO(GPIO_PORTA, 4)
+#define DAC1_MON  GPIO(GPIO_PORTA, 5)
+#define DAC2_MON  GPIO(GPIO_PORTA, 6)
+#define DAC3_MON  GPIO(GPIO_PORTA, 7)
+
+/* ************************************************************
+ * Pins dedicated to Off-board hardware components via J's
+ */
 #define PS_MOSI   GPIO(GPIO_PORTA, 19)
 #define PS_SCLK   GPIO(GPIO_PORTA, 17)
 #define PS_MISO   GPIO(GPIO_PORTA, 16)
@@ -48,9 +65,5 @@
 #define PMP_CNTL_2 GPIO(GPIO_PORTA, 20)
 #define PMP_STAT_1 GPIO(GPIO_PORTA, 22)
 #define PMP_STAT_2 GPIO(GPIO_PORTA, 23)
-
-#define PB22 GPIO(GPIO_PORTB, 22)
-#define PB23 GPIO(GPIO_PORTB, 23)
-#define PA18 GPIO(GPIO_PORTA, 18)
 
 #endif // ATMEL_START_PINS_H_INCLUDED

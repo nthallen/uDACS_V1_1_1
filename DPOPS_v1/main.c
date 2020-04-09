@@ -1,7 +1,7 @@
 /* *****************************************************************************
  * DCOTSS DPOPS uDACs RevB Duct Sensors / Pump control monitor code
  *
- *    Based on Nort Embedded Architecture - Real-time asyn/non-blocking
+ *    Based on Norton Embedded Architecture - Real-time async/non-blocking
  *    callback approach with cached host interface.
  *
  *    Main While(1) 
@@ -16,12 +16,16 @@
  */
 #include <atmel_start.h>
 #include "subbus.h"
-#include "SPI_PR_SN.h"
+#include "usart.h"
+#include "control.h"
+#include "spi_ps.h"
 #include "Timer_Setup.h"
 
 int main(void) {
 	// initialize the micro and its peripherals the start the System Timer
 	atmel_start_init();
+	subbus_reset();
+	uart_init();
 	TIMER_0_go();
 	
 	// Add in all needed drives and test for success
@@ -36,7 +40,7 @@ int main(void) {
 		gpio_set_pin_level(PMP_CNTL_1, true);				// Scope Debug - pulse every state clock
 		for(uint8_t ii=0; ii<3; ii++) {gpio_set_pin_level(PMP_CNTL_1, true);}
 		gpio_set_pin_level(PMP_CNTL_1, false);
-		
+		poll_control();
 		subbus_poll();										//ps_spi_poll();
 	}
 }

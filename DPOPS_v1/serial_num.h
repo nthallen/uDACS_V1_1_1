@@ -12,11 +12,11 @@
 #define SERIAL_NUM_H_INCLUDED
 
 // These parameters are common to all boards built with this code
-#define SUBBUS_BOARD_ID 9
-#define SUBBUS_BOARD_BOARD_TYPE "uDACS"
-#define SUBBUS_BOARD_BOARD_REV "Rev B"
-#define SUBBUS_BOARD_FIRMWARE_REV "V1.2"
-#define SUBBUS_BOARD_BUILD_NUM 6
+#define SUBBUS_BOARD_ID				10
+#define SUBBUS_BOARD_BOARD_TYPE		"uDACS"
+#define SUBBUS_BOARD_BOARD_REV		"Rev A"
+#define SUBBUS_BOARD_FIRMWARE_REV	"V1.3"
+#define SUBBUS_BOARD_BUILD_NUM		7
 
 /**
  * Build definitions
@@ -38,7 +38,7 @@
 #endif
 
 #if SUBBUS_BOARD_SN == 3
-#define SUBBUS_BOARD_INSTRUMENT "DPOPS_litch_hack"
+#define SUBBUS_BOARD_INSTRUMENT "DPOPS"
 #define SUBBUS_BOARD_INSTRUMENT_ID 5
 #endif
 
