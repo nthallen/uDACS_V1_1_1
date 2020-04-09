@@ -335,9 +335,8 @@ void poll_control(void) {
       cmd_nc += nr;
       for (i = cmd_cp; i < cmd_nc; ++i) {
         if (cmd[i] == '\n' || cmd[i] == '\r') {
-          cmd[++i] = '\0';
           parse_command(&cmd[cmd_cp]);
-          cmd_cp = i;
+          cmd_cp = i+1;
           if (cmd_cp >= cmd_nc) {
             cmd_nc = 0;
             cmd_cp = 0;
