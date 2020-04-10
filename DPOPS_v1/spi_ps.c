@@ -416,7 +416,7 @@ void ps_spi_poll(void) {
 		case wr_AD_config:
 			PS_xfr_Wbuf[0] = WR_AD_REG_ALL;				// write_all_ADC_configuration_registers command
 			PS_xfr_Wbuf[1] = prom_p->ADC_Config[0];		// must write EEPROM stored value to reg 0
-			PS_xfr_Wbuf[2] = PS_AD_MODE_T;				// write mode reg to 330 Hz, Normal mode, convert Temperature
+			PS_xfr_Wbuf[2] = PS_AD_MODE_T_20;			// write mode reg to 330 Hz, Normal mode, convert Temperature
 			PS_xfr_Wbuf[3] = prom_p->ADC_Config[2];	    // must write EEPROM stored value to reg 2
 			PS_xfr_Wbuf[4] = prom_p->ADC_Config[3];		// must write EEPROM stored value to reg 3
 			ps_start_spi_transfer(pin_cs, 5);			// 5 bytes to transfer
@@ -439,7 +439,7 @@ void ps_spi_poll(void) {
 		case rd_t_set_p:
 			prom_p = (prom_num == 1) ? &prom_1 : &prom_2;	// select which sensor
 			pin_cs = (prom_num == 1) ? ADC1_CS : ADC2_CS;
-			PS_xfr_Wbuf[1] = PS_AD_MODE_P;					// Mode -> convert Pressure
+			PS_xfr_Wbuf[1] = PS_AD_MODE_P_20;					// Mode -> convert Pressure
 			ps_start_spi_transfer(pin_cs, 3);				// send the 3 bytes, read previous conversion.
 			timer_ps_sm = count_1msec;						// get time of start convert command (1ms resolution)
 			ps_sm = sort_t;
@@ -457,11 +457,11 @@ void ps_spi_poll(void) {
 			
 		case wait_pressure:
 			wait_cnvt_cnt = count_1msec - timer_ps_sm;
-			ps_sm = ( wait_cnvt_cnt < WAIT_CONVERSION ) ? wait_pressure : rd_p_set_t;
+			ps_sm = ( wait_cnvt_cnt < WAIT_CONVERSION_20 ) ? wait_pressure : rd_p_set_t;
 			break;
 		
 		case rd_p_set_t:
-			PS_xfr_Wbuf[1] = PS_AD_MODE_T;									// Mode payload - convert temperature
+			PS_xfr_Wbuf[1] = PS_AD_MODE_T_20;								// Mode payload - convert temperature
 			ps_start_spi_transfer(pin_cs, 3);								// send the 3 bytes, read previous conversion.
 			timer_ps_sm = count_1msec;										// get time of start convert command issued in transfer
 			ps_sm = sort_p;
@@ -481,7 +481,7 @@ void ps_spi_poll(void) {
 		
 		case wait_temperature:
 			wait_cnvt_cnt = count_1msec - timer_ps_sm;
-			if ( wait_cnvt_cnt < WAIT_CONVERSION ) {
+			if ( wait_cnvt_cnt < WAIT_CONVERSION_20 ) {
 				ps_sm = wait_temperature;
 			} else {
 				ps_sm = rd_t_set_p;

@@ -35,12 +35,12 @@ int main(void) {
 		subbus_add_driver(&sb_ps_spi)) { while(true); }		// if True => some driver is mis configured.
 	
 	// reset all resettable drivers and spin forever
-	subbus_reset();											//ps_spi_reset();
+	subbus_reset();											
 	while (1) {
 		gpio_set_pin_level(PMP_CNTL_1, true);				// Scope Debug - pulse every state clock
 		for(uint8_t ii=0; ii<3; ii++) {gpio_set_pin_level(PMP_CNTL_1, true);}
 		gpio_set_pin_level(PMP_CNTL_1, false);
 		poll_control();
-		subbus_poll();										//ps_spi_poll();
+		subbus_poll();										
 	}
 }
