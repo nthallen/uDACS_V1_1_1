@@ -803,9 +803,6 @@
     <Compile Include="atmel_start.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="atmel_start_pins.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Config\hpl_dmac_config.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1203,6 +1200,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="subbus.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="uDACS_pins.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="usart.c">

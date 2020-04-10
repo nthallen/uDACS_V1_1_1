@@ -13,7 +13,7 @@
  */
 #ifndef SERIAL_NUM_H_INCLUDED
 #define SERIAL_NUM_H_INCLUDED
-#include "atmel_start_pins.h"
+#include "uDACS_pins.h"
 
 // These parameters are common to all boards built with this code
 #define SUBBUS_BOARD_FIRMWARE_REV "V1.3"

@@ -6,7 +6,7 @@
 #include <hal_gpio.h>
 #include <hpl_pm_base.h>
 #include <hpl_gclk_base.h>
-#include "atmel_start_pins.h"
+#include "uDACS_pins.h"
 #include "spi.h"
 #include "subbus.h"
 #include "rtc_timer.h"
