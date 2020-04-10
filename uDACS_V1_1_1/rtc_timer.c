@@ -1,7 +1,26 @@
 /* rtc_timer.c */
-#include "driver_init.h"
+// #include "driver_init.h"
 // #include "hri_rtc_d21.h"
+#include <peripheral_clk_config.h>
+#include <hpl_pm_base.h>
+#include <hpl_gclk_base.h>
+#include <hpl_rtc_base.h>
+#include <hal_timer.h>
 #include "rtc_timer.h"
+
+struct timer_descriptor       TIMER_0;
+
+/**
+ * \brief Timer initialization function
+ *
+ * Enables Timer peripheral, clocks and initializes Timer driver
+ */
+static void TIMER_0_init(void)
+{
+	_pm_enable_bus_clock(PM_BUS_APBA, RTC);
+	_gclk_enable_channel(RTC_GCLK_ID, CONF_GCLK_RTC_SRC);
+	timer_init(&TIMER_0, RTC, _rtc_get_timer());
+}
 
 uint32_t rtc_current_count;
 #ifdef RTC_USE_MAX_DURATION_REFERENCE
@@ -55,6 +74,7 @@ static subbus_cache_word_t rtc_cache[RTC_HIGH_ADDR-RTC_BASE_ADDR+1] = {
 };
 
 static void rtc_reset() {
+  TIMER_0_init();
   uDACS_timer_start(&TIMER_0);
 }
 

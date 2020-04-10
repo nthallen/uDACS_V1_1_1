@@ -19,9 +19,10 @@
 #define USART_CTRL_BUFFER_SIZE 16
 
 struct usart_async_descriptor USART_CTRL;
-struct timer_descriptor       TIMER_0;
 
 #if 0
+struct timer_descriptor       TIMER_0;
+
 static uint8_t USART_CTRL_buffer[USART_CTRL_BUFFER_SIZE];
 #endif
 
@@ -290,7 +291,6 @@ void USART_CTRL_init(void)
 	usart_async_init(&USART_CTRL, SERCOM5, USART_CTRL_buffer, USART_CTRL_BUFFER_SIZE, (void *)NULL);
 	USART_CTRL_PORT_init();
 }
-#endif
 
 /**
  * \brief Timer initialization function
@@ -303,6 +303,7 @@ static void TIMER_0_init(void)
 	_gclk_enable_channel(RTC_GCLK_ID, CONF_GCLK_RTC_SRC);
 	timer_init(&TIMER_0, RTC, _rtc_get_timer());
 }
+#endif
 
 void system_init(void)
 {
@@ -504,7 +505,7 @@ void system_init(void)
 
 	SD_SPI_init();
 	USART_CTRL_init();
-#endif
 
 	TIMER_0_init();
+#endif
 }
