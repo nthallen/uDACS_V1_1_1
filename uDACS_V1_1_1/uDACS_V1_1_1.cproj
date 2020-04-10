@@ -797,12 +797,6 @@
     <OutputPath>bin\Debug_SN1B\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="atmel_start.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="atmel_start.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Config\hpl_dmac_config.h">
       <SubType>compile</SubType>
     </Compile>
@@ -840,12 +834,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Device_Startup\system_samd21.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="driver_init.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="driver_init.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="examples\driver_examples.c">

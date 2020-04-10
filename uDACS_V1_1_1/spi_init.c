@@ -25,55 +25,31 @@ static void EXTERNAL_IRQ_0_init(void) {
   ext_irq_init();
 }
 
-void AD_SPI_PORT_init(void)
-{
-
-  gpio_set_pin_level(AD_MOSI,
-  // <y> Initial level
-  // <id> pad_initial_level
-  // <false"> Low
-  // <true"> High
-  false);
-
-  // Set pin direction to output
+void AD_SPI_PORT_init(void) {
+  gpio_set_pin_level(AD_MOSI, false);
   gpio_set_pin_direction(AD_MOSI, GPIO_DIRECTION_OUT);
-
   gpio_set_pin_function(AD_MOSI, PINMUX_PA08C_SERCOM0_PAD0);
-
-  gpio_set_pin_level(AD_SCLK,
-  // <y> Initial level
-  // <id> pad_initial_level
-  // <false"> Low
-  // <true"> High
-  false);
-
-  // Set pin direction to output
+  gpio_set_pin_level(AD_SCLK, false);
   gpio_set_pin_direction(AD_SCLK, GPIO_DIRECTION_OUT);
-
   gpio_set_pin_function(AD_SCLK, PINMUX_PA09C_SERCOM0_PAD1);
-
-  // Set pin direction to input
   gpio_set_pin_direction(AD_MISO, GPIO_DIRECTION_IN);
-
-  gpio_set_pin_pull_mode(AD_MISO,
-  // <y> Pull configuration
-  // <id> pad_pull_config
-  // <GPIO_PULL_OFF"> Off
-  // <GPIO_PULL_UP"> Pull-up
-  // <GPIO_PULL_DOWN"> Pull-down
-  GPIO_PULL_OFF);
-
+  gpio_set_pin_pull_mode(AD_MISO, GPIO_PULL_OFF);
   gpio_set_pin_function(AD_MISO, PINMUX_PA10C_SERCOM0_PAD2);
+	gpio_set_pin_direction(ADC_ALERT, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(ADC_ALERT,	GPIO_PULL_OFF);
+	gpio_set_pin_function(ADC_ALERT, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_level(ADC_CS, true);
+	gpio_set_pin_direction(ADC_CS, GPIO_DIRECTION_OUT);
+	gpio_set_pin_function(ADC_CS, GPIO_PIN_FUNCTION_OFF);
 }
 
-void AD_SPI_CLOCK_init(void)
-{
+void AD_SPI_CLOCK_init(void) {
   _pm_enable_bus_clock(PM_BUS_APBC, SERCOM0);
   _gclk_enable_channel(SERCOM0_GCLK_ID_CORE, CONF_GCLK_SERCOM0_CORE_SRC);
 }
 
-void AD_SPI_init(void)
-{
+void AD_SPI_init(void) {
   EXTERNAL_IRQ_0_init();
   AD_SPI_CLOCK_init();
   spi_m_async_init(&AD_SPI, SERCOM0);
