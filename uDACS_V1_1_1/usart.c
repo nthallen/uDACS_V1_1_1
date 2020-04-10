@@ -1,11 +1,12 @@
-#include "driver_init.h"
 #include <peripheral_clk_config.h>
 #include <hpl_gclk_base.h>
 #include <hpl_pm_base.h>
+#include <hal_usart_async.h>
+#include "uDACS_pins.h"
 #include "usart.h"
 
 
-struct usart_async_descriptor USART_CTRL;
+static struct usart_async_descriptor USART_CTRL;
 /*! Buffer for the receive ringbuffer */
 static uint8_t USART_CTRL_rx_buffer[USART_CTRL_RX_BUFFER_SIZE];
 
@@ -20,35 +21,29 @@ static struct io_descriptor *USART_CTRL_io;
 extern "C" {
 #endif
 
-#if 0
+
 /**
  * \brief USART Clock initialization function
  *
  * Enables register interface and peripheral clock
+ * Copied from driver_init.c: will need manual editing when that changes
  */
 void USART_CTRL_CLOCK_init() {
-  _pm_enable_bus_clock(PM_BUS_APBC, SERCOM5);
-  _gclk_enable_channel(SERCOM5_GCLK_ID_CORE, CONF_GCLK_SERCOM5_CORE_SRC);
-
-#if 0 // This was the FCC code
-	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM1_GCLK_ID_CORE,
-    CONF_GCLK_SERCOM1_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM1_GCLK_ID_SLOW,
-    CONF_GCLK_SERCOM1_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-	hri_mclk_set_APBCMASK_SERCOM1_bit(MCLK);
-#endif
+	_pm_enable_bus_clock(PM_BUS_APBC, SERCOM5);
+	_gclk_enable_channel(SERCOM5_GCLK_ID_CORE, CONF_GCLK_SERCOM5_CORE_SRC);
 }
 
 /**
  * \brief USART pinmux initialization function
  *
  * Set each required pin to USART functionality
+ * Copied from driver_init.c: will need manual editing when that changes
  */
 void USART_CTRL_PORT_init() {
-  gpio_set_pin_function(UART_TX, PINMUX_PB22D_SERCOM5_PAD2);
-  gpio_set_pin_function(UART_RX, PINMUX_PB23D_SERCOM5_PAD3);
+	gpio_set_pin_function(UART_TX, PINMUX_PB22D_SERCOM5_PAD2);
+	gpio_set_pin_function(UART_RX, PINMUX_PB23D_SERCOM5_PAD3);
 }
-#endif
+
 
 static void tx_cb_USART_CTRL(const struct usart_async_descriptor *const io_descr) {
 	/* Transfer completed */

@@ -253,6 +253,7 @@ void SD_SPI_init(void)
 	SD_SPI_PORT_init();
 }
 
+#if 0
 /**
  * \brief USART Clock initialization function
  *
@@ -278,7 +279,6 @@ void USART_CTRL_PORT_init()
 	gpio_set_pin_function(UART_RX, PINMUX_PB23D_SERCOM5_PAD3);
 }
 
-#if 0
 /**
  * \brief USART initialization function
  *
