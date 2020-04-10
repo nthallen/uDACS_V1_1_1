@@ -26,7 +26,9 @@ struct timer_descriptor       TIMER_0;
 static uint8_t USART_CTRL_buffer[USART_CTRL_BUFFER_SIZE];
 #endif
 
+#if 0
 struct spi_m_async_descriptor AD_SPI;
+#endif
 
 struct spi_m_async_descriptor PS_SPI;
 
@@ -34,6 +36,7 @@ struct i2c_m_async_desc UC_I2C;
 
 struct spi_m_async_descriptor SD_SPI;
 
+#if 0
 void EXTERNAL_IRQ_0_init(void)
 {
 	_gclk_enable_channel(EIC_GCLK_ID, CONF_GCLK_EIC_SRC);
@@ -53,7 +56,9 @@ void EXTERNAL_IRQ_0_init(void)
 
 	ext_irq_init();
 }
+#endif
 
+#if 0
 void AD_SPI_PORT_init(void)
 {
 
@@ -107,6 +112,7 @@ void AD_SPI_init(void)
 	spi_m_async_init(&AD_SPI, SERCOM0);
 	AD_SPI_PORT_init();
 }
+#endif
 
 void PS_SPI_PORT_init(void)
 {
@@ -494,9 +500,11 @@ void system_init(void)
 
 	gpio_set_pin_function(PMOD6_CSADC2, GPIO_PIN_FUNCTION_OFF);
 
+#if 0
 	EXTERNAL_IRQ_0_init();
 
 	AD_SPI_init();
+#endif
 
 	PS_SPI_init();
 

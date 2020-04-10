@@ -1196,6 +1196,9 @@
     <Compile Include="spi.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="spi_init.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="subbus.c">
       <SubType>compile</SubType>
     </Compile>

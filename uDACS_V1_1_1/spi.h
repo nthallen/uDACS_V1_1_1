@@ -3,7 +3,7 @@
 /************************************************************************/
 #ifndef SPI_H_INCLUDED
 #define SPI_H_INCLUDED
-#include "driver_init.h"
+#include <hal_spi_m_async.h>
 #include "subbus.h"
 
 #define MAX_SPI_READ_LENGTH 32
@@ -21,5 +21,7 @@
 
 extern subbus_driver_t sb_spi;
 void spi_enable(bool value);
+struct spi_m_async_descriptor AD_SPI;
+void AD_SPI_init(void);
 
 #endif

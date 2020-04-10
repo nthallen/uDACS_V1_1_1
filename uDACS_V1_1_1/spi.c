@@ -6,6 +6,7 @@
 #include <hal_gpio.h>
 #include <hpl_pm_base.h>
 #include <hpl_gclk_base.h>
+#include <hal_ext_irq.h>
 #include "uDACS_pins.h"
 #include "spi.h"
 #include "subbus.h"
@@ -319,8 +320,7 @@ static void DRDY_handler(void) {
 
 static void spi_reset(void) {
   if (!sb_spi.initialized) {
-    // This type of initialization should not be repeated
-    // AD_SPI_init() is called by system_init()
+    AD_SPI_init();
     spi_m_async_register_callback(&AD_SPI, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_AD_SPI);
     spi_m_async_enable(&AD_SPI);
     ext_irq_register(DRDY, DRDY_handler);

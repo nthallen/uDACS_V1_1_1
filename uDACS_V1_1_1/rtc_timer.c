@@ -1,6 +1,4 @@
 /* rtc_timer.c */
-// #include "driver_init.h"
-// #include "hri_rtc_d21.h"
 #include <peripheral_clk_config.h>
 #include <hpl_pm_base.h>
 #include <hpl_gclk_base.h>
