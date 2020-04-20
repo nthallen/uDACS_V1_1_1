@@ -129,7 +129,7 @@ bool sb_cache_update(subbus_cache_word_t *cache, uint16_t offset, uint16_t data)
  * @param data The value to be written
  * @return true on success
  */
-bool sb_cache_update32(subbus_cache_word_t *cache, uint16_t offset, uint32_t data);
+bool sb_cache_update32(subbus_cache_word_t *cache, uint16_t offset, void *data);
 
 /**
  * Indicates that the host computer is actively taking data.

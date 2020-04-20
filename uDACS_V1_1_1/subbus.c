@@ -247,9 +247,10 @@ bool sb_cache_update(subbus_cache_word_t *cache, uint16_t offset, uint16_t data)
   return false;
 }
 
-bool sb_cache_update32(subbus_cache_word_t *cache, uint16_t offset, uint32_t data) {
-  return sb_cache_update(cache, offset, (uint16_t)(data & 0xFFFF)) &&
-        sb_cache_update(cache, offset+1, (uint16_t)((data>>16) & 0xFFFF));
+bool sb_cache_update32(subbus_cache_word_t *cache, uint16_t offset, void* data) {
+  uint16_t *data16 = (uint16_t*)data;
+  return sb_cache_update(cache, offset, data16[0]) &&
+        sb_cache_update(cache, offset+1,data16[1]);
 }
 
 bool subbus_cache_was_read(subbus_driver_t *drv, uint16_t addr) {

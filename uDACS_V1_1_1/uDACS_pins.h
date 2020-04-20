@@ -6,6 +6,7 @@
 #define UDACS_PINS_H_INCLUDED
 
 #include <hal_gpio.h>
+#include "serial_num.h"
 
 // SAMD21 has 8 pin functions
 // ATSAMD21G18A-A
@@ -66,10 +67,11 @@
 #define PS_MOSI PMOD1
 #define PS_MISO PMOD7
 #define PS_SCLK PMOD5
-#define CS_ADC1 PMOD8
-#define CS_EEP1 PMOD4
-#define CS_ADC2 PMOD6
-#define CS_EEP2 PMOD2
+#define ADC1_CS PMOD8
+#define EEP1_CS PMOD4
+#define ADC2_CS PMOD6
+#define EEP2_CS PMOD2
+#define PMP_CNTL_2 SPR29
 #endif
 
 #endif // UDACS_PINS_H_INCLUDED

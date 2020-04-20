@@ -85,7 +85,7 @@ static void rtc_reset() {
  */
 static void rtc_poll() {
   uint32_t cur_time = hri_rtcmode0_read_COUNT_reg(RTC);
-  sb_cache_update32(rtc_cache,RTC_ELAPSED_OFFSET,cur_time);
+  sb_cache_update32(rtc_cache,RTC_ELAPSED_OFFSET,&cur_time);
   if (rtc_current_count_set) {
     uint16_t dt = cur_time - rtc_current_count;
     sb_cache_update(rtc_cache,RTC_CUR_STATE_DURATION_OFFSET,dt);

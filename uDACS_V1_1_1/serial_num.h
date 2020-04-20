@@ -56,6 +56,14 @@
   #define SB_FAIL_TIMEOUT_SECS 20
   #endif
 
+  #if SUBBUS_BOARD_SN == 2
+  #define SUBBUS_BOARD_INSTRUMENT_ID 7
+  #define SUBBUS_BOARD_INSTRUMENT "DPOPS"
+  #define SUBBUS_BOARD_ID 2
+  #define SUBBUS_BOARD_BOARD_TYPE "uDACS B"
+  #define uDACS_B
+  #endif
+
 #else
 #error Unsupported SUBFUNCTION number
 #endif
