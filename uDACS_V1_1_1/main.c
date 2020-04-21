@@ -6,6 +6,7 @@
 #include "spi.h"
 #include "rtc_timer.h"
 #include "spi_ps.h"
+#include "commands.h"
 
 static void configure_ports(void) {
 	// GPIO on PA14
@@ -72,18 +73,20 @@ int main(void)
   if (subbus_add_driver(&sb_base) ||
       subbus_add_driver(&sb_fail_sw) ||
       subbus_add_driver(&sb_board_desc) ||
+      subbus_add_driver(&sb_control) ||
       subbus_add_driver(&sb_spi) ||
       subbus_add_driver(&sb_rtc)
       #ifdef uDACS_B
         || subbus_add_driver(&sb_ps_spi)
+        || subbus_add_driver(&sb_cmd)
       #endif
       ) {
     while (true) ; // some driver is misconfigured.
   }
   subbus_reset();
-  uart_init();
+  // uart_init();
   while (1) {
-    poll_control();
+    // poll_control();
     subbus_poll();
     #if SUBBUS_INTERRUPTS
       if (subbus_intr_req)

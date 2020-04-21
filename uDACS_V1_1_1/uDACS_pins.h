@@ -71,7 +71,10 @@
 #define EEP1_CS PMOD4
 #define ADC2_CS PMOD6
 #define EEP2_CS PMOD2
-#define PMP_CNTL_2 SPR29
+#define PPMP_CNTL SPR7
+#define BPMP_CNTL SPR29
+#define PPMPS   UC_SCL
+#define BPMPS   UC_SDA
 #endif
 
 #endif // UDACS_PINS_H_INCLUDED

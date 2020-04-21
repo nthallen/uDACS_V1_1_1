@@ -403,3 +403,16 @@ void SendCode(int8_t code) {
   uart_send_char(code);
   SendMsg("");
 }
+
+static void control_reset(void) {
+  uart_init();
+}
+
+subbus_driver_t sb_control = {
+  CONTROL_BASE_ADDR, CONTROL_HIGH_ADDR, // address range
+  0,
+  control_reset,
+  poll_control,
+  0,
+  false
+};

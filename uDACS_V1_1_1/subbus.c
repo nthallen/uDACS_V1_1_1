@@ -135,6 +135,16 @@ static void sb_fail_sw_reset() {
   sb_fail_sw_cache[0].cache = 0;
   sb_fail_last_tick_set = false;
   sb_fail_timed_out = false;
+  #ifdef SB_FAIL_PIN
+    gpio_set_pin_level(SB_FAIL_PIN, false);
+    gpio_set_pin_direction(SB_FAIL_PIN, GPIO_DIRECTION_OUT);
+    gpio_set_pin_function(SB_FAIL_PIN, GPIO_PIN_FUNCTION_OFF);
+    #ifdef SB_FAIL_PIN2
+      gpio_set_pin_level(SB_FAIL_PIN2, false);
+      gpio_set_pin_direction(SB_FAIL_PIN2, GPIO_DIRECTION_OUT);
+      gpio_set_pin_function(SB_FAIL_PIN2, GPIO_PIN_FUNCTION_OFF);
+    #endif
+  #endif
 }
 
 static void sb_fail_set() {

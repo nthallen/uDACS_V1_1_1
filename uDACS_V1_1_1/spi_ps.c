@@ -451,9 +451,9 @@ void ps_spi_poll(void) {
       prom_p->temperature_raw = ((PS_xfr_Rbuf[0] << 8) + PS_xfr_Rbuf[1])/4;  // /4 after shift to preserve sign
       prom_p->temperature = T_GAIN * (float)prom_p->temperature_raw;
       ps_sm = wait_pressure;
-          gpio_set_pin_level(PMP_CNTL_2, true);           // pulse every state clock
-          for(uint8_t ii=0; ii<5; ii++) {gpio_set_pin_level(PMP_CNTL_2, true);}
-          gpio_set_pin_level(PMP_CNTL_2, false);
+      //    gpio_set_pin_level(BPMP_CNTL, true);           // pulse every state clock
+      //    for(uint8_t ii=0; ii<5; ii++) {gpio_set_pin_level(BPMP_CNTL, true);}
+      //    gpio_set_pin_level(BPMP_CNTL, false);
       break;
 
     case wait_pressure:
@@ -475,9 +475,9 @@ void ps_spi_poll(void) {
       use_coef(prom_p);
       ps_cache_update(prom_p, prom_num);
       ps_sm = wait_temperature;
-          gpio_set_pin_level(PMP_CNTL_2, true);           // pulse every state clock
-          for(uint8_t ii=0; ii<10; ii++) {gpio_set_pin_level(PMP_CNTL_2, true);}
-          gpio_set_pin_level(PMP_CNTL_2, false);
+      //    gpio_set_pin_level(BPMP_CNTL, true);           // pulse every state clock
+      //    for(uint8_t ii=0; ii<10; ii++) {gpio_set_pin_level(BPMP_CNTL, true);}
+      //    gpio_set_pin_level(BPMP_CNTL, false);
       break;
 
     case wait_temperature:
