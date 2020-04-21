@@ -72,24 +72,36 @@ static volatile uint8_t PS_SPI_txfr_complete = true;   // async transfer complet
 static bool ps_spi_enabled = PS_SPI_ENABLE_DEFAULT;    // PS SPI comms enabled?
 
 // Declare EEPROM structure - holds EEPROM Contents locally
-typedef struct __attribute__((__packed__)) {
-  uint8_t       PartNumber[PART_NO_SIZE];
-  uint8_t       SerialNumber[SERIAL_NO_SIZE];
+typedef struct {
+//  uint8_t       PartNumber[PART_NO_SIZE];
+//  uint8_t       SerialNumber[SERIAL_NO_SIZE];
   float         Pressure_Range;
   float         Pressure_Min;
-  uint8_t       PressureUnit[PRESSURE_UNIT_SIZE];
-  uint8_t       PressureRef[PRESSURE_REF_SIZE];
+//  uint8_t       PressureUnit[PRESSURE_UNIT_SIZE];
+//  uint8_t       PressureRef[PRESSURE_REF_SIZE];
   uint8_t       ADC_Config[ADC_CONFIG_SIZE];
   float         Off_Coeff[DEGREE_POLYNOMIAL];
   float         Spn_Coeff[DEGREE_POLYNOMIAL];
   float         Shp_Coeff[DEGREE_POLYNOMIAL];
   uint16_t      CheckSum;
-  int16_t       temperature_raw;
-  float          temperature;
-  int32_t        pressure_raw;
+  float         temperature;
+  int32_t       pressure_raw;
   float         pressure;
+  int16_t       temperature_raw;
+  uint8_t       EE_CS;
+  uint8_t       AD_CS;
 } EEPROM_t;
-static EEPROM_t prom_1, prom_2, *prom_p;
+static EEPROM_t proms[2], *prom_p;
+
+typedef struct __attribute__((__packed__)) {
+  uint8_t       PartNumber[PN_SIZE];
+  uint8_t       SerialNumber[SN_SIZE];
+  uint8_t       PressureUnit[UNITS_SIZE];
+  uint8_t       PressureRef[REF_SIZE];
+  float         Pressure_Range;
+  float         Pressure_Min;
+} sensor_specs_t;
+static sensor_specs_t sensors[2];
 
 // Pressure sensors require two SPI modes:
 //    MODE 0 when reading from EEPROM
@@ -149,21 +161,30 @@ float bytes2float32(int addr) {
 
 // sort PS_xfr_Rbuf Manufacturer ID info into Local EEPROM Structure
 //
- void sort_PS_EEPROM_info(EEPROM_t *prom_p) {
-   uint8_t ii=0;            // member index
-   int     jj=2;                      // buffer index 1st read from EEPROM is 2 writes delayed
+ void sort_PS_EEPROM_info(int which_prom) {
+   EEPROM_t *prom_p = &proms[which_prom];
+   sensor_specs_t *sensor = &sensors[which_prom];
 
-   for(ii=0; ii<PART_NO_SIZE;   ii++) { prom_p->PartNumber[ii]   = PS_xfr_Rbuf[jj++]; }
-   for(ii=0; ii<SERIAL_NO_SIZE; ii++) { prom_p->SerialNumber[ii] = PS_xfr_Rbuf[jj++]; }
+   int ii;            // member index
+   int jj;            // buffer index 1st read from EEPROM is 2 writes delayed
+
+   for(ii=0, jj=2; ii<PART_NO_SIZE;   ii++) { sensor->PartNumber[ii]   = PS_xfr_Rbuf[jj++]; }
+   sensor->PartNumber[ii] = '\0'; // Add terminating NUL
+   for(ii=0; ii<SERIAL_NO_SIZE; ii++) { sensor->SerialNumber[ii] = PS_xfr_Rbuf[jj++]; }
+   sensor->SerialNumber[ii] = '\0'; // Add terminating NUL
 
    prom_p->Pressure_Range = bytes2float32(jj);
-   jj =jj+EEPROM_FLOAT_SIZE;
+   sensor->Pressure_Range = prom_p->Pressure_Range;
+   jj = jj+EEPROM_FLOAT_SIZE;
 
    prom_p->Pressure_Min = bytes2float32(jj);
-   jj =jj+EEPROM_FLOAT_SIZE;
+   sensor->Pressure_Min = prom_p->Pressure_Min;
+   jj = jj+EEPROM_FLOAT_SIZE;
 
-   for(ii=0; ii<PRESSURE_UNIT_SIZE; ii++) { prom_p->PressureUnit[ii] = PS_xfr_Rbuf[jj++]; }
-   for(ii=0; ii<PRESSURE_REF_SIZE;  ii++) { prom_p->PressureRef[ii]  = PS_xfr_Rbuf[jj++]; }
+   for(ii=0; ii<PRESSURE_UNIT_SIZE; ii++) { sensor->PressureUnit[ii] = PS_xfr_Rbuf[jj++]; }
+   sensor->PressureUnit[ii] = '\0';
+   for(ii=0; ii<PRESSURE_REF_SIZE;  ii++) { sensor->PressureRef[ii]  = PS_xfr_Rbuf[jj++]; }
+   sensor->PressureRef[ii] = '\0';
 }
 
 // sort PS_xfr_Rbuf Polynomial coefficients into Local EEPROM Structure
@@ -244,12 +265,15 @@ static subbus_cache_word_t ps_spi_cache[PS_SPI_HIGH_ADDR - PS_SPI_BASE_ADDR+1] =
   { 0, 0, true,  false,  false,  false, false },  // MSW, Float, Temperature,  Pressure Sensor 2
   { 0, 0, true,  false,  false,  false, false },  // LSW, Float, Pressure,  Pressure Sensor 2
   { 0, 0, true,  false,  false,  false, false },  // MSW, Float, Pressure,  Pressure Sensor 2
+
+  { 0, 0, true,  false,  false,  false, false },  // Sensor Config FIFO Len
+  { 0, 0, true,  false,  false,  false, true  },  // Sensor Config FIFO
 };
 //  0,    0,        true,       false,     true,      false,     false,
 // .cache   .wvalue   .readable   .was_read  .writable  .written   .dynamic
 
 void ps_cache_update(EEPROM_t *sensor, uint8_t which_prom){
-  uint8_t indx = ((which_prom-1)*PS_NUM_WORDS_PER_CHANNEL)+PS_SPI_T1_OFFSET;
+  uint8_t indx = (which_prom*PS_NUM_WORDS_PER_CHANNEL)+PS_SPI_T1_OFFSET;
 
   sb_cache_update32(ps_spi_cache, indx, &prom_p->temperature);
   sb_cache_update32(ps_spi_cache, indx+2, &prom_p->pressure);
@@ -277,7 +301,7 @@ enum ps_sm_t { read_part_info,    sort_part_info,
 
 ps_sm = read_part_info;                // initial state
 
-uint8_t  prom_num       = 1;            // 1 = Sensor/EEPROM-1, 2 = Sensor/EEPROM-2
+uint8_t  prom_num       = 0;            // 0 = Sensor/EEPROM-1, 1 = Sensor/EEPROM-2
 uint8_t  pin_cs         = EEP1_CS;          // 1 of 4 Sensor Chip Selects, start with EEPROM1
 uint8_t  poly_type      = 1;            // which polynomial, 1 = offset, 2 = span, 3 = shape
 uint16_t check_count    = 0;            // track # bytes read from EEPROM for CRC calculation
@@ -294,15 +318,15 @@ void ps_spi_poll(void) {
   }
   switch(ps_sm) {
     case read_part_info:            // Read Sensor's ASCII Manufacturer's Info
-        prom_p = (prom_num == 1) ? &prom_1 : &prom_2;
-      pin_cs = (prom_num == 1) ? EEP1_CS : EEP2_CS;
+      prom_p = &proms[prom_num]; // (prom_num == 1) ? &prom_1 : &prom_2;
+      pin_cs = prom_p->EE_CS; // (prom_num == 0) ? EEP1_CS : EEP2_CS;
       txfr_block(pin_cs, PARTNUMBER_EEADDR, RESERVED_EEADDR-PARTNUMBER_EEADDR+2);
       ps_sm = sort_part_info;
       break;
 
     case sort_part_info:            // Sort SPI read-buffer into local structure
       ps_chip_deselect(pin_cs);
-      sort_PS_EEPROM_info(prom_p);
+      sort_PS_EEPROM_info(prom_num);
       poly_type = 1;
       ps_sm = read_poly_coeffs;
       break;
@@ -357,16 +381,16 @@ void ps_spi_poll(void) {
         ps_sm = calc_checksum_read;                // no, get next address
       } else if (CRC16_Computed != prom_p->CheckSum) {  // checksum matches?
         ps_sm = bad_checksum;                  // no, fail
-      } else if (prom_num < 2) {              // last EEPROM tested?
+      } else if (prom_num == 0) {              // last EEPROM tested?
         check_count = 0;                    // no, do it all on next EEPROM
-        prom_num++;
+        prom_num = 1;
         ps_sm = read_part_info;
       } else {                      // EEPROMS done and passed! On to AD's
         spi_m_async_disable(&PS_SPI);            // AD's work in MODE_1
         spi_m_async_set_mode(&PS_SPI, SPI_MODE_1);
         PS_spi_current_transfer_mode = SPI_MODE_1;
         spi_m_async_enable(&PS_SPI);
-        prom_num = 1;
+        prom_num = 0;
         ps_sm = reset_ADs;
       }
       break;
@@ -376,8 +400,8 @@ void ps_spi_poll(void) {
       break;
 
     case reset_ADs:
-      prom_p = (prom_num == 1) ? &prom_1 : &prom_2;
-      pin_cs = (prom_num == 1) ? ADC1_CS : ADC2_CS;
+      prom_p = &proms[prom_num]; // (prom_num == 1) ? &prom_1 : &prom_2;
+      pin_cs = prom_p->AD_CS; // (prom_num == 0) ? ADC1_CS : ADC2_CS;
       PS_xfr_Wbuf[0] = RESET_AD;
       ps_start_spi_transfer(pin_cs, 1);
       timer_ps_sm = rtc_current_count;
@@ -402,11 +426,11 @@ void ps_spi_poll(void) {
 
     case wait_AD_config:
       ps_chip_deselect(pin_cs);
-      if (prom_num < 2) {
-        prom_num++;
+      if (prom_num == 0) {
+        prom_num = 1;
         ps_sm = reset_ADs;
       } else {
-        prom_num = 1;
+        prom_num = 0;
         PS_xfr_Wbuf[0] = WR_AD_REG_MODE;            // Command = Write_AD_Mode_Register
         PS_xfr_Wbuf[2] = PS_START_CNV;        // Command = Start_Convert
         ps_sm = rd_t_set_p;
@@ -414,8 +438,8 @@ void ps_spi_poll(void) {
       break;
 
     case rd_t_set_p:
-      prom_p = (prom_num == 1) ? &prom_1 : &prom_2;  // select which sensor
-      pin_cs = (prom_num == 1) ? ADC1_CS : ADC2_CS;
+      prom_p = &proms[prom_num]; // (prom_num == 1) ? &prom_1 : &prom_2;  // select which sensor
+      pin_cs = prom_p->AD_CS; // (prom_num == 0) ? ADC1_CS : ADC2_CS;
       PS_xfr_Wbuf[1] = PS_AD_MODE_P_20;          // Mode -> convert Pressure
       ps_start_spi_transfer(pin_cs, 3);        // send the 3 bytes, read previous conversion.
       timer_ps_sm = rtc_current_count;            // get time of start convert command (1ms resolution)
@@ -462,13 +486,38 @@ void ps_spi_poll(void) {
         ps_sm = wait_temperature;
       } else {
         ps_sm = rd_t_set_p;
-        prom_num = (prom_num == 1) ? 2 : 1;
+        prom_num = prom_num ? 0 : 1;
       }
       break;
 
     default:
       ps_sm = read_part_info;
       break;
+  }
+}
+
+static struct sensor_cfg_t {
+  uint16_t *data;
+  int cp;
+  int nc;
+} sensor_cfg;
+
+static void sensor_cfg_init(void) {
+  sensor_cfg.data = (uint16_t*)&sensors;
+  sensor_cfg.cp = 0;
+  sensor_cfg.nc = sizeof(sensors)/2;
+  sb_cache_update(ps_spi_cache, PS_SPI_FIFO_LEN_OFFSET, sensor_cfg.nc);
+  sb_cache_update(ps_spi_cache, PS_SPI_FIFO_OFFSET, sensor_cfg.data[sensor_cfg.cp++]);
+}
+
+static void sensor_cfg_action(uint16_t addr) {
+  addr = addr;
+  if (sb_cache_was_read(ps_spi_cache, PS_SPI_FIFO_OFFSET)) {
+    if (sensor_cfg.cp >= sensor_cfg.nc) {
+      sensor_cfg.cp = 0;
+    }
+    sb_cache_update(ps_spi_cache, PS_SPI_FIFO_LEN_OFFSET, sensor_cfg.nc-sensor_cfg.cp);
+    sb_cache_update(ps_spi_cache, PS_SPI_FIFO_OFFSET, sensor_cfg.data[sensor_cfg.cp++]);
   }
 }
 
@@ -480,18 +529,25 @@ void ps_spi_poll(void) {
 
 // Reset Function - Register ISR and enable SPI Hardware resource for Pressure Sensors
 void ps_spi_reset(void) {
-  PS_SPI_init();
-  spi_m_async_register_callback(&PS_SPI, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_ps_spi);
-  spi_m_async_enable(&PS_SPI);
-  ps_spi_enabled = true;
+  if (!ps_spi_enabled) {
+    PS_SPI_init();
+    spi_m_async_register_callback(&PS_SPI, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_ps_spi);
+    spi_m_async_enable(&PS_SPI);
+    proms[0].AD_CS = ADC1_CS;
+    proms[1].AD_CS = ADC2_CS;
+    proms[0].EE_CS = EEP1_CS;
+    proms[1].EE_CS = EEP2_CS;
+    sensor_cfg_init();
+    ps_spi_enabled = true;
+  }
 }
 
 subbus_driver_t sb_ps_spi = {
   PS_SPI_BASE_ADDR, PS_SPI_HIGH_ADDR,
   ps_spi_cache,
   ps_spi_reset,
-  ps_spi_poll,       // driver state machine
-  0,                 // no action function
+  ps_spi_poll,        // driver state machine
+  sensor_cfg_action,  // action function for FIFO
   false
 };
 

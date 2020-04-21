@@ -6,6 +6,7 @@
 */
 #ifndef SPI_PS_H_
 #define SPI_PS_H_
+
 #include <hal_spi_m_async.h>
 // #include "driver_init.h"
 #include "serial_num.h"
@@ -23,10 +24,10 @@ void PS_SPI_init(void);
 #define PS_SPI_T2_OFFSET             5
 #define PS_SPI_P2_OFFSET             7
 #define PS_NUM_WORDS_PER_CHANNEL   (PS_SPI_T2_OFFSET-PS_SPI_T1_OFFSET)   // Number of 16 bit words per channel
-// #define PS_SPI_FIFO_LEN_OFFSET    9
-// #define PS_SPI_FIFO_OFFSET       10
+#define PS_SPI_FIFO_LEN_OFFSET       9
+#define PS_SPI_FIFO_OFFSET          10
 #define PS_SPI_BASE_ADDR          0x50
-#define PS_SPI_HIGH_ADDR          0x58
+#define PS_SPI_HIGH_ADDR          0x5A
 
 #define PS_SPI_MAX_XFR_LENGTH      44
 #define PS_SPI_ENABLE_DEFAULT      false
@@ -56,6 +57,17 @@ void PS_SPI_init(void);
 #define MAX_EEPROM_SIZE              (EEPROM_END_EEADDR + 1)
 #define ADC_CONFIG_SIZE              8 // Number of ADC Config. Registers bytes
 #define EEPROM_FLOAT_SIZE            4 // Size of any Floats stored in EEPROM
+
+#define PN_SIZE 18
+#define SN_SIZE 12
+#define UNITS_SIZE 6
+#define REF_SIZE 2
+
+#define compile_time_assert(cond,msg) extern char msg[(cond)?1:-1];
+compile_time_assert(PN_SIZE >= PART_NO_SIZE+1, PN_SIZE_NOT_LARGE_ENOUGH)
+compile_time_assert(SN_SIZE >= SERIAL_NO_SIZE+1, SN_SIZE_NOT_LARGE_ENOUGH)
+compile_time_assert(UNITS_SIZE >= PRESSURE_UNIT_SIZE+1, UNITS_SIZE_NOT_LARGE_ENOUGH)
+compile_time_assert(REF_SIZE >= PRESSURE_REF_SIZE+1, REF_SIZE_NOT_LARGE_ENOUGH)
 
 #define RESET_AD            6 // Reset ADC command
 #define WR_AD_REG_ALL      67 // Write ADC Reg cmd = 0b 0100 0011, all four reg's
