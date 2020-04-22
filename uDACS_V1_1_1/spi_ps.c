@@ -102,6 +102,7 @@ typedef struct __attribute__((__packed__)) {
   float         Pressure_Min;
 } sensor_specs_t;
 static sensor_specs_t sensors[2];
+static void sensor_cfg_init(void);
 
 // Pressure sensors require two SPI modes:
 //    MODE 0 when reading from EEPROM
@@ -185,6 +186,9 @@ float bytes2float32(int addr) {
    sensor->PressureUnit[ii] = '\0';
    for(ii=0; ii<PRESSURE_REF_SIZE;  ii++) { sensor->PressureRef[ii]  = PS_xfr_Rbuf[jj++]; }
    sensor->PressureRef[ii] = '\0';
+
+   if (which_prom)
+     sensor_cfg_init();
 }
 
 // sort PS_xfr_Rbuf Polynomial coefficients into Local EEPROM Structure
@@ -379,19 +383,27 @@ void ps_spi_poll(void) {
       check_count++;
       if (check_count < MAX_EEPROM_SIZE-2) {        // last address (excluding last 2) in EEPROM?
         ps_sm = calc_checksum_read;                // no, get next address
-      } else if (CRC16_Computed != prom_p->CheckSum) {  // checksum matches?
-        ps_sm = bad_checksum;                  // no, fail
-      } else if (prom_num == 0) {              // last EEPROM tested?
-        check_count = 0;                    // no, do it all on next EEPROM
-        prom_num = 1;
-        ps_sm = read_part_info;
-      } else {                      // EEPROMS done and passed! On to AD's
-        spi_m_async_disable(&PS_SPI);            // AD's work in MODE_1
-        spi_m_async_set_mode(&PS_SPI, SPI_MODE_1);
-        PS_spi_current_transfer_mode = SPI_MODE_1;
-        spi_m_async_enable(&PS_SPI);
-        prom_num = 0;
-        ps_sm = reset_ADs;
+      } else {
+        // The the initialized bit in the status word
+        sb_cache_update(ps_spi_cache, 0, ps_spi_cache[0].cache | (1<<(prom_num*2)));
+        if (CRC16_Computed != prom_p->CheckSum) {  // checksum matches?
+          ps_sm = bad_checksum;                  // no, fail
+        } else {
+          // Good checksum, so update the CRC_OK bit
+          sb_cache_update(ps_spi_cache, 0, ps_spi_cache[0].cache | (1<<(prom_num*2+1)));
+          if (prom_num == 0) {              // last EEPROM tested?
+            check_count = 0;                    // no, do it all on next EEPROM
+            prom_num = 1;
+            ps_sm = read_part_info;
+          } else {                      // EEPROMS done and passed! On to AD's
+            spi_m_async_disable(&PS_SPI);            // AD's work in MODE_1
+            spi_m_async_set_mode(&PS_SPI, SPI_MODE_1);
+            PS_spi_current_transfer_mode = SPI_MODE_1;
+            spi_m_async_enable(&PS_SPI);
+            prom_num = 0;
+            ps_sm = reset_ADs;
+          }
+        }
       }
       break;
 
@@ -537,7 +549,7 @@ void ps_spi_reset(void) {
     proms[1].AD_CS = ADC2_CS;
     proms[0].EE_CS = EEP1_CS;
     proms[1].EE_CS = EEP2_CS;
-    sensor_cfg_init();
+    // sensor_cfg_init();
     ps_spi_enabled = true;
   }
 }

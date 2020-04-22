@@ -2,7 +2,7 @@ function [ subfunction, desc] = get_subfunction(s)
 % [subfunction, desc] = get_subfunction(s)
 fprintf(s,"V\n");
 tline = fgetl(s);
-[A,n,~,nextindex] = sscanf(tline,'V%u:%u:');
+[A,n,~,nextindex] = sscanf(tline,'V%x:%x:');
 if n ~= 2
   error('Error getting subfunction code');
 end

@@ -8,7 +8,6 @@
 #define SPI_PS_H_
 
 #include <hal_spi_m_async.h>
-// #include "driver_init.h"
 #include "serial_num.h"
 #include "uDACS_pins.h"
 #include "rtc_timer.h"

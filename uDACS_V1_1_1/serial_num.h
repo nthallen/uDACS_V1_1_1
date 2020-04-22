@@ -68,6 +68,21 @@
 #error Unsupported SUBFUNCTION number
 #endif
 
+#ifdef uDACS_B
+  #define PS_MOSI PMOD1
+  #define PS_MISO PMOD7
+  #define PS_SCLK PMOD5
+  #define ADC1_CS PMOD8
+  #define EEP1_CS PMOD4
+  #define ADC2_CS PMOD6
+  #define EEP2_CS PMOD2
+  #define PPMP_CNTL SPR7
+  #define BPMP_CNTL SPR29
+  #define PPMPS   UC_SCL
+  #define BPMPS   UC_SDA
+#endif
+
+
 #ifndef SUBBUS_SUBFUNCTION_HEX
 #define SUBBUS_SUBFUNCTION_HEX SUBBUS_SUBFUNCTION
 #endif
