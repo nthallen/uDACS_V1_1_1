@@ -2,6 +2,8 @@
 #include "subbus.h"
 #include "spi.h"
 
+#ifdef uDACS_B
+
 static void commands_init(void) {
   #ifdef uDACS_B
     gpio_set_pin_level(PPMP_CNTL, false);
@@ -86,3 +88,5 @@ subbus_driver_t sb_cmd = {
   cmd_poll,
   false
 };
+
+#endif

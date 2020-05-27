@@ -92,11 +92,12 @@ typedef struct {
 /* first byte could be part of the sigma-delta readback error header    */
 /* rather than the response from the registers.                         */
 /************************************************************************/
-#define N_AD7770_INIT 9
+#define N_AD7770_INIT 10
 ad7770_init_word ad7770_init_codes[N_AD7770_INIT] = {
   { { 0x13, 0x80 } }, // readback regs on SDO
   { { 0xDB, 0x00 } }, // R: GEN_ERR_REG_2 to clear reset detected
   { { 0x11, 0x34 } }, // GENERAL_USER_CONFIG_1: Power up internal reference output
+  { { 0x14, 0.00 } }, // Data Output Format Register: Status Header
   { { 0x15, 0x40 } }, // Internal reference
   { { 0x60, 0x0F } }, // SRC N MSB
   { { 0x61, 0xA0 } }, // SRC N LSB
@@ -168,7 +169,7 @@ static bool poll_adc() {
       for (int i = 0; i < 8; ++i) {
         int offset = 4*i;
         uint8_t hdr = spi_read_data[offset];
-        if ((hdr & 0x80) || ((hdr&0x70)>>4) != i) {
+        if (((hdr&0x70)>>4) != i) {
           stage.status |= 1<<i;
         }
         stage.hdr[i] = hdr;

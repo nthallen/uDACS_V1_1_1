@@ -14,6 +14,7 @@ function [ value, ack_out ] = read_subbus(s, addr)
   elseif tline(1) == 'r'
     ack = 0;
   else
+    fprintf(1,'ERROR: read_subbus expected [Rr], received "%s"\n', tline);
     ack = -2;
   end
   if ack >= 0
@@ -23,4 +24,6 @@ function [ value, ack_out ] = read_subbus(s, addr)
   end
   if nargout > 1
     ack_out = ack;
+  elseif ack ~= 1
+    error(sprintf('ack=%d on read_subbus(0x%X)', ack, addr));
   end

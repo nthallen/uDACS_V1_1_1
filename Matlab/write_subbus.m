@@ -14,6 +14,7 @@ function ack_out = write_subbus(s, addr, value)
   elseif tline(1) == 'w'
     ack = 0;
   else
+    fprintf(1,'ERROR: write_subbus expected [Ww], received "%s"\n', tline);
     ack = -2;
   end
   if nargout > 0

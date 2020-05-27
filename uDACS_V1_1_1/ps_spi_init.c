@@ -4,13 +4,15 @@
 #include <hal_ext_irq.h>
 #include "spi_ps.h"
 
+#ifdef uDACS_B
+
 struct spi_m_async_descriptor PS_SPI;
 
 void PS_SPI_PORT_init(void) {
   gpio_set_pin_direction(PS_MISO, GPIO_DIRECTION_IN);
   gpio_set_pin_pull_mode(PS_MISO, GPIO_PULL_OFF);
   gpio_set_pin_function(PS_MISO, PINMUX_PA16C_SERCOM1_PAD0);
-  
+
   gpio_set_pin_level(PS_SCLK, false);
   gpio_set_pin_direction(PS_SCLK, GPIO_DIRECTION_OUT);
   gpio_set_pin_function(PS_SCLK, PINMUX_PA17C_SERCOM1_PAD1);
@@ -48,3 +50,5 @@ void PS_SPI_init(void) {
   spi_m_async_init(&PS_SPI, SERCOM1);
   PS_SPI_PORT_init();
 }
+
+#endif // uDACS_B

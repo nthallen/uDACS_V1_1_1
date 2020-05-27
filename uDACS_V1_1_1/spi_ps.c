@@ -6,7 +6,8 @@
 #include "uDACS_pins.h"
 #include "subbus.h"
 #include "spi_ps.h"
-// #include "Timer_Setup.h"
+
+#ifdef uDACS_B
 
 /* *************************************************************************
  * CCTIT Checksum and Checksum Table with 0x1021 seed
@@ -563,4 +564,4 @@ subbus_driver_t sb_ps_spi = {
   false
 };
 
-
+#endif // uDACS_B

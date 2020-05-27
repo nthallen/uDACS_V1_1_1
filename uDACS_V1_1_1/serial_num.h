@@ -16,8 +16,8 @@
 #include "uDACS_pins.h"
 
 // These parameters are common to all boards built with this code
-#define SUBBUS_BOARD_FIRMWARE_REV "V1.3"
-#define SUBBUS_BOARD_BUILD_NUM 8
+#define SUBBUS_BOARD_FIRMWARE_REV "V1.6"
+#define SUBBUS_BOARD_BUILD_NUM 11
 #define HAVE_RTC
 
 /**
@@ -33,39 +33,39 @@
 #error Must define SUBBUS_SUBFUNCTION
 #endif
 
-#if SUBBUS_SUBFUNCTION == 9
+#if SUBBUS_SUBFUNCTION == 9 // uDACS Rev A
   #define SUBBUS_BOARD_BOARD_REV "Rev A"
 
   #if SUBBUS_BOARD_SN == 1
-  #define SUBBUS_BOARD_INSTRUMENT_ID 7
-  #define SUBBUS_BOARD_INSTRUMENT "DPOPS"
-  #define SUBBUS_BOARD_ID 1
-  #define SUBBUS_BOARD_BOARD_TYPE "uDACS A"
+    #define SUBBUS_BOARD_INSTRUMENT_ID 7
+    #define SUBBUS_BOARD_INSTRUMENT "DPOPS"
+    #define SUBBUS_BOARD_ID 1
+    #define SUBBUS_BOARD_BOARD_TYPE "uDACS A"
   #endif
-#elif SUBBUS_SUBFUNCTION == 14
+#elif SUBBUS_SUBFUNCTION == 14 // uDACS Rev B
   #define SUBBUS_SUBFUNCTION_HEX E
   #define SUBBUS_BOARD_BOARD_REV "Rev B"
 
   #if SUBBUS_BOARD_SN == 1
-  #define SUBBUS_BOARD_INSTRUMENT_ID 7
-  #define SUBBUS_BOARD_INSTRUMENT "DPOPS"
-  #define SUBBUS_BOARD_ID 1
-  #define SUBBUS_BOARD_BOARD_TYPE "uDACS A"
-  #define SB_FAIL_PIN SPR7
-  #define SB_FAIL_PIN2 SPR29
-  #define SB_FAIL_TIMEOUT_SECS 20
+    #define SUBBUS_BOARD_INSTRUMENT_ID 7
+    #define SUBBUS_BOARD_INSTRUMENT "DPOPS"
+    #define SUBBUS_BOARD_ID 1
+    #define SUBBUS_BOARD_BOARD_TYPE "uDACS A"
+    #define SB_FAIL_PIN SPR7
+    #define SB_FAIL_PIN2 SPR29
+    // #define SB_FAIL_TIMEOUT_SECS 20
   #endif
 
   #if SUBBUS_BOARD_SN == 2
-  #define SUBBUS_BOARD_INSTRUMENT_ID 7
-  #define SUBBUS_BOARD_INSTRUMENT "DPOPS"
-  #define SUBBUS_BOARD_ID 2
-  #define SUBBUS_BOARD_BOARD_TYPE "uDACS B"
-  #define uDACS_B
+    #define SUBBUS_BOARD_INSTRUMENT_ID 7
+    #define SUBBUS_BOARD_INSTRUMENT "DPOPS"
+    #define SUBBUS_BOARD_ID 2
+    #define SUBBUS_BOARD_BOARD_TYPE "uDACS B"
+    #define uDACS_B
   #endif
 
 #else
-#error Unsupported SUBFUNCTION number
+  #error Unsupported SUBFUNCTION number
 #endif
 
 #ifdef uDACS_B

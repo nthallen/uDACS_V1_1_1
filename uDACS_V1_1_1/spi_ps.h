@@ -13,6 +13,8 @@
 #include "rtc_timer.h"
 #include "subbus.h"
 
+#ifdef uDACS_B
+
 extern struct spi_m_async_descriptor PS_SPI;
 void PS_SPI_init(void);
 
@@ -102,4 +104,5 @@ extern subbus_driver_t sb_ps_spi;
 void ps_spi_poll(void);
 void ps_spi_reset(void);
 
+#endif // uDACS_B
 #endif
