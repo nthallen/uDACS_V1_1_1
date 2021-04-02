@@ -7,6 +7,7 @@
 #include "rtc_timer.h"
 #include "spi_ps.h"
 #include "commands.h"
+#include "serial_num.h"
 
 static void configure_ports(void) {
 	// GPIO on PA14
