@@ -20,13 +20,13 @@ void PS_SPI_init(void);
 
 // #define SUBBUS_MATLAB_TEST_ADDR     0x30
 #define PS_SPI_STATUS_OFFSET         0
-#define PS_SPI_T1_OFFSET             1
-#define PS_SPI_P1 OFFSET             3
-#define PS_SPI_T2_OFFSET             5
-#define PS_SPI_P2_OFFSET             7
+#define PS_SPI_FIFO_LEN_OFFSET       1
+#define PS_SPI_FIFO_OFFSET           2
+#define PS_SPI_T1_OFFSET             3
+#define PS_SPI_P1 OFFSET             5
+#define PS_SPI_T2_OFFSET             7
+#define PS_SPI_P2_OFFSET             9
 #define PS_NUM_WORDS_PER_CHANNEL   (PS_SPI_T2_OFFSET-PS_SPI_T1_OFFSET)   // Number of 16 bit words per channel
-#define PS_SPI_FIFO_LEN_OFFSET       9
-#define PS_SPI_FIFO_OFFSET          10
 #define PS_SPI_BASE_ADDR          0x50
 #define PS_SPI_HIGH_ADDR          0x5A
 

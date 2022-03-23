@@ -9,6 +9,8 @@
 
 #ifdef uDACS_B
 
+#define N_PSENSORS 3
+
 /* *************************************************************************
  * CCTIT Checksum and Checksum Table with 0x1021 seed
 */
@@ -92,7 +94,7 @@ typedef struct {
   uint8_t       EE_CS;
   uint8_t       AD_CS;
 } EEPROM_t;
-static EEPROM_t proms[2], *prom_p;
+static EEPROM_t proms[N_PSENSORS], *prom_p;
 
 typedef struct __attribute__((__packed__)) {
   uint8_t       PartNumber[PN_SIZE];
@@ -102,7 +104,7 @@ typedef struct __attribute__((__packed__)) {
   float         Pressure_Range;
   float         Pressure_Min;
 } sensor_specs_t;
-static sensor_specs_t sensors[2];
+static sensor_specs_t sensors[N_PSENSORS];
 static void sensor_cfg_init(void);
 
 // Pressure sensors require two SPI modes:
@@ -163,9 +165,9 @@ float bytes2float32(int addr) {
 
 // sort PS_xfr_Rbuf Manufacturer ID info into Local EEPROM Structure
 //
- void sort_PS_EEPROM_info(int which_prom) {
-   EEPROM_t *prom_p = &proms[which_prom];
-   sensor_specs_t *sensor = &sensors[which_prom];
+ void sort_PS_EEPROM_info(int prom_num) {
+   EEPROM_t *prom_p = &proms[prom_num];
+   sensor_specs_t *sensor = &sensors[prom_num];
 
    int ii;            // member index
    int jj;            // buffer index 1st read from EEPROM is 2 writes delayed
@@ -188,8 +190,8 @@ float bytes2float32(int addr) {
    for(ii=0; ii<PRESSURE_REF_SIZE;  ii++) { sensor->PressureRef[ii]  = PS_xfr_Rbuf[jj++]; }
    sensor->PressureRef[ii] = '\0';
 
-   if (which_prom)
-     sensor_cfg_init();
+   // if (which_prom)
+   //   sensor_cfg_init();
 }
 
 // sort PS_xfr_Rbuf Polynomial coefficients into Local EEPROM Structure
@@ -277,8 +279,8 @@ static subbus_cache_word_t ps_spi_cache[PS_SPI_HIGH_ADDR - PS_SPI_BASE_ADDR+1] =
 //  0,    0,        true,       false,     true,      false,     false,
 // .cache   .wvalue   .readable   .was_read  .writable  .written   .dynamic
 
-void ps_cache_update(EEPROM_t *sensor, uint8_t which_prom){
-  uint8_t indx = (which_prom*PS_NUM_WORDS_PER_CHANNEL)+PS_SPI_T1_OFFSET;
+void ps_cache_update(EEPROM_t *sensor, uint8_t prom_num){
+  uint8_t indx = (prom_num*PS_NUM_WORDS_PER_CHANNEL)+PS_SPI_T1_OFFSET;
 
   sb_cache_update32(ps_spi_cache, indx, &prom_p->temperature);
   sb_cache_update32(ps_spi_cache, indx+2, &prom_p->pressure);
@@ -306,7 +308,7 @@ enum ps_sm_t { read_part_info,    sort_part_info,
 
 ps_sm = read_part_info;                // initial state
 
-uint8_t  prom_num       = 0;            // 0 = Sensor/EEPROM-1, 1 = Sensor/EEPROM-2
+uint8_t  prom_num       = 0;            // 0 = Sensor/EEPROM-1, 1 = Sensor/EEPROM-2, 2 = Sensor/EEPROM-3
 uint8_t  pin_cs         = EEP1_CS;          // 1 of 4 Sensor Chip Selects, start with EEPROM1
 uint8_t  poly_type      = 1;            // which polynomial, 1 = offset, 2 = span, 3 = shape
 uint16_t check_count    = 0;            // track # bytes read from EEPROM for CRC calculation
@@ -332,6 +334,8 @@ void ps_spi_poll(void) {
     case sort_part_info:            // Sort SPI read-buffer into local structure
       ps_chip_deselect(pin_cs);
       sort_PS_EEPROM_info(prom_num);
+      if (prom_num >= N_PSENSORS-1)
+        sensor_cfg_init();
       poly_type = 1;
       ps_sm = read_poly_coeffs;
       break;
@@ -386,15 +390,17 @@ void ps_spi_poll(void) {
         ps_sm = calc_checksum_read;                // no, get next address
       } else {
         // The the initialized bit in the status word
-        sb_cache_update(ps_spi_cache, 0, ps_spi_cache[0].cache | (1<<(prom_num*2)));
+        sb_cache_update(ps_spi_cache, PS_SPI_STATUS_OFFSET,
+          ps_spi_cache[PS_SPI_STATUS_OFFSET].cache | (1<<(prom_num*2)));
         if (CRC16_Computed != prom_p->CheckSum) {  // checksum matches?
           ps_sm = bad_checksum;                  // no, fail
         } else {
           // Good checksum, so update the CRC_OK bit
-          sb_cache_update(ps_spi_cache, 0, ps_spi_cache[0].cache | (1<<(prom_num*2+1)));
-          if (prom_num == 0) {              // last EEPROM tested?
+          sb_cache_update(ps_spi_cache, PS_SPI_STATUS_OFFSET,
+             ps_spi_cache[PS_SPI_STATUS_OFFSET].cache | (1<<(prom_num*2+1)));
+          if (prom_num < N_PSENSORS - 1) {              // last EEPROM tested?
             check_count = 0;                    // no, do it all on next EEPROM
-            prom_num = 1;
+            ++prom_num;
             ps_sm = read_part_info;
           } else {                      // EEPROMS done and passed! On to AD's
             spi_m_async_disable(&PS_SPI);            // AD's work in MODE_1
@@ -439,8 +445,8 @@ void ps_spi_poll(void) {
 
     case wait_AD_config:
       ps_chip_deselect(pin_cs);
-      if (prom_num == 0) {
-        prom_num = 1;
+      if (prom_num < N_PSENSORS-1) {
+        ++prom_num;
         ps_sm = reset_ADs;
       } else {
         prom_num = 0;
@@ -499,7 +505,9 @@ void ps_spi_poll(void) {
         ps_sm = wait_temperature;
       } else {
         ps_sm = rd_t_set_p;
-        prom_num = prom_num ? 0 : 1;
+        if (++prom_num == N_PSENSORS)
+          prom_num = 0;
+        // prom_num = prom_num ? 0 : 1;
       }
       break;
 

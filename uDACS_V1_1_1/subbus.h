@@ -106,7 +106,7 @@ bool subbus_cache_update(subbus_driver_t *drv, uint16_t addr, uint16_t data);
 /**
  * This function differs from subbus_write() in that it directly
  * updates the cache value.
- * This function differes from subbus_cache_update() in that it
+ * This function differs from subbus_cache_update() in that it
  * directly addresses the local cache without checking the range.
  * On success, returns true and clears the was_read flag.
  * @param cache pointer to the local cache
