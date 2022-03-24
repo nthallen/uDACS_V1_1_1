@@ -26,9 +26,11 @@ void PS_SPI_init(void);
 #define PS_SPI_P1 OFFSET             5
 #define PS_SPI_T2_OFFSET             7
 #define PS_SPI_P2_OFFSET             9
+#define PS_SPI_T3_OFFSET            11
+#define PS_SPI_P3_OFFSET            13
 #define PS_NUM_WORDS_PER_CHANNEL   (PS_SPI_T2_OFFSET-PS_SPI_T1_OFFSET)   // Number of 16 bit words per channel
 #define PS_SPI_BASE_ADDR          0x50
-#define PS_SPI_HIGH_ADDR          0x5A
+#define PS_SPI_HIGH_ADDR          0x5E
 
 #define PS_SPI_MAX_XFR_LENGTH      44
 #define PS_SPI_ENABLE_DEFAULT      false

@@ -21,6 +21,10 @@ void PS_SPI_PORT_init(void) {
   gpio_set_pin_direction(PS_MOSI, GPIO_DIRECTION_OUT);
   gpio_set_pin_function(PS_MOSI, PINMUX_PA19C_SERCOM1_PAD3);
 
+  gpio_set_pin_level(EEP3_CS, true);
+  gpio_set_pin_direction(EEP3_CS, GPIO_DIRECTION_OUT);
+  gpio_set_pin_function(EEP3_CS, GPIO_PIN_FUNCTION_OFF);
+
   gpio_set_pin_level(EEP2_CS, true);
   gpio_set_pin_direction(EEP2_CS, GPIO_DIRECTION_OUT);
   gpio_set_pin_function(EEP2_CS, GPIO_PIN_FUNCTION_OFF);
@@ -28,6 +32,10 @@ void PS_SPI_PORT_init(void) {
   gpio_set_pin_level(EEP1_CS, true);
   gpio_set_pin_direction(EEP1_CS, GPIO_DIRECTION_OUT);
   gpio_set_pin_function(EEP1_CS, GPIO_PIN_FUNCTION_OFF);
+
+  gpio_set_pin_level(ADC3_CS, true);
+  gpio_set_pin_direction(ADC3_CS, GPIO_DIRECTION_OUT);
+  gpio_set_pin_function(ADC3_CS, GPIO_PIN_FUNCTION_OFF);
 
   // GPIO on PB11
   gpio_set_pin_level(ADC2_CS, true);

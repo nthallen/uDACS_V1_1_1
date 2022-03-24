@@ -59,6 +59,7 @@
 #define START      GPIO(GPIO_PORTB, 2)   // Unused (?) input ADC
 #define SPR7       GPIO(GPIO_PORTB, 8)   // Spare on J7 pin 1
 #define SPR29      GPIO(GPIO_PORTA, 20)  // Spare on J8 pin 1
+#define SPR_AO     GPIO(GPIO_PORTA, 2)
 
 // 27 of 38 definable PINS defined
 

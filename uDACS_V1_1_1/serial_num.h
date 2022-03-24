@@ -92,6 +92,8 @@
   #define EEP1_CS PMOD4
   #define ADC2_CS PMOD6
   #define EEP2_CS PMOD2
+  #define ADC3_CS PMOD3
+  #define EEP3_CS SPR_AO
   #define PPMP_CNTL SPR7
   #define BPMP_CNTL SPR29
   #define PPMPS   UC_SCL

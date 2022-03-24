@@ -263,6 +263,10 @@ void use_coef(EEPROM_t *sensor) {
 // Define read / write-able Host Cache Interface
 static subbus_cache_word_t ps_spi_cache[PS_SPI_HIGH_ADDR - PS_SPI_BASE_ADDR+1] = {
   { 0, 0, true,  false,  false,  false, false },  // R,   PS_SPI_STATUS
+
+  { 0, 0, true,  false,  false,  false, false },  // Sensor Config FIFO Len
+  { 0, 0, true,  false,  false,  false, true  },  // Sensor Config FIFO
+
   { 0, 0, true,  false,  false,  false, false },  // LSW, Float, Temperature,  Pressure Sensor 1
   { 0, 0, true,  false,  false,  false, false },  // MSW, Float, Temperature,  Pressure Sensor 1
   { 0, 0, true,  false,  false,  false, false },  // LSW, Float, Pressure,  Pressure Sensor 1
@@ -273,8 +277,10 @@ static subbus_cache_word_t ps_spi_cache[PS_SPI_HIGH_ADDR - PS_SPI_BASE_ADDR+1] =
   { 0, 0, true,  false,  false,  false, false },  // LSW, Float, Pressure,  Pressure Sensor 2
   { 0, 0, true,  false,  false,  false, false },  // MSW, Float, Pressure,  Pressure Sensor 2
 
-  { 0, 0, true,  false,  false,  false, false },  // Sensor Config FIFO Len
-  { 0, 0, true,  false,  false,  false, true  },  // Sensor Config FIFO
+  { 0, 0, true,  false,  false,  false, false },  // LSW, Float, Temperature,  Pressure Sensor 3
+  { 0, 0, true,  false,  false,  false, false },  // MSW, Float, Temperature,  Pressure Sensor 3
+  { 0, 0, true,  false,  false,  false, false },  // LSW, Float, Pressure,  Pressure Sensor 3
+  { 0, 0, true,  false,  false,  false, false },  // MSW, Float, Pressure,  Pressure Sensor 3
 };
 //  0,    0,        true,       false,     true,      false,     false,
 // .cache   .wvalue   .readable   .was_read  .writable  .written   .dynamic
@@ -556,8 +562,10 @@ void ps_spi_reset(void) {
     spi_m_async_enable(&PS_SPI);
     proms[0].AD_CS = ADC1_CS;
     proms[1].AD_CS = ADC2_CS;
+    proms[2].AD_CS = ADC3_CS;
     proms[0].EE_CS = EEP1_CS;
     proms[1].EE_CS = EEP2_CS;
+    proms[2].EE_CS = EEP3_CS;
     // sensor_cfg_init();
     ps_spi_enabled = true;
   }
