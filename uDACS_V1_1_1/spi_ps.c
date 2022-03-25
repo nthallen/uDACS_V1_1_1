@@ -398,24 +398,24 @@ void ps_spi_poll(void) {
         // The the initialized bit in the status word
         sb_cache_update(ps_spi_cache, PS_SPI_STATUS_OFFSET,
           ps_spi_cache[PS_SPI_STATUS_OFFSET].cache | (1<<(prom_num*2)));
-        if (CRC16_Computed != prom_p->CheckSum) {  // checksum matches?
-          ps_sm = bad_checksum;                  // no, fail
-        } else {
+        if (CRC16_Computed == prom_p->CheckSum) {  // checksum matches?
           // Good checksum, so update the CRC_OK bit
           sb_cache_update(ps_spi_cache, PS_SPI_STATUS_OFFSET,
              ps_spi_cache[PS_SPI_STATUS_OFFSET].cache | (1<<(prom_num*2+1)));
-          if (prom_num < N_PSENSORS - 1) {              // last EEPROM tested?
-            check_count = 0;                    // no, do it all on next EEPROM
-            ++prom_num;
-            ps_sm = read_part_info;
-          } else {                      // EEPROMS done and passed! On to AD's
-            spi_m_async_disable(&PS_SPI);            // AD's work in MODE_1
-            spi_m_async_set_mode(&PS_SPI, SPI_MODE_1);
-            PS_spi_current_transfer_mode = SPI_MODE_1;
-            spi_m_async_enable(&PS_SPI);
-            prom_num = 0;
-            ps_sm = reset_ADs;
-          }
+        }
+//          ps_sm = bad_checksum;                  // no, fail
+//        } else {
+        if (prom_num < N_PSENSORS - 1) {              // last EEPROM tested?
+          check_count = 0;                    // no, do it all on next EEPROM
+          ++prom_num;
+          ps_sm = read_part_info;
+        } else {                      // EEPROMS done and passed! On to AD's
+          spi_m_async_disable(&PS_SPI);            // AD's work in MODE_1
+          spi_m_async_set_mode(&PS_SPI, SPI_MODE_1);
+          PS_spi_current_transfer_mode = SPI_MODE_1;
+          spi_m_async_enable(&PS_SPI);
+          prom_num = 0;
+          ps_sm = reset_ADs;
         }
       }
       break;
