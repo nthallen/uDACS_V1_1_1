@@ -3,6 +3,7 @@
 #include <hpl_gclk_base.h>
 #include <hal_ext_irq.h>
 #include "spi.h"
+#include "serial_num.h"
 
 struct spi_m_async_descriptor AD_SPI;
 
