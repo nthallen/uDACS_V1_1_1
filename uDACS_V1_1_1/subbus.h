@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "serial_num.h"
+//#include "serial_num.h"
 
 #define USE_SUBBUS 1
 
@@ -18,9 +18,8 @@
 #define SUBBUS_SWITCHES_ADDR        0x0007
 #define SUBBUS_DESC_FIFO_SIZE_ADDR  0x0008
 #define SUBBUS_DESC_FIFO_ADDR       0x0009
+#define SUBBUS_SUBFUNCTION_ADDR     0x000A
 #define SUBBUS_INTERRUPTS           0
-
-#define SUBBUS_ADDR_CMDS 0x18
 
 #if SUBBUS_INTERRUPTS
 extern volatile uint8_t subbus_intr_req;
@@ -106,7 +105,7 @@ bool subbus_cache_update(subbus_driver_t *drv, uint16_t addr, uint16_t data);
 /**
  * This function differs from subbus_write() in that it directly
  * updates the cache value.
- * This function differs from subbus_cache_update() in that it
+ * This function differes from subbus_cache_update() in that it
  * directly addresses the local cache without checking the range.
  * On success, returns true and clears the was_read flag.
  * @param cache pointer to the local cache

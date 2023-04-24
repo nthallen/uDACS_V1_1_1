@@ -2,6 +2,7 @@
  */
 #include <string.h>
 #include "subbus.h"
+#include "serial_num.h"
 #ifdef HAVE_RTC
 #include "rtc_timer.h"
 #endif
@@ -133,8 +134,10 @@ static bool sb_fail_timed_out;
 
 static void sb_fail_sw_reset() {
   sb_fail_sw_cache[0].cache = 0;
-  sb_fail_last_tick_set = false;
-  sb_fail_timed_out = false;
+  #ifdef HAVE_RTC
+    sb_fail_last_tick_set = false;
+    sb_fail_timed_out = false;
+  #endif
   #ifdef SB_FAIL_PIN
     gpio_set_pin_level(SB_FAIL_PIN, false);
     gpio_set_pin_direction(SB_FAIL_PIN, GPIO_DIRECTION_OUT);
@@ -179,6 +182,16 @@ void sb_fail_tick() {
   sb_fail_tick_int(0);
 }
 
+#ifdef MODE_PIN_0
+static void update_status(uint16_t *status, uint8_t pin, uint16_t bit) {
+  if (gpio_get_pin_level(pin)) {
+    *status |= bit;
+    } else {
+    *status &= ~bit;
+  }
+}
+#endif
+
 static void sb_fail_sw_poll() {
   uint16_t wfail;
   #ifdef HAVE_RTC
@@ -210,6 +223,16 @@ static void sb_fail_sw_poll() {
     sb_cache_update(sb_fail_sw_cache,0,wfail);
     sb_fail_set();
   }
+#ifdef MODE_PIN_0
+  {
+    uint16_t status = 0;
+    update_status(&status, MODE_PIN_0, 0x01);
+    #ifdef MODE_PIN1
+      update_status(&status, MODE_PIN_1, 0x02);
+    #endif
+    sb_cache_update(sb_fail_sw_cache, 1, status); // Make status bits true in high
+  }
+#endif
 }
 
 subbus_driver_t sb_fail_sw = { SUBBUS_FAIL_ADDR, SUBBUS_SWITCHES_ADDR,
@@ -291,9 +314,10 @@ bool sb_cache_was_read(subbus_cache_word_t *cache, uint16_t offset) {
 /***************************************************/
 /* Board Description Driver                        */
 /***************************************************/
-static subbus_cache_word_t board_desc_cache[2] = {
+static subbus_cache_word_t board_desc_cache[3] = {
   { 0, 0, true, false, false, false, false },
-  { 0, 0, true, false, false, false, true }
+  { 0, 0, true, false, false, false, true },
+  { SUBBUS_SUBFUNCTION, 0, true, false, false, false, false }
 };
 
 static struct board_desc_t {
@@ -303,7 +327,7 @@ static struct board_desc_t {
 } board_desc;
 
 static void board_desc_init(void) {
-  board_desc.desc = SUBBUS_BOARD_REV;
+  board_desc.desc = SUBBUS_BOARD_DESC;
   board_desc.cp = 0;
   board_desc.nc = strlen(board_desc.desc)+1; // Include the trailing NUL
   subbus_cache_update(&sb_board_desc, SUBBUS_DESC_FIFO_SIZE_ADDR, (board_desc.nc+1)/2);
@@ -325,6 +349,6 @@ static void board_desc_action(uint16_t addr) {
 }
 
 subbus_driver_t sb_board_desc = {
-  SUBBUS_DESC_FIFO_SIZE_ADDR, SUBBUS_DESC_FIFO_ADDR,
+  SUBBUS_DESC_FIFO_SIZE_ADDR, SUBBUS_SUBFUNCTION_ADDR,
   board_desc_cache, board_desc_init, 0, board_desc_action,
-false };
+  false };
