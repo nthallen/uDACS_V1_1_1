@@ -1249,12 +1249,6 @@
     <Compile Include="Device_Startup\system_samd21.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="examples\driver_examples.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="examples\driver_examples.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="hal\include\hal_atomic.h">
       <SubType>compile</SubType>
     </Compile>
