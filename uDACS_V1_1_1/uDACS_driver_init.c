@@ -1,12 +1,12 @@
 /*
- * Code generated from Atmel Start.
+ * Code originally generated from Atmel Start's atmel_start_pins.h.
+ * Changes made there by Atmel Start should be migrated into this file.
  *
- * This file will be overwritten when reconfiguring your Atmel Start project.
- * Please copy examples or other code you want to keep to a separate file
- * to avoid losing it when reconfiguring.
+ *
+ *
  */
 
-#include "driver_init.h"
+#include "uDACS_driver_init.h"
 #include <peripheral_clk_config.h>
 #include <utils.h>
 #include <hal_init.h>
@@ -15,19 +15,19 @@
 
 #include <hpl_rtc_base.h>
 
+#if 0  // in usart.c
 /*! The buffer size for USART */
-#if 0
-#define USART_CTRL_BUFFER_SIZE 16
+#define USART_CTRL_BUFFER_SIZE 64
 
 struct usart_async_descriptor USART_CTRL;
-
 struct timer_descriptor       TIMER_0;
 
 static uint8_t USART_CTRL_buffer[USART_CTRL_BUFFER_SIZE];
-
+#endif
+#if 0
 struct spi_m_async_descriptor AD_SPI;
 
-struct spi_m_async_descriptor PS_SPI;
+struct i2c_m_async_desc PM_I2C;
 
 struct i2c_m_async_desc UC_I2C;
 
@@ -52,6 +52,7 @@ void EXTERNAL_IRQ_0_init(void)
 
 	ext_irq_init();
 }
+#endif
 
 void AD_SPI_PORT_init(void)
 {
@@ -107,13 +108,11 @@ void AD_SPI_init(void)
 	AD_SPI_PORT_init();
 }
 
-void PS_SPI_PORT_init(void)
+#if 0
+void PM_I2C_PORT_init(void)
 {
 
-	// Set pin direction to input
-	gpio_set_pin_direction(PMOD7, GPIO_DIRECTION_IN);
-
-	gpio_set_pin_pull_mode(PMOD7,
+	gpio_set_pin_pull_mode(PM_SDA,
 	                       // <y> Pull configuration
 	                       // <id> pad_pull_config
 	                       // <GPIO_PULL_OFF"> Off
@@ -121,44 +120,31 @@ void PS_SPI_PORT_init(void)
 	                       // <GPIO_PULL_DOWN"> Pull-down
 	                       GPIO_PULL_OFF);
 
-	gpio_set_pin_function(PMOD7, PINMUX_PA16C_SERCOM1_PAD0);
+	gpio_set_pin_function(PM_SDA, PINMUX_PA16C_SERCOM1_PAD0);
 
-	gpio_set_pin_level(PMOD5,
-	                   // <y> Initial level
-	                   // <id> pad_initial_level
-	                   // <false"> Low
-	                   // <true"> High
-	                   false);
+	gpio_set_pin_pull_mode(PM_SCL,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
 
-	// Set pin direction to output
-	gpio_set_pin_direction(PMOD5, GPIO_DIRECTION_OUT);
-
-	gpio_set_pin_function(PMOD5, PINMUX_PA17C_SERCOM1_PAD1);
-
-	gpio_set_pin_level(PMOD1,
-	                   // <y> Initial level
-	                   // <id> pad_initial_level
-	                   // <false"> Low
-	                   // <true"> High
-	                   false);
-
-	// Set pin direction to output
-	gpio_set_pin_direction(PMOD1, GPIO_DIRECTION_OUT);
-
-	gpio_set_pin_function(PMOD1, PINMUX_PA19C_SERCOM1_PAD3);
+	gpio_set_pin_function(PM_SCL, PINMUX_PA17C_SERCOM1_PAD1);
 }
 
-void PS_SPI_CLOCK_init(void)
+void PM_I2C_CLOCK_init(void)
 {
 	_pm_enable_bus_clock(PM_BUS_APBC, SERCOM1);
 	_gclk_enable_channel(SERCOM1_GCLK_ID_CORE, CONF_GCLK_SERCOM1_CORE_SRC);
+	_gclk_enable_channel(SERCOM1_GCLK_ID_SLOW, CONF_GCLK_SERCOM1_SLOW_SRC);
 }
 
-void PS_SPI_init(void)
+void PM_I2C_init(void)
 {
-	PS_SPI_CLOCK_init();
-	spi_m_async_init(&PS_SPI, SERCOM1);
-	PS_SPI_PORT_init();
+	PM_I2C_CLOCK_init();
+	i2c_m_async_init(&PM_I2C, SERCOM1);
+	PM_I2C_PORT_init();
 }
 
 void UC_I2C_PORT_init(void)
@@ -253,6 +239,7 @@ void SD_SPI_init(void)
 	SD_SPI_PORT_init();
 }
 
+// in usart.c
 /**
  * \brief USART Clock initialization function
  *
@@ -306,7 +293,6 @@ static void TIMER_0_init(void)
 void system_init(void)
 {
 	init_mcu();
-
 #if 0
 	// GPIO on PA01
 
@@ -366,6 +352,21 @@ void system_init(void)
 
 	gpio_set_pin_function(PMOD3, GPIO_PIN_FUNCTION_OFF);
 
+	// GPIO on PA19
+
+	// Set pin direction to input
+	gpio_set_pin_direction(PMOD1, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(PMOD1,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(PMOD1, GPIO_PIN_FUNCTION_OFF);
+
 	// GPIO on PA20
 
 	gpio_set_pin_level(SPR29,
@@ -382,7 +383,7 @@ void system_init(void)
 
 	// GPIO on PA21
 
-	gpio_set_pin_level(PMOD2_CSEE2,
+	gpio_set_pin_level(PMOD2,
 	                   // <y> Initial level
 	                   // <id> pad_initial_level
 	                   // <false"> Low
@@ -390,9 +391,9 @@ void system_init(void)
 	                   true);
 
 	// Set pin direction to output
-	gpio_set_pin_direction(PMOD2_CSEE2, GPIO_DIRECTION_OUT);
+	gpio_set_pin_direction(PMOD2, GPIO_DIRECTION_OUT);
 
-	gpio_set_pin_function(PMOD2_CSEE2, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_function(PMOD2, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PA27
 
@@ -411,7 +412,7 @@ void system_init(void)
 
 	// GPIO on PA28
 
-	gpio_set_pin_level(PMOD4_CSEE1,
+	gpio_set_pin_level(PMOD4,
 	                   // <y> Initial level
 	                   // <id> pad_initial_level
 	                   // <false"> Low
@@ -419,9 +420,9 @@ void system_init(void)
 	                   true);
 
 	// Set pin direction to output
-	gpio_set_pin_direction(PMOD4_CSEE1, GPIO_DIRECTION_OUT);
+	gpio_set_pin_direction(PMOD4, GPIO_DIRECTION_OUT);
 
-	gpio_set_pin_function(PMOD4_CSEE1, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_function(PMOD4, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PB02
 
@@ -467,7 +468,7 @@ void system_init(void)
 
 	// GPIO on PB10
 
-	gpio_set_pin_level(PMOD8_CSADC1,
+	gpio_set_pin_level(PMOD8,
 	                   // <y> Initial level
 	                   // <id> pad_initial_level
 	                   // <false"> Low
@@ -475,13 +476,13 @@ void system_init(void)
 	                   true);
 
 	// Set pin direction to output
-	gpio_set_pin_direction(PMOD8_CSADC1, GPIO_DIRECTION_OUT);
+	gpio_set_pin_direction(PMOD8, GPIO_DIRECTION_OUT);
 
-	gpio_set_pin_function(PMOD8_CSADC1, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_function(PMOD8, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PB11
 
-	gpio_set_pin_level(PMOD6_CSADC2,
+	gpio_set_pin_level(PMOD6,
 	                   // <y> Initial level
 	                   // <id> pad_initial_level
 	                   // <false"> Low
@@ -489,15 +490,15 @@ void system_init(void)
 	                   true);
 
 	// Set pin direction to output
-	gpio_set_pin_direction(PMOD6_CSADC2, GPIO_DIRECTION_OUT);
+	gpio_set_pin_direction(PMOD6, GPIO_DIRECTION_OUT);
 
-	gpio_set_pin_function(PMOD6_CSADC2, GPIO_PIN_FUNCTION_OFF);
+	gpio_set_pin_function(PMOD6, GPIO_PIN_FUNCTION_OFF);
 
 	EXTERNAL_IRQ_0_init();
 
 	AD_SPI_init();
 
-	PS_SPI_init();
+	PM_I2C_init();
 
 	UC_I2C_init();
 

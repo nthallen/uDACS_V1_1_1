@@ -300,36 +300,32 @@ drivers:
         configuration:
           core_gclk_selection: Generic clock generator 0
           slow_gclk_selection: Generic clock generator 3
-  PS_SPI:
-    user_label: PS_SPI
-    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM1::driver_config_definition::SPI.Master::HAL:Driver:SPI.Master.Async
-    functionality: SPI
-    api: HAL:Driver:SPI_Master_Async
+  PM_I2C:
+    user_label: PM_I2C
+    definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::SERCOM1::driver_config_definition::I2C.Master.Standard~2FFast-mode::HAL:Driver:I2C.Master.Async
+    functionality: I2C
+    api: HAL:Driver:I2C_Master_Async
     configuration:
-      spi_master_advanced: false
-      spi_master_arch_cpha: Sample input on leading edge
-      spi_master_arch_cpol: SCK is low when idle
-      spi_master_arch_dbgstop: Keep running
-      spi_master_arch_dord: MSB first
-      spi_master_arch_ibon: In data stream
-      spi_master_arch_runstdby: false
-      spi_master_baud_rate: 1000000
-      spi_master_character_size: 8 bits
-      spi_master_dummybyte: 511
-      spi_master_rx_enable: true
+      i2c_master_advanced: false
+      i2c_master_arch_dbgstop: Keep running
+      i2c_master_arch_inactout: Disabled
+      i2c_master_arch_lowtout: false
+      i2c_master_arch_mexttoen: false
+      i2c_master_arch_runstdby: false
+      i2c_master_arch_sdahold: 300-600ns hold time
+      i2c_master_arch_sexttoen: false
+      i2c_master_arch_trise: 215
+      i2c_master_baud_rate: 100000
     optional_signals: []
     variant:
-      specification: TXPO=2, RXPO=0
+      specification: SDA=0, SCL=1
       required_signals:
       - name: SERCOM1/PAD/0
         pad: PA16
-        label: MISO
+        label: SDA
       - name: SERCOM1/PAD/1
         pad: PA17
-        label: SCK
-      - name: SERCOM1/PAD/3
-        pad: PA19
-        label: MOSI
+        label: SCL
     clocks:
       domain_group:
         nodes:
@@ -919,18 +915,18 @@ pads:
     user_label: ADC_CS
     configuration:
       pad_initial_level: High
-  PMOD8_CSADC1:
+  PMOD8:
     name: PB10
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB10
     mode: Digital output
-    user_label: PMOD8_CSADC1
+    user_label: PMOD8
     configuration:
       pad_initial_level: High
-  PMOD6_CSADC2:
+  PMOD6:
     name: PB11
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PB11
     mode: Digital output
-    user_label: PMOD6_CSADC2
+    user_label: PMOD6
     configuration:
       pad_initial_level: High
   SD_MOSI:
@@ -958,17 +954,17 @@ pads:
     mode: Digital input
     user_label: SD_MISO
     configuration: null
-  PMOD7:
+  PM_SDA:
     name: PA16
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA16
-    mode: Digital input
-    user_label: PMOD7
+    mode: I2C
+    user_label: PM_SDA
     configuration: null
-  PMOD5:
+  PM_SCL:
     name: PA17
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA17
-    mode: Digital output
-    user_label: PMOD5
+    mode: I2C
+    user_label: PM_SCL
     configuration: null
   PMOD3:
     name: PA18
@@ -979,7 +975,7 @@ pads:
   PMOD1:
     name: PA19
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA19
-    mode: Digital output
+    mode: Digital input
     user_label: PMOD1
     configuration: null
   SPR29:
@@ -988,11 +984,11 @@ pads:
     mode: Digital output
     user_label: SPR29
     configuration: null
-  PMOD2_CSEE2:
+  PMOD2:
     name: PA21
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA21
     mode: Digital output
-    user_label: PMOD2_CSEE2
+    user_label: PMOD2
     configuration:
       pad_initial_level: High
   UC_SDA:
@@ -1025,11 +1021,11 @@ pads:
     mode: Digital input
     user_label: SD
     configuration: null
-  PMOD4_CSEE1:
+  PMOD4:
     name: PA28
     definition: Atmel:SAMD21_Drivers:0.0.1::SAMD21G18A-AF::pad::PA28
     mode: Digital output
-    user_label: PMOD4_CSEE1
+    user_label: PMOD4
     configuration:
       pad_initial_level: High
   START:

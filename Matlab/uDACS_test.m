@@ -1,9 +1,10 @@
 %%
 cd C:\Users\nort\Documents\Documents\Exp\Boards\uDACS\uDACS_V1_1_1\Matlab
+% cd C:\huarp\ElecCore\uDACS\code\uDACS\uDACS_V1_1_1\Matlab
 %%
 serial_port_clear();
 %%
-[s,port] = serial_port_init('COM4');
+[s,port] = serial_port_init('COM3');
 set(s,'BaudRate',57600);
 % set(s,'BaudRate',115200);
 %%
@@ -71,6 +72,40 @@ flush_input(s);
 %fprintf(1,'ack=%d value=%04X\n', ack,value);
 %
 %write_subbus(s, 17, 0);
+
+%%
+% MS5607 Barometer :
+ms_base = hex2dec('80'); %% 0x80
+
+% Read Coefficients
+rm_obj = read_multi_prep([ms_base+5,1,ms_base+10]);  % [0x85 - 0x8A]
+[vals,~] = read_multi(s,rm_obj);
+%
+if isempty(vals) || length(vals) ~= 6 
+  error('vals length was %d, expected 6', length(vals));
+end
+%
+fprintf(1, '\nMS5607 Coefficients:\n');
+for i=1:6
+  fprintf(1, '  C%d: %x\n', i, vals(i));
+end
+%%
+rm_obj = read_multi_prep([ms_base+1,1,ms_base+4]); % 0x81 - 0x82, and 0x83 - 0x84 
+
+fprintf(1, '\nMS5607 Pressure and Temperature:\n');
+for i=0:9
+  [vals,ack] = read_multi(s, rm_obj);
+  
+PTread = struct( ...
+  'T', { typecast(uint32(vals(3)+65536*vals(4)),'single') }, ...
+  'P', { typecast(uint32(vals(1)+65536*vals(2)),'single') });
+  
+  fprintf(1,'P%d: %7.3f mBar ( %7.3f Torr )  T%d: %7.3f degC\n', i, ...
+    PTread.P, (PTread.P * 0.750062), i, PTread.T);
+ 
+  pause(1);
+end
+
 %% Timer section
 rm_obj = read_multi_prep([64,1,68]); % 0x40
 %

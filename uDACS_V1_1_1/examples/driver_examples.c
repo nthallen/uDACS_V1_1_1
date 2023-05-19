@@ -49,30 +49,22 @@ void AD_SPI_example(void)
 	io_write(io, example_AD_SPI, 12);
 }
 
-/**
- * Example of using PS_SPI to write "Hello World" using the IO abstraction.
- *
- * Since the driver is asynchronous we need to use statically allocated memory for string
- * because driver initiates transfer and then returns before the transmission is completed.
- *
- * Once transfer has been completed the tx_cb function will be called.
- */
+static uint8_t PM_I2C_example_str[12] = "Hello World!";
 
-static uint8_t example_PS_SPI[12] = "Hello World!";
-
-static void complete_cb_PS_SPI(const struct spi_m_async_descriptor *const io_descr)
+void PM_I2C_tx_complete(struct i2c_m_async_desc *const i2c)
 {
-	/* Transfer completed */
 }
 
-void PS_SPI_example(void)
+void PM_I2C_example(void)
 {
-	struct io_descriptor *io;
-	spi_m_async_get_io_descriptor(&PS_SPI, &io);
+	struct io_descriptor *PM_I2C_io;
 
-	spi_m_async_register_callback(&PS_SPI, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_PS_SPI);
-	spi_m_async_enable(&PS_SPI);
-	io_write(io, example_PS_SPI, 12);
+	i2c_m_async_get_io_descriptor(&PM_I2C, &PM_I2C_io);
+	i2c_m_async_enable(&PM_I2C);
+	i2c_m_async_register_callback(&PM_I2C, I2C_M_ASYNC_TX_COMPLETE, (FUNC_PTR)PM_I2C_tx_complete);
+	i2c_m_async_set_slaveaddr(&PM_I2C, 0x12, I2C_M_SEVEN);
+
+	io_write(PM_I2C_io, PM_I2C_example_str, 12);
 }
 
 static uint8_t UC_I2C_example_str[12] = "Hello World!";

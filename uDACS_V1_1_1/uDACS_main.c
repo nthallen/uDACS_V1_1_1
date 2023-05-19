@@ -5,11 +5,12 @@
 #include "control.h"
 #include "spi.h"
 #include "rtc_timer.h"
-#include "spi_ps.h"
+#include "i2c.h"
 #include "commands.h"
 #include "serial_num.h"
 
 static void configure_ports(void) {
+	// Dis/Enable pins as needed
 	// GPIO on PA14
 	gpio_set_pin_level(SD_CS, true);
 	gpio_set_pin_direction(SD_CS, GPIO_DIRECTION_OUT);
@@ -50,21 +51,11 @@ static void configure_ports(void) {
 	gpio_set_pin_pull_mode(PMOD4,	GPIO_PULL_OFF);
 	gpio_set_pin_function(PMOD4, GPIO_PIN_FUNCTION_OFF);
   
-  // GPIO on PA17
-	gpio_set_pin_direction(PMOD5, GPIO_DIRECTION_IN);
-	gpio_set_pin_pull_mode(PMOD5,	GPIO_PULL_OFF);
-	gpio_set_pin_function(PMOD5, GPIO_PIN_FUNCTION_OFF);
-
   // GPIO on PB11
 	gpio_set_pin_direction(PMOD6, GPIO_DIRECTION_IN);
 	gpio_set_pin_pull_mode(PMOD6,	GPIO_PULL_OFF);
 	gpio_set_pin_function(PMOD6, GPIO_PIN_FUNCTION_OFF);
   
-  // GPIO on PA16
-  gpio_set_pin_direction(PMOD7, GPIO_DIRECTION_IN);
-  gpio_set_pin_pull_mode(PMOD7, GPIO_PULL_OFF);
-  gpio_set_pin_function(PMOD7, GPIO_PIN_FUNCTION_OFF);
-
   // GPIO on PB10
 	gpio_set_pin_direction(PMOD8, GPIO_DIRECTION_IN);
 	gpio_set_pin_pull_mode(PMOD8,	GPIO_PULL_OFF);
@@ -86,12 +77,13 @@ int main(void)
   /* Initializes MCU, drivers and middleware */
   init_mcu();
   configure_ports();
-  if (subbus_add_driver(&sb_base) ||
-      subbus_add_driver(&sb_fail_sw) ||
-      subbus_add_driver(&sb_board_desc) ||
-      subbus_add_driver(&sb_control) ||
-      subbus_add_driver(&sb_spi) ||
-      subbus_add_driver(&sb_rtc)
+  if (subbus_add_driver(&sb_base)
+   || subbus_add_driver(&sb_fail_sw)
+   || subbus_add_driver(&sb_board_desc)
+   || subbus_add_driver(&sb_control)
+   || subbus_add_driver(&sb_spi)
+   || subbus_add_driver(&sb_i2c_j4)
+   || subbus_add_driver(&sb_rtc)
       #ifdef uDACS_B
         || subbus_add_driver(&sb_ps_spi)
         || subbus_add_driver(&sb_cmd)

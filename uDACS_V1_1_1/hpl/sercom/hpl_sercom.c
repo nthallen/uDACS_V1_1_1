@@ -158,7 +158,7 @@ static struct usart_configuration _usarts[] = {
 
 static struct _spi_async_dev *_sercom0_dev = NULL;
 
-static struct _spi_async_dev *_sercom1_dev = NULL;
+static struct _i2c_m_async_device *_sercom1_dev = NULL;
 
 static struct _i2c_m_async_device *_sercom3_dev = NULL;
 
@@ -626,7 +626,7 @@ static void _sercom_init_irq_param(const void *const hw, void *dev)
 	}
 
 	if (hw == SERCOM1) {
-		_sercom1_dev = (struct _spi_async_dev *)dev;
+		_sercom1_dev = (struct _i2c_m_async_device *)dev;
 	}
 
 	if (hw == SERCOM3) {
@@ -2473,7 +2473,7 @@ void SERCOM0_Handler(void)
 
 void SERCOM1_Handler(void)
 {
-	_spi_handler(_sercom1_dev);
+	_sercom_i2c_m_irq_handler(_sercom1_dev);
 }
 
 void SERCOM3_Handler(void)

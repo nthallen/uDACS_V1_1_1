@@ -1,12 +1,12 @@
 /*
- * Code generated from Atmel Start.
- *
- * This file will be overwritten when reconfiguring your Atmel Start project.
- * Please copy examples or other code you want to keep to a separate file
- * to avoid losing it when reconfiguring.
+ * Code originally generated from Atmel Start's atmel_start_pins.h.
+ * Changes made there by Atmel Start should be migrated into this file.
+ * 
+ * 
+ * 
  */
-#ifndef DRIVER_INIT_INCLUDED
-#define DRIVER_INIT_INCLUDED
+#ifndef UDACS_DRIVER_INIT_INCLUDED
+#define UDACS_DRIVER_INIT_INCLUDED
 
 #include "atmel_start_pins.h"
 
@@ -25,7 +25,7 @@ extern "C" {
 
 #include <hal_spi_m_async.h>
 
-#include <hal_spi_m_async.h>
+#include <hal_i2c_m_async.h>
 
 #include <hal_i2c_m_async.h>
 
@@ -35,7 +35,7 @@ extern "C" {
 
 extern struct spi_m_async_descriptor AD_SPI;
 
-extern struct spi_m_async_descriptor PS_SPI;
+extern struct i2c_m_async_desc PM_I2C;
 
 extern struct i2c_m_async_desc UC_I2C;
 
@@ -47,9 +47,9 @@ void AD_SPI_PORT_init(void);
 void AD_SPI_CLOCK_init(void);
 void AD_SPI_init(void);
 
-void PS_SPI_PORT_init(void);
-void PS_SPI_CLOCK_init(void);
-void PS_SPI_init(void);
+void PM_I2C_PORT_init(void);
+void PM_I2C_CLOCK_init(void);
+void PM_I2C_init(void);
 
 void UC_I2C_PORT_init(void);
 void UC_I2C_CLOCK_init(void);
@@ -72,4 +72,4 @@ void system_init(void);
 #ifdef __cplusplus
 }
 #endif
-#endif // DRIVER_INIT_INCLUDED
+#endif // UDACS_DRIVER_INIT_INCLUDED
