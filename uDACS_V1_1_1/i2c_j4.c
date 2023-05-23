@@ -7,15 +7,6 @@
 	NOTE: Needs RTC timer module for delays
 
  ************************************************************************/
-
-/* Need? ***
-
-#include <hal_gpio.h>
-#include <hpl_gclk_base.h>
-// #include <hal_ext_irq.h>  // Need?? ***
- */
-
-// #include "driver_temp.h" // Need?? ***
 #include <hpl_pm_base.h>
 #include <peripheral_clk_config.h>
 #include <hpl_gclk_base.h>
@@ -65,20 +56,14 @@ static ms5607_prom_read msp_read_coef[8] = {
 };
 static uint8_t coef_num = 0;
 static uint8_t msp_ibuf[I2C_J4_MAX_READ_LENGTH];
-static uint8_t msrh_ibuf[I2C_J4_MAX_READ_LENGTH];
+static uint8_t sht_ibuf[I2C_J4_MAX_READ_LENGTH];
 
-//  *** May not need the array. May just need command, and read back 4 bytes.
-/* static uint8_t ms5607_adc_read[4] = {
-  MSP_ADC_READ, 		// Send ADC Read command
-  0x00, 0x00, 0x00 	// read back ADC on SDO
-};
- */
 static uint8_t msp_adc_read[1] = { MSP_ADC_READ };
-
 static uint8_t msp_reset_cmd[1] = { MSP_RESET };
 static uint8_t msp_conv_D1_osr[1];
 static uint8_t msp_conv_D2_osr[1];
-static uint8_t msrh_meas_D3[1] = { MSRH_MEAS_D3 };
+static uint8_t sht_meas_t[1] = { SHT_MEAS_T };
+static uint8_t sht_meas_rh[1] = { SHT_MEAS_RH };
 
 // Need to add RH values to cache ***
 
@@ -99,6 +84,9 @@ static uint8_t msrh_meas_D3[1] = { MSRH_MEAS_D3 };
  * 0x8D R:  D2L:16b Raw Temperature LSW
  * 0x8E R:  D2M:16b Raw Temperature MSB
  * 0x8F R:  OSR:16b OSR select (0:256, 1:512, 2:1024, 3:2048, 4:4096, 5:8192)
+ * 0x90 R:  RH: 16b SHT25 Relative Humidity measurement in %
+ * 0x91 R:   T: 16b SHT25 Temperature measurement in degC
+ * 0x92 RW:UREG:16b SHT25 8-bit User Register (Place holder; Not implemented)
  */
 static subbus_cache_word_t i2c_j4_cache[I2C_J4_HIGH_ADDR-I2C_J4_BASE_ADDR+1] = {
   { 0, 0, true,  false, false,  false, false }, // Offset 0x00: R: 16b I2C Status
@@ -117,24 +105,12 @@ static subbus_cache_word_t i2c_j4_cache[I2C_J4_HIGH_ADDR-I2C_J4_BASE_ADDR+1] = {
   { 0, 0, true,  false, false,  false, false }, // Offset 0x0D: R: Raw Temperature LSW
   { 0, 0, true,  false, false,  false, false }, // Offset 0x0E: R: Raw Temperature MSB
   { 4, 0, true,  false,  true,  false, false }, // Offset 0x0F: RW: OSR select (0:256, 1:512, 2:1024, 3:2048, 4:4096)
+  { 0, 0, true,  false, false,  false, false }, // Offset 0x10: R: SHT25 Relative Humidity
+  { 0, 0, true,  false, false,  false, false }, // Offset 0x11: R: SHT25 Temperature LSW
+  { 0, 0, true,  false, false,  false, false }, // Offset 0x12: R: SHT25 Temperature MSW
+  { 4, 0, true,  false,  true,  false, false }, // Offset 0x13: RW: SHT25 User Register (Place holder; Not implemented)
 // .cache	.wvalue	.readable	.was_read	.writable	.written	.dynamic
 };
-
-// For P and T
-// 
-//
-// start_spi_transfer to start P conversion then -check
-//   MSP_CONV_D1 + (2 * MSP_OSR_OFFS) // OFFS can change for different OSR. 
-//		would be on cache.
-//
-// set endtime -check
-// delay until done then start_spi_transfer to read P addr 0x00 -check
-
-// store read P results AND start_spi_transfer to start T conversion
-// set new endtime
-// delay until done then start_spi_transfer to read T addr 0x00
-// store read T results go back to Read P : give up the BUS
-
 
 /*	Need to add  RH states
  ****************************************************
@@ -152,7 +128,8 @@ enum ms5607_state_t {
         ms5607_convp, ms5607_convp_tx, ms5607_convp_delay,
         ms5607_readp, ms5607_readp_tx, ms5607_readp_cache,
         ms5607_convt, ms5607_convt_tx, ms5607_convt_delay,
-        ms5607_readt, ms5607_readt_tx, ms5607_readt_cache};
+        ms5607_readt, ms5607_readt_tx, ms5607_readt_cache,
+        };
 
 typedef struct {
   bool enabled;
@@ -178,7 +155,7 @@ static ms5607_poll_def ms5607 = {
 /**
  * poll_ms5607() is only called when I2C_txfr_complete = true
  *    and I2C bus is free
- * @return true if we are relinquishing the SPI bus
+ * return true if we are relinquishing the I2C bus
  */
 static bool poll_ms5607() {
   // uint32_t delay = 0x00000000;
@@ -187,19 +164,19 @@ static bool poll_ms5607() {
   float SENS; 	// sensitivity at actual temperature
   if (!I2C_MS5607_ENABLED || !I2C_txfr_complete ) return true;
   switch (ms5607.state) {
+    // Reset ms5607
     case ms5607_init:
-			i2c_write(MSP_I2C_ADDR, msp_reset_cmd, 1);
+			i2c_write(MSP_I2C_ADDR, msp_reset_cmd, 1);  // Reset MS5607 ~ 2.8mSec
       ms5607.state = ms5607_init_tx;
       return false;
 
     case ms5607_init_tx:
-      ms5607.endtime = rtc_current_count + ( 3 * RTC_COUNTS_PER_MSEC ); // >2.8mS
+      ms5607.endtime = rtc_current_count + ( 3 * RTC_COUNTS_PER_MSEC ); 
       ms5607.state = ms5607_init_delay;
       return false;
 
     case ms5607_init_delay:
       if ( rtc_current_count <= ms5607.endtime ) return false;
-      // for (int j=0; j < 5500; ++j);  // 5500 about 3ms delay
       ms5607.state = ms5607_readcal;
       return true;
 
@@ -256,7 +233,6 @@ static bool poll_ms5607() {
 
     case ms5607_convp_delay:
   	  if ( rtc_current_count <= ms5607.endtime ) return false;
-      // for (int j=0; j < 16500; ++j); // 16500 about 10ms delay
       ms5607.state = ms5607_readp;
       return true;
 
@@ -294,7 +270,6 @@ static bool poll_ms5607() {
 
     case ms5607_convt_delay:
   	  if ( rtc_current_count <= ms5607.endtime ) return false;
-      // for (int j=0; j < 16500; ++j); // 16500 about 10ms delay
       ms5607.state = ms5607_readt;
       return true;
 
@@ -317,8 +292,6 @@ static bool poll_ms5607() {
       ms5607.D2 = ((uint32_t)i2c_j4_cache[0x0E].cache)<<16
         | ((uint32_t)i2c_j4_cache[0x0D].cache);	// Update ms5607.D2 for T calculation
 
-//	Insert RH readings here ***
-
       // Perform Compensation calculations here and update cache
       dT = ((float)ms5607.D2) - ((float)(ms5607.cal[5]) * pow2(8));
       OFF = ((float)(ms5607.cal[2]) * pow2(17)) + (dT * ((float)(ms5607.cal[4]))) / pow2(6);
@@ -338,13 +311,121 @@ static bool poll_ms5607() {
    return true;
 }
 
-/**
- * Only called when I2C bus is free
- * @return true if we have relinquished the bus 
+
+/****************************************************
+ *	SHT25 Driver State Machine
+ *	sht25_init - Reset sht25 to initialize
+ *	sht25_convt - Send Measure Temperature Command
+ *	sht25_readt - Read Temperature
+ *	sht25_convrh - Send Measure Relative Humidity Command
+ *	sht25_readrh - Read Relative Humidity
  */
-static bool poll_i2c_p4(void) {
-  if (!I2C_P4_ENABLED) return true;
-//	to service whatever is connected to J4 I2C bus on P4
+enum sht25_state_t {
+        sht25_init, sht25_init_tx, sht25_init_delay,
+        sht25_convt, sht25_convt_tx, sht25_convt_delay,
+        sht25_readt, sht25_readt_cache,
+        sht25_convrh, sht25_convrh_tx, sht25_convrh_delay,
+        sht25_readrh, sht25_readrh_cache
+        };
+
+typedef struct {
+  bool enabled;
+  enum sht25_state_t state;
+  uint16_t RH; 	//  Relative Humidity
+  float T; 	//  Temperature
+  uint32_t endtime;
+//  uint32_t delay;
+//  uint16_t current;
+} sht25_poll_def;
+
+static sht25_poll_def sht25 = {
+    I2C_SHT25_ENABLED, sht25_init
+//	, 0, 0
+//	, 0, 0
+};
+
+/**
+ * poll_sht25() is only called when I2C_txfr_complete = true
+ *    and I2C bus is free
+ * return true if we are relinquishing the I2C bus
+ */
+static bool poll_sht25(void) {
+  if (!I2C_SHT25_ENABLED || !I2C_txfr_complete ) return true;
+  switch (sht25.state) {
+  //  Reset SHT25
+    case sht25_init:
+			i2c_write(SHT_I2C_ADDR, msp_reset_cmd, 1);
+      sht25.state = sht25_init_tx;
+      return false;
+
+    case sht25_init_tx:
+      sht25.endtime = rtc_current_count + ( 15 * RTC_COUNTS_PER_MSEC ); // Reset < 15mS
+      sht25.state = sht25_init_delay;
+      return false;
+
+    case sht25_init_delay:
+      if ( rtc_current_count <= sht25.endtime ) return false;
+      sht25.state = sht25_convt;
+      return true;
+
+  //  Process SHT25
+    case sht25_convt:
+	  i2c_write(SHT_I2C_ADDR, sht_meas_t, 1);	
+      sht25.state = sht25_convt_tx;
+      return false;
+
+    case sht25_convt_tx:
+      sht25.endtime = rtc_current_count + ( 85 * RTC_COUNTS_PER_MSEC ); // Tmax delay 85mS
+      sht25.state = sht25_convt_delay;
+      return false;
+
+    case sht25_convt_delay:
+  	  if ( rtc_current_count <= sht25.endtime ) return false;
+      sht25.state = sht25_readt;
+      return true;
+
+    case sht25_readt:
+			i2c_read(SHT_I2C_ADDR, sht_ibuf, 3);  // 3rd byte is checksum
+      sht25.state = sht25_readt_cache;
+      return false;
+
+    case sht25_readt_cache:
+      sht25.T = -46.85 + (175.72) *   // convert to 14b (16b) and calculate T
+        ((((uint16_t)sht_ibuf[0])<<8) | ((uint16_t)(sht_ibuf[1] & 0xFC))) / pow2(16);
+      sb_cache_update32(i2c_j4_cache, 0x11, &sht25.T);	// Update cache T
+      sht25.state = sht25_convrh;
+      return true;
+
+    case sht25_convrh:
+	  i2c_write(SHT_I2C_ADDR, sht_meas_rh, 1);	
+      sht25.state = sht25_convrh_tx;
+      return false;
+
+    case sht25_convrh_tx:
+      sht25.endtime = rtc_current_count + ( 29 * RTC_COUNTS_PER_MSEC ); // RHmax delay 29mS
+      sht25.state = sht25_convrh_delay;
+      return false;
+
+    case sht25_convrh_delay:
+  	  if ( rtc_current_count <= sht25.endtime ) return false;
+      sht25.state = sht25_readrh;
+      return true;
+
+    case sht25_readrh:
+			i2c_read(SHT_I2C_ADDR, sht_ibuf, 3);  // 3rd byte is checksum
+      sht25.state = sht25_readrh_cache;
+      return false;
+
+    case sht25_readrh_cache:
+      sht25.RH = -600 + 12500 *   // convert to 12b (16b) and Calculate '% * 100'
+        ((((uint16_t)sht_ibuf[0])<<8) | ((uint16_t)(sht_ibuf[1] & 0xFC))) / pow2(16);
+      i2c_j4_cache[0x10].cache = sht25.RH;  // update cache
+      sht25.state = sht25_convt;
+      return true;
+
+    default:
+      assert(false, __FILE__, __LINE__);
+   }
   return true;
 }
 
@@ -410,25 +491,10 @@ static void i2c_j4_reset() {
 //	UC_I2C Driver
 void UC_I2C_PORT_init(void)
 {
-
-	gpio_set_pin_pull_mode(UC_SDA,
-	// <y> Pull configuration
-	// <id> pad_pull_config
-	// <GPIO_PULL_OFF"> Off
-	// <GPIO_PULL_UP"> Pull-up
-	// <GPIO_PULL_DOWN"> Pull-down
-	GPIO_PULL_OFF);
-
+	gpio_set_pin_pull_mode(UC_SDA, GPIO_PULL_OFF);
 	gpio_set_pin_function(UC_SDA, PINMUX_PA22C_SERCOM3_PAD0);
 
-	gpio_set_pin_pull_mode(UC_SCL,
-	// <y> Pull configuration
-	// <id> pad_pull_config
-	// <GPIO_PULL_OFF"> Off
-	// <GPIO_PULL_UP"> Pull-up
-	// <GPIO_PULL_DOWN"> Pull-down
-	GPIO_PULL_OFF);
-
+	gpio_set_pin_pull_mode(UC_SCL, GPIO_PULL_OFF);
 	gpio_set_pin_function(UC_SCL, PINMUX_PA23C_SERCOM3_PAD1);
 }
 
@@ -449,7 +515,7 @@ void UC_I2C_init(void)
 
 // Main poll loop
 
-enum i2c_state_t {i2c_ms5607, i2c_p4 };
+enum i2c_state_t {i2c_ms5607, i2c_sht25 };
 static enum i2c_state_t i2c_state = i2c_ms5607;
 
 void i2c_j4_poll(void) {
@@ -459,11 +525,11 @@ void i2c_j4_poll(void) {
     switch (i2c_state) {
       case i2c_ms5607:
         if (poll_ms5607()) {
-          i2c_state = i2c_p4;
+          i2c_state = i2c_sht25;
         }
         break;
-      case i2c_p4:
-        if (poll_i2c_p4()) {
+      case i2c_sht25:
+        if (poll_sht25()) {
           i2c_state = i2c_ms5607;
         }
         break;

@@ -14,19 +14,24 @@
 
 #define I2C_J4_BASE_ADDR 0x80
 #define I2C_J4_STATUS_OFFSET 0x00
-#define I2C_J4_HIGH_ADDR 0x8F
+#define I2C_J4_HIGH_ADDR 0x93
+#define I2C_J6_BASE_ADDR 0x80
+#define I2C_J6_STATUS_OFFSET 0x00
+#define I2C_J6_HIGH_ADDR 0x93
 
 #define I2C_J4_ENABLE_DEFAULT true	// Default true. SUBBUS can change
 #define I2C_MS5607_ENABLED true	// Default true
-#define I2C_P4_ENABLED false	// Default false
+#define I2C_SHT25_ENABLED true	// Default true
 
 #define I2C_J4_MAX_READ_LENGTH 3
+#define I2C_J6_MAX_READ_LENGTH 3
 
 #define ADC_LSW_OFFSET(x) (5+2*(x))
 #define ADC_MSB_OFFSET(x) (6+2*(x))
 
 #define MSP_I2C_ADDR 0x77
-#define MSRH_I2C_ADDR 0x40
+#define SHT_I2C_ADDR 0x40
+// #define MSRH_I2C_ADDR 0x40
 
 // MS5607 Pressure Commands
 #define MSP_RESET 0x1E // ADC reset command
@@ -42,15 +47,32 @@
 //	#define MSP_ADC_8192 0x0A // ADC OSR=8192	Offset 5
 #define MSP_PROM_RD 0xA0 // Prom read command base address
 
-// MS5607 Relative Humidity Commands
-#define MSRH_RESET 0xFE // RH reset command
-#define MSRH_WRITE_UREG 0xE6 // Write User Register
-#define MSRH_READ_UREG 0xE7 // Read User Register
-#define MSRH_MEAS_D3_HOLD 0xE5 // Measure RH (D3) Hold Master
-#define MSRH_MEAS_D3 0xF5 // Measure RH (D3) No Hold Master
-#define MSRH_PROM_RD 0xA0 // Prom read command base address
+// SHT25 Relative Humidity Commands
+#define SHT_RESET 0xFE // RH reset command
+#define SHT_WRITE_UREG 0xE6 // Write User Register
+#define SHT_READ_UREG 0xE7 // Read User Register
+#define SHT_MEAS_T_HOLD 0xE3 // Measure T Hold Master
+#define SHT_MEAS_RH_HOLD 0xE5 // Measure RH (D3) Hold Master
+#define SHT_MEAS_T 0xF3 // Measure T No Hold Master
+#define SHT_MEAS_RH 0xF5 // Measure RH (D3) No Hold Master
 
-// *** Need RH User Register Definitions here ***
+// *** SHT25 RH User Register Definitions ***
+// Bit 7,0 : RH     T   Measurement Resolution
+//   ‘00’ 12 bit 14 bit (Default)
+//   ‘01’  8 bit 12 bit
+//   ‘10’ 10 bit 13 bit
+//   ‘11’ 11 bit 11 bit
+// Bit 6 : Power Status 
+//    ‘0’: VDD > 2.25 V
+//    ‘1’: VDD < 2.25 V
+// Bit 3, 4, 5 : Reserved
+// Bit 2 : Enable on-chip Heater
+//    ‘0’: Disable (Default) 
+//    ‘1’: Enable
+// Bit 1 : Disable OTP Reload
+//    ‘0’: Disable 
+//    ‘1’: Enable (Default) 
+
 
 
 extern subbus_driver_t sb_i2c_j4;
