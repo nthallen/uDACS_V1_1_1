@@ -83,6 +83,7 @@ int main(void)
    || subbus_add_driver(&sb_control)
    || subbus_add_driver(&sb_spi)
    || subbus_add_driver(&sb_i2c_j4)
+   || subbus_add_driver(&sb_i2c_j6)
    || subbus_add_driver(&sb_rtc)
       #ifdef uDACS_B
         || subbus_add_driver(&sb_ps_spi)

@@ -7,6 +7,7 @@ serial_port_clear();
 [s,port] = serial_port_init('COM3');
 set(s,'BaudRate',57600);
 % set(s,'BaudRate',115200);
+fprintf(1, '\nConnected to Port "%s"\n', port);
 %%
 % First check that the board is a uDACS
 [subfunc,desc] = get_subfunction(s);
@@ -121,6 +122,41 @@ RHread = struct( ...
   'T', { typecast(uint32(vals(2)+65536*vals(3)),'single') });
   
   fprintf(1,'RH%d: %5.2f %%  T%d: %7.3f degC\n', i, RHread.RH/100, i, RHread.T);
+ 
+  pause(1);
+end
+
+%%
+% On-Board MS8607 PTRH :
+ms8_base = hex2dec('60'); % 0x60
+
+% Read Coefficients
+rm_obj = read_multi_prep([ms8_base+5,1,ms8_base+10]);  % [0x65 - 0x6A]
+[vals,~] = read_multi(s,rm_obj);
+%
+if isempty(vals) || length(vals) ~= 6 
+  error('vals length was %d, expected 6', length(vals));
+end
+%
+fprintf(1, '\nMS8607 Coefficients:\n');
+for i=1:6
+  fprintf(1, '  C%d: %x\n', i, vals(i));
+end
+%% P, T, and RH
+%
+rm_obj = read_multi_prep([ms8_base+1,1,ms8_base+16]); % 0x61 - 0x70
+
+fprintf(1, '\nMS8607 Pressure, Temperature, and Relative Humidity:\n');
+for i=0:9
+  [vals,ack] = read_multi(s, rm_obj);
+  
+PTRHread = struct( ...
+  'T', { typecast(uint32(vals(3)+65536*vals(4)),'single') }, ...
+  'P', { typecast(uint32(vals(1)+65536*vals(2)),'single') }, ...
+  'RH', { vals(16) });
+  
+  fprintf(1,'P%d: %7.3f mBar ( %7.3f Torr )  T%d: %7.3f degC  RH%d: %5.2f %%\n', ...
+    i, PTRHread.P, (PTRHread.P * 0.750062), i, PTRHread.T, i, PTRHread.RH/100);
  
   pause(1);
 end

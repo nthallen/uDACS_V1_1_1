@@ -15,13 +15,17 @@
 #define I2C_J4_BASE_ADDR 0x80
 #define I2C_J4_STATUS_OFFSET 0x00
 #define I2C_J4_HIGH_ADDR 0x93
-#define I2C_J6_BASE_ADDR 0x80
+#define I2C_J6_BASE_ADDR 0x60
 #define I2C_J6_STATUS_OFFSET 0x00
-#define I2C_J6_HIGH_ADDR 0x93
+#define I2C_J6_HIGH_ADDR 0x71
 
 #define I2C_J4_ENABLE_DEFAULT true	// Default true. SUBBUS can change
 #define I2C_MS5607_ENABLED true	// Default true
 #define I2C_SHT25_ENABLED true	// Default true
+
+#define I2C_J6_ENABLE_DEFAULT true	// Default true. SUBBUS can change
+#define I2C_MS8607_ENABLED true	// Default true
+#define I2C_MSRH_ENABLED true	// Default true
 
 #define I2C_J4_MAX_READ_LENGTH 3
 #define I2C_J6_MAX_READ_LENGTH 3
@@ -31,7 +35,8 @@
 
 #define MSP_I2C_ADDR 0x77
 #define SHT_I2C_ADDR 0x40
-// #define MSRH_I2C_ADDR 0x40
+#define MS8P_I2C_ADDR 0x76
+#define MSRH_I2C_ADDR 0x40
 
 // MS5607 Pressure Commands
 #define MSP_RESET 0x1E // ADC reset command
@@ -46,6 +51,14 @@
 //	#define MSP_ADC_4096 0x08 // ADC OSR=4096	Offset 4
 //	#define MSP_ADC_8192 0x0A // ADC OSR=8192	Offset 5
 #define MSP_PROM_RD 0xA0 // Prom read command base address
+
+// MS8607 Relative Humidity Commands
+#define MSRH_RESET 0xFE // RH reset command
+#define MSRH_WRITE_UREG 0xE6 // Write User Register
+#define MSRH_READ_UREG 0xE7 // Read User Register
+#define MSRH_MEAS_RH_HOLD 0xE5 // Measure RH (D3) Hold Master
+#define MSRH_MEAS_RH 0xF5 // Measure RH (D3) No Hold Master
+#define MSRH_PROM_RD 0xA0 // RH Prom read command base address
 
 // SHT25 Relative Humidity Commands
 #define SHT_RESET 0xFE // RH reset command
@@ -74,12 +87,18 @@
 //    ‘1’: Enable (Default) 
 
 
-
 extern subbus_driver_t sb_i2c_j4;
 void i2c_j4_enable(bool value);
 extern struct i2c_m_async_desc UC_I2C;
 void UC_I2C_PORT_init(void);
 void UC_I2C_CLOCK_init(void);
 void UC_I2C_init(void);
+
+extern subbus_driver_t sb_i2c_j6;
+void i2c_j6_enable(bool value);
+extern struct i2c_m_async_desc PM_I2C;
+void PM_I2C_PORT_init(void);
+void PM_I2C_CLOCK_init(void);
+void PM_I2C_init(void);
 
 #endif
