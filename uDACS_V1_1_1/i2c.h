@@ -17,7 +17,7 @@
 #define I2C_J4_HIGH_ADDR 0x93
 #define I2C_J6_BASE_ADDR 0x60
 #define I2C_J6_STATUS_OFFSET 0x00
-#define I2C_J6_HIGH_ADDR 0x71
+#define I2C_J6_HIGH_ADDR 0x72
 
 #define I2C_J4_ENABLE_DEFAULT true	// Default true. SUBBUS can change
 #define I2C_MS5607_ENABLED true	// Default true

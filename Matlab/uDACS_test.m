@@ -89,7 +89,7 @@ end
 %
 fprintf(1, '\nMS5607 Coefficients:\n');
 for i=1:6
-  fprintf(1, '  C%d: %x\n', i, vals(i));
+  fprintf(1, '  C%d: %x  %d\n', i, vals(i), vals(i));
 end
 %% P and T
 %
@@ -140,7 +140,7 @@ end
 %
 fprintf(1, '\nMS8607 Coefficients:\n');
 for i=1:6
-  fprintf(1, '  C%d: %x\n', i, vals(i));
+  fprintf(1, '  C%d: %x  %d\n', i, vals(i), vals(i));
 end
 %% P, T, and RH
 %

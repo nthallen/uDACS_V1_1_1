@@ -67,24 +67,25 @@ static uint8_t msrh_meas_rh[1] = { MSRH_MEAS_RH };
 // Need to add RH values to cache ***
 
 /* These addresses belong to the I2C_J6 module
- * 0x80 R:  ST: 16b I2C Status
- * 0x81 R:  PL: 16b Compensated Pressure LSW
- * 0x82 R:  PM: 16b Compensated Pressure MSB
- * 0x83 R:  TL: 16b Compensated Temperature LSW
- * 0x84 R:  TM: 16b Compensated Temperature MSB
- * 0x85 R:  C1: 16b Pressure sensitivity | SENST1
- * 0x86 R:  C2: 16b Pressure offset | OFFT1
- * 0x87 R:  C3: 16b Temperature coeff. of pressure sensitivity | TCS
- * 0x88 R:  C4: 16b Temperature coefficient of pressure offset | TCO
- * 0x89 R:  C5: 16b Reference temperature | TREF
- * 0x8A R:  C6: 16b Temperature coefficient of the temperature | TEMPSENS
- * 0x8B R:  D1L:16b Raw Pressure LSW
- * 0x8C R:  D1M:16b Raw Pressure MSB
- * 0x8D R:  D2L:16b Raw Temperature LSW
- * 0x8E R:  D2M:16b Raw Temperature MSB
- * 0x8F R:  OSR:16b OSR select (0:256, 1:512, 2:1024, 3:2048, 4:4096, 5:8192)
- * 0x90 R:  RH: 16b MS8607 Relative Humidity measurement in %
- * 0x91 RW:UREG:16b MS8607 8-bit User Register (Place holder; Not implemented)
+ * 0x60 R:  ST: 16b I2C Status
+ * 0x61 R:  PL: 16b Compensated Pressure LSW
+ * 0x62 R:  PM: 16b Compensated Pressure MSB
+ * 0x63 R:  TL: 16b Compensated Temperature LSW
+ * 0x64 R:  TM: 16b Compensated Temperature MSB
+ * 0x65 R:  C1: 16b Pressure sensitivity | SENST1
+ * 0x66 R:  C2: 16b Pressure offset | OFFT1
+ * 0x67 R:  C3: 16b Temperature coeff. of pressure sensitivity | TCS
+ * 0x68 R:  C4: 16b Temperature coefficient of pressure offset | TCO
+ * 0x69 R:  C5: 16b Reference temperature | TREF
+ * 0x6A R:  C6: 16b Temperature coefficient of the temperature | TEMPSENS
+ * 0x6B R:  D1L:16b Raw Pressure LSW
+ * 0x6C R:  D1M:16b Raw Pressure MSB
+ * 0x6D R:  D2L:16b Raw Temperature LSW
+ * 0x6E R:  D2M:16b Raw Temperature MSB
+ * 0x6F RW: OSR:16b OSR select (0:256, 1:512, 2:1024, 3:2048, 4:4096, 5:8192)
+ * 0x70 R:  RH: 16b MS8607 Compensated Relative Humidity measurement in %
+ * 0x71 R:  RH: 16b MS8607 Relative Humidity measurement in %
+ * 0x72 RW:UREG:16b MS8607 8-bit User Register (Place holder; Not implemented)
  */
 static subbus_cache_word_t i2c_j6_cache[I2C_J6_HIGH_ADDR-I2C_J6_BASE_ADDR+1] = {
   { 0, 0, true,  false, false,  false, false }, // Offset 0x00: R: 16b I2C Status
@@ -103,8 +104,9 @@ static subbus_cache_word_t i2c_j6_cache[I2C_J6_HIGH_ADDR-I2C_J6_BASE_ADDR+1] = {
   { 0, 0, true,  false, false,  false, false }, // Offset 0x0D: R: Raw Temperature LSW
   { 0, 0, true,  false, false,  false, false }, // Offset 0x0E: R: Raw Temperature MSB
   { 4, 0, true,  false,  true,  false, false }, // Offset 0x0F: RW: OSR select (0:256, 1:512, 2:1024, 3:2048, 4:4096)
-  { 0, 0, true,  false, false,  false, false }, // Offset 0x10: R: MS8607 Relative Humidity
-  { 4, 0, true,  false,  true,  false, false }, // Offset 0x11: RW: MS8607 RH User Register (Place holder; Not implemented)
+  { 0, 0, true,  false, false,  false, false }, // Offset 0x10: R: MS8607 COmpensated Relative Humidity
+  { 0, 0, true,  false, false,  false, false }, // Offset 0x11: R: MS8607 Relative Humidity
+  { 4, 0, true,  false,  true,  false, false }, // Offset 0x12: RW: MS8607 RH User Register (Place holder; Not implemented)
 // .cache	.wvalue	.readable	.was_read	.writable	.written	.dynamic
 };
 
@@ -323,8 +325,8 @@ enum msrh_state_t {
 typedef struct {
   bool enabled;
   enum msrh_state_t state;
-  uint16_t RH; 	//  Relative Humidity
-//  float T; 	//  Temperature
+  uint16_t D3; 	//  Relative Humidity
+  uint16_t RH; 	//  COmpensated Relative Humidity
   uint32_t endtime;
 //  uint32_t delay;
 //  uint16_t current;
@@ -382,8 +384,10 @@ static bool poll_msrh(void) {
       return false;
 
     case msrh_readrh_cache:
-      msrh.RH = -600 + 12500 *   // convert to 12b (16b) and Calculate '% * 100'
+      msrh.D3 = -600 + 12500 *   // convert to 12b (16b) and Calculate '% * 100'
         ((((uint16_t)msrh_ibuf[0])<<8) | ((uint16_t)(msrh_ibuf[1] & 0xFC))) / pow2(16);
+      i2c_j6_cache[0x11].cache = msrh.D3;  // update cache
+      msrh.RH = msrh.D3 + (18)*(20 - (uint16_t)ms8607.T); // 'Tcoeff * 100'
       i2c_j6_cache[0x10].cache = msrh.RH;  // update cache
       msrh.state = msrh_convrh;
       return true;
