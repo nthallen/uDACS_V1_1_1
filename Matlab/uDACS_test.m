@@ -51,7 +51,7 @@ rm_obj = read_multi_prep([20,1,37]);
 %
 % while true
 for iadc=1:10
-  %%
+  %
   [vals,ack] = read_multi(s,rm_obj);
   fprintf(1,'---------\n');
   fprintf(1,'%04X %d\n', vals(1),vals(end));
@@ -64,7 +64,7 @@ for iadc=1:10
   for i=1:length(hdr)
     fprintf(1,'%02X %8X %8d %10f V\n',hdr(i), adc(i), sadc(i), vadc(i));
   end
-  %%
+  %
   pause(1);
 end
 flush_input(s);

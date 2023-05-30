@@ -98,6 +98,33 @@
   //  #define uDACS_B	// Need this out to disable spi_ps.c/.h
   #endif
 
+  #if SUBBUS_BOARD_SN == 7
+  #define SUBBUS_BOARD_INSTRUMENT_ID 10
+  #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
+  #define SUBBUS_BOARD_ID 3
+  #define SUBBUS_BOARD_BOARD_TYPE "OE uDACS"
+  #define SUBBUS_BOARD_LOCATION "CO2 Backup"
+  //  #define uDACS_B	// Need this out to disable spi_ps.c/.h
+  #endif
+
+  #if SUBBUS_BOARD_SN == 8
+  #define SUBBUS_BOARD_INSTRUMENT_ID 10
+  #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
+  #define SUBBUS_BOARD_ID 3
+  #define SUBBUS_BOARD_BOARD_TYPE "OE uDACS"
+  #define SUBBUS_BOARD_LOCATION "Methane Backup"
+  //  #define uDACS_B	// Need this out to disable spi_ps.c/.h
+  #endif
+
+  #if SUBBUS_BOARD_SN == 9
+  #define SUBBUS_BOARD_INSTRUMENT_ID 10
+  #define SUBBUS_BOARD_INSTRUMENT "Test"
+  #define SUBBUS_BOARD_ID 3
+  #define SUBBUS_BOARD_BOARD_TYPE "Spare uDACS"
+  #define SUBBUS_BOARD_LOCATION "Stock"
+  //  #define uDACS_B	// Need this out to disable spi_ps.c/.h
+  #endif
+
 #else
   #error Unsupported SUBFUNCTION number
 #endif
